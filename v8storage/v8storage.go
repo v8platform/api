@@ -9,7 +9,7 @@ import (
 	"log"
 	"time"
 	//"os"
-	"../../v8runner"
+	"../../go-v8runner"
 	"../v8tools"
 )
 

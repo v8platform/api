@@ -3,7 +3,7 @@ package v8tempDb
 import (
 	"fmt"
 
-	"../../v8runner"
+	"../../go-v8runner"
 	"../v8tools"
 )
 
