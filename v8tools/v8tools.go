@@ -19,7 +19,7 @@ import (
 
 var (
 	tempFiles []string
-	tempDir   string = ИницализороватьВременныйКаталог()
+	tempDir   string = ИницализироватьВременныйКаталог()
 )
 
 const (
@@ -42,7 +42,7 @@ func ВременныйКаталогСПрефисом(pre string) string {
 	return t
 }
 
-func ИницализороватьВременныйКаталог() string {
+func ИницализироватьВременныйКаталог() string {
 
 	userTmpDir := os.TempDir()
 

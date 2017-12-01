@@ -3,15 +3,13 @@ package v8runner
 import (
 	"path"
 
-	"./dumpMode"
+	"./v8dumpMode"
 	//"testing"
 	_ "github.com/stretchr/testify/suite"
 )
 
 var _ = Suite(&тестыНаЗагрузкуКонфигурацииИзФайла{})
 var _ = Suite(&тестыНаЗагрузкуКонфигурацииИзФайлов{})
-
-
 
 type тестыНаЗагрузкуКонфигурацииИзФайла struct {
 	conf                            *Конфигуратор

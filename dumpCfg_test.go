@@ -5,7 +5,7 @@ import (
 	//_ "github.com/stretchr/testify/suite"
 	"path"
 
-	"./dumpMode"
+	"./v8dumpMode"
 	log "github.com/sirupsen/logrus"
 )
 

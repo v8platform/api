@@ -3,7 +3,7 @@ package v8runner
 import (
 	"fmt"
 
-	"./dumpMode"
+	"./v8dumpMode"
 	"./v8tools"
 	log "github.com/sirupsen/logrus"
 )
