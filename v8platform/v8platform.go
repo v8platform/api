@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"../v8config-file"
+	"../v8tools"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -66,20 +67,20 @@ func ПолучитьПутьКВерсииПлатформы(ВерсияПла
 		var КаталогУстановкиx86_64 = path.Join(КорневойПуть1С, "x86_64")
 		var КаталогУстановки string = ""
 
-		if ok, _ := Exists(КаталогУстановкиi386); ok {
+		if ok, _ := v8tools.Exists(КаталогУстановкиi386); ok {
 			КаталогУстановки = КаталогУстановкиi386
 		} else {
-			if ok, _ := Exists(КаталогУстановкиx86_64); ok {
+			if ok, _ := v8tools.Exists(КаталогУстановкиx86_64); ok {
 				КаталогУстановки = КаталогУстановкиx86_64
 			}
 		}
 
-		if ПустаяСтрока(КаталогУстановки) {
+		if v8tools.ПустаяСтрока(КаталогУстановки) {
 			log.Debugf("Не удалось прочитать версию 1С < %s >. Не найден каталог установки 1С", ВерсияПлатформы)
 		}
 
 		var fRac = path.Join(КаталогУстановки, "rac")
-		if ok, err := Exists(fRac); ok {
+		if ok, err := v8tools.Exists(fRac); ok {
 			var args []string
 
 			out, execErr := exec.Command(fRac, strings.Join(args, "-v")).Output()
@@ -94,7 +95,7 @@ func ПолучитьПутьКВерсииПлатформы(ВерсияПла
 		}
 
 		var fV8 = path.Join(КаталогУстановки, "1cv8")
-		if ok, err := Exists(fV8); ok {
+		if ok, err := v8tools.Exists(fV8); ok {
 			добавитьВерсию(НоваяВерсияПлатформы(ВерсияПлатформы, fRac, fV8))
 		} else {
 			log.Debugf("Не удалось прочитать версию 1С < %s > по причине %s", ВерсияПлатформы, err)

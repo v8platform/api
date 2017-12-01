@@ -7,11 +7,19 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (conf *Конфигуратор) СоздатьФайловуюБазуПоУмолчанию(КаталогБазы string) error {
+type процедурыСозданияБазы interface {
+	СоздатьФайловуюБазуПоУмолчанию(КаталогБазы string) error
+	СоздатьФайловуюБазуПоШаблону(КаталогБазы string, ПутьКШаблону string) (e error)
+	СоздатьИменнуюФайловуюБазу(КаталогБазы string, ИмяБазыВСписке string) error
+	СоздатьИменнуюФайловуюБазуПоШаблону(КаталогБазы string, ПутьКШаблону string, ИмяБазыВСписке string) error
+	СоздатьФайловуюБазу(КаталогБазы string, ПутьКШаблону string, ИмяБазыВСписке string) error
+}
+
+func (conf *конфигуратор) СоздатьФайловуюБазуПоУмолчанию(КаталогБазы string) error {
 	return conf.createFileBase(КаталогБазы, "", "")
 }
 
-func (conf *Конфигуратор) СоздатьФайловуюБазуПоШаблону(КаталогБазы string, ПутьКШаблону string) (e error) {
+func (conf *конфигуратор) СоздатьФайловуюБазуПоШаблону(КаталогБазы string, ПутьКШаблону string) (e error) {
 
 	if ok, err := v8tools.IsNoExist(ПутьКШаблону); ok {
 
@@ -24,20 +32,20 @@ func (conf *Конфигуратор) СоздатьФайловуюБазуПо
 	return
 }
 
-func (conf *Конфигуратор) СоздатьИменнуюФайловуюБазу(КаталогБазы string, ИмяБазыВСписке string) error {
+func (conf *конфигуратор) СоздатьИменнуюФайловуюБазу(КаталогБазы string, ИмяБазыВСписке string) error {
 	return conf.createFileBase(КаталогБазы, "", ИмяБазыВСписке)
 }
 
-func (conf *Конфигуратор) СоздатьИменнуюФайловуюБазуПоШаблону(КаталогБазы string, ПутьКШаблону string, ИмяБазыВСписке string) error {
+func (conf *конфигуратор) СоздатьИменнуюФайловуюБазуПоШаблону(КаталогБазы string, ПутьКШаблону string, ИмяБазыВСписке string) error {
 	return conf.createFileBase(КаталогБазы, ПутьКШаблону, ИмяБазыВСписке)
 }
 
-func (conf *Конфигуратор) СоздатьФайловуюБазу(КаталогБазы string, ПутьКШаблону string, ИмяБазыВСписке string) error {
+func (conf *конфигуратор) СоздатьФайловуюБазу(КаталогБазы string, ПутьКШаблону string, ИмяБазыВСписке string) error {
 	return conf.createFileBase(КаталогБазы, ПутьКШаблону, ИмяБазыВСписке)
 }
 
 //
-func (conf *Конфигуратор) createFileBase(dir string, pTemplate string, lName string) (e error) {
+func (conf *конфигуратор) createFileBase(dir string, pTemplate string, lName string) (e error) {
 
 	var p []string
 	p = append(p, "CREATEINFOBASE")
@@ -53,7 +61,7 @@ func (conf *Конфигуратор) createFileBase(dir string, pTemplate strin
 
 	p = append(p, "/Out", conf.ФайлИнформации)
 
-	e = conf.ЗапускателььКонфигуратора.ВыполнитьКоманду(p)
+	e = conf.ЗапускательКонфигуратора.ВыполнитьКоманду(p)
 
 	return
 }

@@ -6,9 +6,9 @@ import (
 
 	"os"
 
-	"../../v8runner"
-	"../dumpMode"
+	"../../go-v8runner"
 	"../v8constants"
+	"../v8dumpMode"
 	"../v8tools"
 	"github.com/stretchr/testify/suite"
 )
@@ -17,7 +17,7 @@ var pwd, _ = os.Getwd()
 
 type тестыНаРаботуСХранилищем struct {
 	suite.Suite
-	conf                            *v8runner.Конфигуратор
+	conf                            v8runner.Конфигуратор
 	КаталогЗагрузки                 string
 	ПутьКФайлуКофигурации           string
 	ПутьКФайлуСпискаОбъектов        string
@@ -27,7 +27,7 @@ type тестыНаРаботуСХранилищем struct {
 
 type тестыНаРаботуСХранилищемЧерезКонфигуратор struct {
 	suite.Suite
-	conf                            *v8runner.Конфигуратор
+	conf                            v8runner.Конфигуратор
 	КаталогЗагрузки                 string
 	ПутьКФайлуКофигурации           string
 	ПутьКФайлуСпискаОбъектов        string

@@ -8,17 +8,22 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (conf *Конфигуратор) ЗагрузитьКонфигурациюИзФайлов(КаталогЗагрузки string) (e error) {
+type процедурыЗагрузкиКонфигурации interface {
+	ЗагрузитьКонфигурациюИзФайлов(КаталогЗагрузки string) (e error)
+	ЗагрузитьКонфигурациюИзФайла(ПутьКФайлуКонфигуации string) (e error)
+}
+
+func (conf *конфигуратор) ЗагрузитьКонфигурациюИзФайлов(КаталогЗагрузки string) (e error) {
 	return conf.loadConfigFromFiles(КаталогЗагрузки, "", "", false)
 }
 
-func (conf *Конфигуратор) ЗагрузитьКонфигурациюИзФайла(ПутьКФайлуКонфигуации string) (e error) {
+func (conf *конфигуратор) ЗагрузитьКонфигурациюИзФайла(ПутьКФайлуКонфигуации string) (e error) {
 	return conf.loadCfg(ПутьКФайлуКонфигуации)
 }
 
 // private func
 
-func (conf *Конфигуратор) loadCfg(cfg string) (e error) {
+func (conf *конфигуратор) loadCfg(cfg string) (e error) {
 
 	var c = conf.СтандартныеПараметрыЗапускаКонфигуратора()
 
@@ -29,7 +34,7 @@ func (conf *Конфигуратор) loadCfg(cfg string) (e error) {
 	return err
 }
 
-func (conf *Конфигуратор) loadConfigFromFiles(dir string, pListFile string, format string, updDumpInfo bool) (e error) {
+func (conf *конфигуратор) loadConfigFromFiles(dir string, pListFile string, format string, updDumpInfo bool) (e error) {
 
 	var c = conf.СтандартныеПараметрыЗапускаКонфигуратора()
 
