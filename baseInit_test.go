@@ -1,11 +1,12 @@
 package v8runner
 
 import (
-	"./v8tools"
-	. "gopkg.in/check.v1"
 	"math/rand"
 	"os"
 	"path"
+
+	"./v8tools"
+	. "gopkg.in/check.v1"
 )
 
 var pwd, _ = os.Getwd()

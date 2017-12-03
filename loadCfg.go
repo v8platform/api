@@ -8,55 +8,52 @@ import (
 	"github.com/pkg/errors"
 )
 
-type процедурыЗагрузкиКонфигурации interface {
-	ЗагрузитьКонфигурациюИзФайлов(КаталогЗагрузки string) (e error)
-	ЗагрузитьКонфигурациюИзФайла(ПутьКФайлуКонфигуации string) (e error)
-}
-
-func (conf *конфигуратор) ЗагрузитьКонфигурациюИзФайлов(КаталогЗагрузки string) (e error) {
+func (conf *Конфигуратор) ЗагрузитьКонфигурациюИзФайлов(КаталогЗагрузки string) (e error) {
 	return conf.loadConfigFromFiles(КаталогЗагрузки, "", "", false)
 }
 
-func (conf *конфигуратор) ЗагрузитьКонфигурациюИзФайла(ПутьКФайлуКонфигуации string) (e error) {
+func (conf *Конфигуратор) ЗагрузитьКонфигурациюИзФайла(ПутьКФайлуКонфигуации string) (e error) {
 	return conf.loadCfg(ПутьКФайлуКонфигуации)
 }
 
 // private func
 
-func (conf *конфигуратор) loadCfg(cfg string) (e error) {
+func (conf *Конфигуратор) loadCfg(cfg string) (e error) {
 
-	var c = conf.СтандартныеПараметрыЗапускаКонфигуратора()
+	var Параметры []string
 
-	c = append(c, fmt.Sprintf("/LoadCfg %s", cfg))
+	Параметры = append(Параметры, fmt.Sprintf("/LoadCfg %s", cfg))
 
-	err := conf.ВыполнитьКоманду(c)
+	conf.УстановитьПараметры(Параметры...)
+	err := conf.ВыполнитьКоманду()
 
 	return err
 }
 
-func (conf *конфигуратор) loadConfigFromFiles(dir string, pListFile string, format string, updDumpInfo bool) (e error) {
+func (conf *Конфигуратор) loadConfigFromFiles(dir string, pListFile string, format string, updDumpInfo bool) (e error) {
 
-	var c = conf.СтандартныеПараметрыЗапускаКонфигуратора()
+	var Параметры []string
 
-	c = append(c, fmt.Sprintf("/LoadConfigFromFiles %s", dir))
+	Параметры = append(Параметры, fmt.Sprintf("/LoadConfigFromFiles %s", dir))
 
 	if ok, _ := v8tools.Exists(pListFile); ok {
 
 		if ok, _ := РежимВыгрузкиКонфигурации.РежимДоступен(format); ok {
-			c = append(c, fmt.Sprintf("-format %s", format))
+			Параметры = append(Параметры, fmt.Sprintf("-format %s", format))
 		} else {
 			return errors.New("Не корректно задач формат для загрузки")
 		}
-		c = append(c, fmt.Sprintf("-listFile %s", pListFile))
+		Параметры = append(Параметры, fmt.Sprintf("-listFile %s", pListFile))
 
 		if updDumpInfo {
 			//Если ПроверитьВозможностьОбновленияФайловВыгрузки(КаталогВыгрузки, ПутьКФайлуВерсийДляСравнения, ФорматВыгрузки) Тогда
-			c = append(c, "-updateConfigDumpInfo", "-force")
+			Параметры = append(Параметры, "-updateConfigDumpInfo", "-force")
 		}
 
 	}
 
-	err := conf.ВыполнитьКоманду(c)
+	conf.УстановитьПараметры(Параметры...)
+	err := conf.ВыполнитьКоманду()
 
 	return err
 }

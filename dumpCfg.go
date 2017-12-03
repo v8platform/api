@@ -20,15 +20,15 @@ import (
 //   ПутьКФайлуВерсийДляСравнения - Строка - Указывает путь к файлу, который будет использован для сравнения изменений.
 //
 //   Для того чтобы работали функции 8.3.10. необходимо явно указать версию
-func (conf *конфигуратор) ВыгрузитьКонфигурациюСРежимомВыгрузки(dir string, mode string) error {
+func (conf *Конфигуратор) ВыгрузитьКонфигурациюСРежимомВыгрузки(dir string, mode string) error {
 	return conf.dumpConfigToFiles(dir, mode, false, "", "")
 }
 
-func (conf *конфигуратор) ВыгрузитьКонфигурациюПоУмолчанию(dir string) error {
+func (conf *Конфигуратор) ВыгрузитьКонфигурациюПоУмолчанию(dir string) error {
 	return conf.dumpConfigToFiles(dir, РежимВыгрузкиКонфигурации.СтандартныйРежим(), false, "", "")
 }
 
-func (conf *конфигуратор) ВыгрузитьКонфигурацию(КаталогВыгрузки string, ФорматВыгрузки string, ТолькоИзмененные bool, ПутьКФайлуИзменений string, ПутьКФайлуВерсийДляСравнения string) error {
+func (conf *Конфигуратор) ВыгрузитьКонфигурацию(КаталогВыгрузки string, ФорматВыгрузки string, ТолькоИзмененные bool, ПутьКФайлуИзменений string, ПутьКФайлуВерсийДляСравнения string) error {
 	return conf.dumpConfigToFiles(КаталогВыгрузки, ФорматВыгрузки, ТолькоИзмененные, ПутьКФайлуИзменений, ПутьКФайлуВерсийДляСравнения)
 }
 
@@ -41,33 +41,33 @@ func (conf *конфигуратор) ВыгрузитьКонфигурацию
 //   ФорматВыгрузки 	- РежимВыгрузкиКонфигурации - По умолчанию выгрузка производится в иерархическом формате.
 //
 //   Для того чтобы работали функции 8.3.10. необходимо явно указать версию
-func (conf *конфигуратор) ВыгрузитьИзмененияКонфигурацииВФайл(КаталогВыгрузки string, ФорматВыгрузки string, ПутьКФайлуИзменений string, ПутьКФайлуВерсийДляСравнения string) error {
+func (conf *Конфигуратор) ВыгрузитьИзмененияКонфигурацииВФайл(КаталогВыгрузки string, ФорматВыгрузки string, ПутьКФайлуИзменений string, ПутьКФайлуВерсийДляСравнения string) error {
 	return conf.dumpConfigToFiles(КаталогВыгрузки, ФорматВыгрузки, true, ПутьКФайлуИзменений, ПутьКФайлуВерсийДляСравнения)
 }
 
-func (conf *конфигуратор) dumpConfigToFiles(dir string, mode string, ch bool, pChFile string, pVersionFile string) error {
+func (conf *Конфигуратор) dumpConfigToFiles(dir string, mode string, ch bool, pChFile string, pVersionFile string) error {
 
-	var c = conf.СтандартныеПараметрыЗапускаКонфигуратора()
+	var Параметры []string
 
-	c = append(c, fmt.Sprintf("/DumpConfigToFiles %s", dir))
+	Параметры = append(Параметры, fmt.Sprintf("/DumpConfigToFiles %s", dir))
 	if ok, _ := РежимВыгрузкиКонфигурации.РежимДоступен(mode); ok {
-		c = append(c, fmt.Sprintf("-format %s", mode))
+		Параметры = append(Параметры, fmt.Sprintf("-format %s", mode))
 	}
 
 	if ch {
 		//Если ПроверитьВозможностьОбновленияФайловВыгрузки(КаталогВыгрузки, ПутьКФайлуВерсийДляСравнения, ФорматВыгрузки) Тогда
-		c = append(c, "-update", "-force")
+		Параметры = append(Параметры, "-update", "-force")
 		if v8tools.ЗначениеЗаполнено(pChFile) {
-			c = append(c, fmt.Sprintf("-getChanges %s", pChFile))
+			Параметры = append(Параметры, fmt.Sprintf("-getChanges %s", pChFile))
 		}
 		if v8tools.ЗначениеЗаполнено(pChFile) {
-			c = append(c, fmt.Sprintf("-configDumpInfoForChanges %s", pVersionFile))
+			Параметры = append(Параметры, fmt.Sprintf("-configDumpInfoForChanges %s", pVersionFile))
 		}
 	}
 
-	log.Debugf("Параметры запуска: %s", c)
-
-	err := conf.ВыполнитьКоманду(c)
+	log.Debugf("Параметры запуска: %s", Параметры)
+	conf.УстановитьПараметры(Параметры...)
+	err := conf.ВыполнитьКоманду()
 
 	return err
 }
