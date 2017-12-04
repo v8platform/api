@@ -35,7 +35,7 @@ func новаяВерсияПлатформы(v string, rac string, v8 string) *
 var доступныеВерсииПлатформы = make(map[string]*ВерсияПлатформы)
 
 func init() {
-	log.SetLevel(log.DebugLevel)
+	//log.SetLevel(log.DebugLevel)
 	log.Debugf("Текущая операционная система: %s", runtime.GOOS)
 	собратьКешДоступныхВерсий()
 
