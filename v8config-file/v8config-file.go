@@ -1,10 +1,8 @@
 package КонфигурацияСтартера
 
 import (
+	"../v8tools"
 	"bufio"
-	"fmt"
-	"io/ioutil"
-	"os"
 	"strings"
 )
 
@@ -22,9 +20,8 @@ func ПрочитатьНастройкиСтартера(pathToFile string) (r 
 
 func (s *настройкиСтартера) открыть(pathToFile string) (err error) {
 
-	b, err := ioutil.ReadFile(pathToFile) // just pass the file name
+	b, err := v8tools.ReadFileUTF16(pathToFile) // just pass the file name
 	if err != nil {
-		fmt.Print(err)
 		return
 	}
 
@@ -54,13 +51,12 @@ func строкаВСоответсвие(s string, sep string) (Соответ�
 	for scanner.Scan() {
 
 		z := strings.Split(scanner.Text(), sep)
+		if cap(z) == 2 {
+			Соответсвие[strings.ToUpper(z[0])] = append(Соответсвие[strings.ToUpper(z[0])], z[1])
+		}
 
-		Соответсвие[strings.ToUpper(z[0])] = append(Соответсвие[strings.ToUpper(z[0])], z[1])
 	}
-
-	if err := scanner.Err(); err != nil {
-		fmt.Fprintln(os.Stderr, "reading standard input:", err)
-	}
+	err = scanner.Err()
 
 	return
 }

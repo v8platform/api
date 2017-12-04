@@ -17,7 +17,7 @@ var pwd, _ = os.Getwd()
 
 type тестыНаРаботуСХранилищем struct {
 	suite.Suite
-	conf                            v8runner.Конфигуратор
+	conf                            *v8runner.Конфигуратор
 	КаталогЗагрузки                 string
 	ПутьКФайлуКофигурации           string
 	ПутьКФайлуСпискаОбъектов        string
@@ -27,7 +27,7 @@ type тестыНаРаботуСХранилищем struct {
 
 type тестыНаРаботуСХранилищемЧерезКонфигуратор struct {
 	suite.Suite
-	conf                            v8runner.Конфигуратор
+	conf                            *v8runner.Конфигуратор
 	КаталогЗагрузки                 string
 	ПутьКФайлуКофигурации           string
 	ПутьКФайлуСпискаОбъектов        string

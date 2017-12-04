@@ -8,7 +8,9 @@ import (
 	"./v8constants"
 	"./v8dumpMode"
 	"./v8tools"
+	"github.com/labstack/gommon/log"
 	. "gopkg.in/check.v1"
+	"path/filepath"
 )
 
 var _ = Suite(&тестыНаВыгрузкуКонфигурации{})
@@ -27,7 +29,7 @@ func (s *тестыНаВыгрузкуКонфигурации) TearDownSuite(c
 
 func (s *тестыНаВыгрузкуКонфигурации) SetUpSuite(c *C) {
 
-	s.ПутьКФайлуКофигурации = path.Join(pwd, "tests", "fixtures", "ТестовыйФайлКонфигурации.cf")
+	s.ПутьКФайлуКофигурации = filepath.Join(pwd, "tests", "fixtures", "ТестовыйФайлКонфигурации.cf")
 	s.conf = НовыйКонфигуратор()
 	errLoad := s.conf.ЗагрузитьКонфигурациюИзФайла(s.ПутьКФайлуКофигурации)
 	c.Assert(errLoad, IsNil, Commentf("Ошибка загрузки конфигурации из файла: %s", s.ПутьКФайлуКофигурации))
@@ -35,6 +37,7 @@ func (s *тестыНаВыгрузкуКонфигурации) SetUpSuite(c *C
 }
 
 func (s *тестыНаВыгрузкуКонфигурации) SetUpTest(c *C) {
+	log.SetLevel(log.DEBUG)
 
 	s.КаталогВыгрузки = v8tools.ВременныйКаталог()
 
