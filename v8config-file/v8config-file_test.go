@@ -37,9 +37,9 @@ func (s *ПроверкаБазовойФункциональности) TestЧ�
 
 	СписокПутей := настройка.ПолучитьНастройку("InstalledLocation")
 
-	c.Check(cap(СписокПутей), DeepEquals, 2)
+	c.Check(cap(СписокПутей), DeepEquals, 4)
 
-	c.Assert(СписокПутей[0], Equals, "C:\\Program Files\\1cv82")
-	c.Assert(СписокПутей[1], Equals, "C:\\Program Files\\1cv83")
+	c.Assert(СписокПутей[0], Equals, "C:\\Program Files (x86)\\1cv82")
+	c.Assert(СписокПутей[1], Equals, "C:\\Program Files (x86)\\1cv8")
 
 }

@@ -35,7 +35,7 @@ func новаяВерсияПлатформы(v string, rac string, v8 string) *
 var доступныеВерсииПлатформы = make(map[string]*ВерсияПлатформы)
 
 func init() {
-	//log.SetLevel(log.DebugLevel)
+
 	log.Debugf("Текущая операционная система: %s", runtime.GOOS)
 	собратьКешДоступныхВерсий()
 
@@ -89,7 +89,7 @@ func ПолучитьВерсиюПоУмолчанию() (v *ВерсияПла
 //noinspection ALL
 func собратьКешДоступныхВерсий() {
 
-	matchWindows := "\\*\\bin\\1cv8.exe"
+	matchWindows := "*\\*\\bin\\1cv8.exe"
 
 	match1cv8 := "/*/1cv8"
 	fRacName := "rac"
