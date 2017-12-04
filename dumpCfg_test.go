@@ -8,7 +8,6 @@ import (
 	"./v8constants"
 	"./v8dumpMode"
 	"./v8tools"
-	log "github.com/sirupsen/logrus"
 	. "gopkg.in/check.v1"
 )
 
@@ -27,8 +26,6 @@ func (s *тестыНаВыгрузкуКонфигурации) TearDownSuite(c
 }
 
 func (s *тестыНаВыгрузкуКонфигурации) SetUpSuite(c *C) {
-
-	log.SetLevel(log.DebugLevel)
 
 	s.ПутьКФайлуКофигурации = path.Join(pwd, "tests", "fixtures", "ТестовыйФайлКонфигурации.cf")
 	s.conf = НовыйКонфигуратор()

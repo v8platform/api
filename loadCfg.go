@@ -5,11 +5,20 @@ import (
 
 	"./v8dumpMode"
 	"./v8tools"
-	"github.com/pkg/errors"
+	//"github.com/pkg/errors"
 )
+
+type процедурыЗагрузкиКонфигурации interface {
+	ЗагрузитьКонфигурациюИзФайлов(КаталогЗагрузки string) (e error)
+	ЗагрузитьКонфигурациюИзФайла(ПутьКФайлуКонфигуации string) (e error)
+	ЗагрузитьКонфигурациюИзФайловСПараметрами(КаталогЗагрузки string, ПутьКФайлуСоСпискомФайлов string, Формат string, ОбновитьИнформациюВФайлеВыгрузки bool) (e error)
+}
 
 func (conf *Конфигуратор) ЗагрузитьКонфигурациюИзФайлов(КаталогЗагрузки string) (e error) {
 	return conf.loadConfigFromFiles(КаталогЗагрузки, "", "", false)
+}
+func (conf *Конфигуратор) ЗагрузитьКонфигурациюИзФайловСПараметрами(КаталогЗагрузки string, ПутьКФайлуСоСпискомФайлов string, Формат string, ОбновитьИнформациюВФайлеВыгрузки bool) (e error) {
+	return conf.loadConfigFromFiles(КаталогЗагрузки, ПутьКФайлуСоСпискомФайлов, Формат, ОбновитьИнформациюВФайлеВыгрузки)
 }
 
 func (conf *Конфигуратор) ЗагрузитьКонфигурациюИзФайла(ПутьКФайлуКонфигуации string) (e error) {
@@ -38,18 +47,18 @@ func (conf *Конфигуратор) loadConfigFromFiles(dir string, pListFile 
 
 	if ok, _ := v8tools.Exists(pListFile); ok {
 
+		Параметры = append(Параметры, fmt.Sprintf("-listFile %s", pListFile))
+	}
+
+	if updDumpInfo {
+		//Если ПроверитьВозможностьОбновленияФайловВыгрузки(КаталогВыгрузки, ПутьКФайлуВерсийДляСравнения, ФорматВыгрузки) Тогда
+		Параметры = append(Параметры, "-updateConfigDumpInfo", "-force")
+	}
+
+	if len(format) > 0 {
 		if ok, _ := РежимВыгрузкиКонфигурации.РежимДоступен(format); ok {
 			Параметры = append(Параметры, fmt.Sprintf("-format %s", format))
-		} else {
-			return errors.New("Не корректно задач формат для загрузки")
 		}
-		Параметры = append(Параметры, fmt.Sprintf("-listFile %s", pListFile))
-
-		if updDumpInfo {
-			//Если ПроверитьВозможностьОбновленияФайловВыгрузки(КаталогВыгрузки, ПутьКФайлуВерсийДляСравнения, ФорматВыгрузки) Тогда
-			Параметры = append(Параметры, "-updateConfigDumpInfo", "-force")
-		}
-
 	}
 
 	conf.УстановитьПараметры(Параметры...)

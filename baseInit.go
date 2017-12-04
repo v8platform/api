@@ -7,6 +7,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+type процедурыСозданияБазы interface {
+	СоздатьФайловуюБазуПоУмолчанию(КаталогБазы string) error
+	СоздатьФайловуюБазуПоШаблону(КаталогБазы string, ПутьКШаблону string) (e error)
+	СоздатьИменнуюФайловуюБазу(КаталогБазы string, ИмяБазыВСписке string) error
+	СоздатьИменнуюФайловуюБазуПоШаблону(КаталогБазы string, ПутьКШаблону string, ИмяБазыВСписке string) error
+	СоздатьФайловуюБазу(КаталогБазы string, ПутьКШаблону string, ИмяБазыВСписке string) error
+}
+
 func (conf *Конфигуратор) СоздатьФайловуюБазуПоУмолчанию(КаталогБазы string) error {
 	return conf.createFileBase(КаталогБазы, "", "")
 }
@@ -52,6 +60,7 @@ func (conf *Конфигуратор) createFileBase(dir string, pTemplate strin
 	}
 
 	conf.УстановитьПараметры(Параметры...)
+
 	err = conf.ВыполнитьКомандуСоздатьБазу()
 
 	return

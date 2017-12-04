@@ -3,7 +3,6 @@ package v8runner
 import (
 	//"testing"
 	"./v8tools"
-	log "github.com/sirupsen/logrus"
 	. "gopkg.in/check.v1"
 	"path"
 )
@@ -17,8 +16,6 @@ type тестыНаДополнительныйФункционал struct {
 }
 
 func (s *тестыНаДополнительныйФункционал) SetUpSuite(c *C) {
-
-	log.SetLevel(log.DebugLevel)
 
 	s.КаталогЗагрузки = path.Join(pwd, "v8storage", "epf/ОбработкаКонвертацииMXLJSON/ОбработкаКонвертацииMXLJSON/ОбработкаКонвертацииMXLJSON.xml")
 
