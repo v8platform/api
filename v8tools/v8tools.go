@@ -11,6 +11,7 @@ import (
 	"golang.org/x/text/encoding/unicode"
 	"golang.org/x/text/transform"
 
+	"../v8constants"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -22,14 +23,9 @@ var (
 	tempDir   string = ИницализироватьВременныйКаталог()
 )
 
-const (
-	prefix     = "v8r"
-	TempDBname = "TempBD_v8"
-)
-
 func ВременныйКаталог() string {
 
-	return ВременныйКаталогСПрефисом(prefix)
+	return ВременныйКаталогСПрефисом(v8constants.Prefix)
 }
 
 func ВременныйКаталогСПрефисом(pre string) string {
@@ -46,7 +42,7 @@ func ИницализироватьВременныйКаталог() string {
 
 	userTmpDir := os.TempDir()
 
-	tmpDir, err := ioutil.TempDir(userTmpDir, prefix)
+	tmpDir, err := ioutil.TempDir(userTmpDir, v8constants.Prefix)
 	if err != nil {
 		panic(err)
 	}

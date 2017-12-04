@@ -4,7 +4,7 @@ import (
 	//"testing"
 	"./v8tools"
 	. "gopkg.in/check.v1"
-	"path"
+	"path/filepath"
 )
 
 var _ = Suite(&тестыНаДополнительныйФункционал{})
@@ -17,7 +17,7 @@ type тестыНаДополнительныйФункционал struct {
 
 func (s *тестыНаДополнительныйФункционал) SetUpSuite(c *C) {
 
-	s.КаталогЗагрузки = path.Join(pwd, "v8storage", "epf/ОбработкаКонвертацииMXLJSON/ОбработкаКонвертацииMXLJSON/ОбработкаКонвертацииMXLJSON.xml")
+	s.КаталогЗагрузки = filepath.Join(pwd, "v8storage", "epf", "ОбработкаКонвертацииMXLJSON", "ОбработкаКонвертацииMXLJSON", "ОбработкаКонвертацииMXLJSON.xml")
 
 }
 
