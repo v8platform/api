@@ -1,8 +1,8 @@
 package v8run
 
 import (
-	"../v8tempDb"
-	"../v8tools"
+//"../v8tempDb"
+//"../v8tools"
 )
 
 type Контекст struct {
@@ -10,9 +10,9 @@ type Контекст struct {
 	Пользователь          string
 	Пароль                string
 	КлючРазрешенияЗапуска string
-	ВременнаяБаза         *v8tempDb.ВременнаяБаза
-	КодЯзыка              string
-	КодЯзыкаСеанса        string
+	//ВременнаяБаза         *v8tempDb.ВременнаяБаза
+	КодЯзыка       string
+	КодЯзыкаСеанса string
 }
 
 func НовыйКонтекст() *Контекст {
@@ -27,7 +27,7 @@ func newContext() *Контекст {
 		"",
 		"",
 		"",
-		v8tempDb.НоваяВременнаяБаза(v8tools.ВременныйКаталогСПрефисом(v8tools.TempDBname)),
+		//v8tempDb.НоваяВременнаяБаза(v8tools.ВременныйКаталогСПрефисом(v8tools.TempDBname)),
 		"",
 		"",
 	}

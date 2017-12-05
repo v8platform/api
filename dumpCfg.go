@@ -47,27 +47,27 @@ func (conf *Конфигуратор) ВыгрузитьИзмененияКон
 
 func (conf *Конфигуратор) dumpConfigToFiles(dir string, mode string, ch bool, pChFile string, pVersionFile string) error {
 
-	var c = conf.СтандартныеПараметрыЗапускаКонфигуратора()
+	var Параметры []string
 
-	c = append(c, fmt.Sprintf("/DumpConfigToFiles %s", dir))
+	Параметры = append(Параметры, fmt.Sprintf("/DumpConfigToFiles %s", dir))
 	if ok, _ := РежимВыгрузкиКонфигурации.РежимДоступен(mode); ok {
-		c = append(c, fmt.Sprintf("-format %s", mode))
+		Параметры = append(Параметры, fmt.Sprintf("-format %s", mode))
 	}
 
 	if ch {
 		//Если ПроверитьВозможностьОбновленияФайловВыгрузки(КаталогВыгрузки, ПутьКФайлуВерсийДляСравнения, ФорматВыгрузки) Тогда
-		c = append(c, "-update", "-force")
+		Параметры = append(Параметры, "-update", "-force")
 		if v8tools.ЗначениеЗаполнено(pChFile) {
-			c = append(c, fmt.Sprintf("-getChanges %s", pChFile))
+			Параметры = append(Параметры, fmt.Sprintf("-getChanges %s", pChFile))
 		}
 		if v8tools.ЗначениеЗаполнено(pChFile) {
-			c = append(c, fmt.Sprintf("-configDumpInfoForChanges %s", pVersionFile))
+			Параметры = append(Параметры, fmt.Sprintf("-configDumpInfoForChanges %s", pVersionFile))
 		}
 	}
 
-	log.Debugf("Параметры запуска: %s", c)
-
-	err := conf.ВыполнитьКоманду(c)
+	log.Debugf("Параметры запуска: %s", Параметры)
+	conf.УстановитьПараметры(Параметры...)
+	err := conf.ВыполнитьКоманду()
 
 	return err
 }

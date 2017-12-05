@@ -15,6 +15,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"../v8constants"
 )
 
 var (
@@ -22,14 +24,9 @@ var (
 	tempDir   string = ИницализироватьВременныйКаталог()
 )
 
-const (
-	prefix     = "v8r"
-	TempDBname = "TempBD_v8"
-)
-
 func ВременныйКаталог() string {
 
-	return ВременныйКаталогСПрефисом(prefix)
+	return ВременныйКаталогСПрефисом(v8constants.Prefix)
 }
 
 func ВременныйКаталогСПрефисом(pre string) string {
@@ -46,7 +43,7 @@ func ИницализироватьВременныйКаталог() string {
 
 	userTmpDir := os.TempDir()
 
-	tmpDir, err := ioutil.TempDir(userTmpDir, prefix)
+	tmpDir, err := ioutil.TempDir(userTmpDir, v8constants.Prefix)
 	if err != nil {
 		panic(err)
 	}
@@ -101,18 +98,31 @@ func ОчиститьВременныйКаталог() {
 }
 
 // Similar to ioutil.ReadFile() but decodes UTF-16.  Useful when
-// reading data from MS-Windows systems that generate UTF-16BE files,
-// but will do the right thing if other BOMs are found.
-func ReadFileUTF16(filename string) ([]byte, error) {
+func ПрочитатьФайл1С(filename string) ([]byte, error) {
 
 	// Read the file into a []byte:
 	raw, err := ioutil.ReadFile(filename)
+	cs := detectFileCharset(raw)
+
 	if err != nil {
 		return nil, err
 	}
 
+	var Endianness unicode.Endianness
+
+	switch {
+	case cs == other:
+		return raw, err
+	case cs == utf8withBOM:
+		return raw[3:], err
+	case cs == utf16Be:
+		Endianness = unicode.BigEndian
+	case cs == utf16Le:
+		Endianness = unicode.LittleEndian
+	}
+
 	// Make an tranformer that converts MS-Win default to UTF8:
-	win16be := unicode.UTF16(unicode.BigEndian, unicode.IgnoreBOM)
+	win16be := unicode.UTF16(Endianness, unicode.IgnoreBOM)
 	// Make a transformer that is like win16be, but abides by BOM:
 	utf16bom := unicode.BOMOverride(win16be.NewDecoder())
 
@@ -123,6 +133,33 @@ func ReadFileUTF16(filename string) ([]byte, error) {
 	decoded, err := ioutil.ReadAll(unicodeReader)
 	return decoded, err
 
+}
+
+type Charset byte
+
+const (
+	utf8withBOM = Charset(iota)
+	utf16Be
+	utf16Le
+	other
+)
+
+func detectFileCharset(data []byte) Charset {
+
+	// Проверка на BOM
+	if len(data) >= 3 {
+		switch {
+		case data[0] == 0xFF && data[1] == 0xFE:
+			return utf16Be
+		case data[0] == 0xFE && data[1] == 0xFF:
+			return utf16Le
+		case data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF:
+			// wanna check special ascii codings here?
+			return utf8withBOM
+		}
+	}
+
+	return other
 }
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")

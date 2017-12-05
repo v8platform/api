@@ -6,9 +6,9 @@ import (
 
 	"os"
 
-	"../../v8runner"
-	"../dumpMode"
+	"../../go-v8runner"
 	"../v8constants"
+	"../v8dumpMode"
 	"../v8tools"
 	"github.com/stretchr/testify/suite"
 )
