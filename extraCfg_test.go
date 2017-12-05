@@ -2,7 +2,7 @@ package v8runner
 
 import (
 	//"testing"
-	"./v8tools"
+	"github.com/Khorevaa/go-v8runner/v8tools"
 	. "gopkg.in/check.v1"
 	"path/filepath"
 )
