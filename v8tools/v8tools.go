@@ -11,11 +11,12 @@ import (
 	"golang.org/x/text/encoding/unicode"
 	"golang.org/x/text/transform"
 
-	"../v8constants"
 	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
+
+	"../v8constants"
 )
 
 var (
@@ -103,12 +104,27 @@ func ReadFileUTF16(filename string) ([]byte, error) {
 
 	// Read the file into a []byte:
 	raw, err := ioutil.ReadFile(filename)
+	cs := DetectFileCharset(raw)
+
 	if err != nil {
 		return nil, err
 	}
 
+	var Endianness unicode.Endianness
+
+	switch {
+	case cs == Other:
+		return raw, err
+	case cs == Utf8withBOM:
+		return raw[3:], err
+	case cs == Utf16Be:
+		Endianness = unicode.BigEndian
+	case cs == Utf16Le:
+		Endianness = unicode.LittleEndian
+	}
+
 	// Make an tranformer that converts MS-Win default to UTF8:
-	win16be := unicode.UTF16(unicode.BigEndian, unicode.IgnoreBOM)
+	win16be := unicode.UTF16(Endianness, unicode.IgnoreBOM)
 	// Make a transformer that is like win16be, but abides by BOM:
 	utf16bom := unicode.BOMOverride(win16be.NewDecoder())
 
@@ -119,6 +135,33 @@ func ReadFileUTF16(filename string) ([]byte, error) {
 	decoded, err := ioutil.ReadAll(unicodeReader)
 	return decoded, err
 
+}
+
+type Charset byte
+
+const (
+	Utf8withBOM = Charset(iota)
+	Utf16Be
+	Utf16Le
+	Other
+)
+
+func DetectFileCharset(data []byte) Charset {
+
+	// Проверка на BOM
+	if len(data) >= 3 {
+		switch {
+		case data[0] == 0xFF && data[1] == 0xFE:
+			return Utf16Be
+		case data[0] == 0xFE && data[1] == 0xFF:
+			return Utf16Le
+		case data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF:
+			// wanna check special ascii codings here?
+			return Utf8withBOM
+		}
+	}
+
+	return Other
 }
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")

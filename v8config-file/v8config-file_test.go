@@ -19,7 +19,7 @@ type ПроверкаБазовойФункциональности struct {
 func (s *ПроверкаБазовойФункциональности) SetUpSuite(c *C) {
 
 	pwd, _ := os.Getwd()
-	s.ПутьКФайлуКофигурации = filepath.Join(pwd, "..", "tests", "fixtures", "config.cfg")
+	s.ПутьКФайлуКофигурации = filepath.Join(pwd, "..", "tests", "fixtures", "test.cfg")
 
 }
 
