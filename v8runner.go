@@ -1,6 +1,7 @@
 package v8runner
 
 import (
+	"./v8constants"
 	"./v8run"
 	"./v8tools"
 	log "github.com/sirupsen/logrus"
@@ -52,7 +53,7 @@ func НовыйКонфигуратор() (conf *Конфигуратор) {
 		log.Panicf("Не удалось установить версию платформы: %s", err)
 	}
 
-	conf.временнаяБаза = НоваяВременнаяБаза(v8tools.ВременныйКаталогСПрефисом(v8tools.TempDBname))
+	conf.временнаяБаза = НоваяВременнаяБаза(v8tools.ВременныйКаталогСПрефисом(v8constants.TempDBname))
 	conf.УстановитьКлючСоединенияСБазой(conf.КлючВременногоСоединенияСБазой())
 	return conf
 }

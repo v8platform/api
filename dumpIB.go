@@ -20,6 +20,7 @@ func (conf *Конфигуратор) ВыгрузитьИнформационн
 		os.Chdir(dir)
 	}
 
+	return errInfo
 	//
 	//versionFile := versionDirOrFile
 	//if fileInfo.IsDir() {

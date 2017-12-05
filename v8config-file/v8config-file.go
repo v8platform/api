@@ -20,7 +20,7 @@ func ПрочитатьНастройкиСтартера(pathToFile string) (r 
 
 func (s *настройкиСтартера) открыть(pathToFile string) (err error) {
 
-	b, err := v8tools.ReadFileUTF16(pathToFile) // just pass the file name
+	b, err := v8tools.ПрочитатьФайл1С(pathToFile) // just pass the file name
 	if err != nil {
 		return
 	}
@@ -50,7 +50,7 @@ func строкаВСоответсвие(s string, sep string) (Соответ�
 	scanner := bufio.NewScanner(strings.NewReader(s))
 	for scanner.Scan() {
 
-		z := strings.Split(scanner.Text(), sep)
+		z := strings.SplitN(scanner.Text(), sep, 1)
 		if cap(z) == 2 {
 			Соответсвие[strings.ToUpper(z[0])] = append(Соответсвие[strings.ToUpper(z[0])], z[1])
 		}

@@ -98,13 +98,11 @@ func ОчиститьВременныйКаталог() {
 }
 
 // Similar to ioutil.ReadFile() but decodes UTF-16.  Useful when
-// reading data from MS-Windows systems that generate UTF-16BE files,
-// but will do the right thing if other BOMs are found.
-func ReadFileUTF16(filename string) ([]byte, error) {
+func ПрочитатьФайл1С(filename string) ([]byte, error) {
 
 	// Read the file into a []byte:
 	raw, err := ioutil.ReadFile(filename)
-	cs := DetectFileCharset(raw)
+	cs := detectFileCharset(raw)
 
 	if err != nil {
 		return nil, err
@@ -113,13 +111,13 @@ func ReadFileUTF16(filename string) ([]byte, error) {
 	var Endianness unicode.Endianness
 
 	switch {
-	case cs == Other:
+	case cs == other:
 		return raw, err
-	case cs == Utf8withBOM:
+	case cs == utf8withBOM:
 		return raw[3:], err
-	case cs == Utf16Be:
+	case cs == utf16Be:
 		Endianness = unicode.BigEndian
-	case cs == Utf16Le:
+	case cs == utf16Le:
 		Endianness = unicode.LittleEndian
 	}
 
@@ -140,28 +138,28 @@ func ReadFileUTF16(filename string) ([]byte, error) {
 type Charset byte
 
 const (
-	Utf8withBOM = Charset(iota)
-	Utf16Be
-	Utf16Le
-	Other
+	utf8withBOM = Charset(iota)
+	utf16Be
+	utf16Le
+	other
 )
 
-func DetectFileCharset(data []byte) Charset {
+func detectFileCharset(data []byte) Charset {
 
 	// Проверка на BOM
 	if len(data) >= 3 {
 		switch {
 		case data[0] == 0xFF && data[1] == 0xFE:
-			return Utf16Be
+			return utf16Be
 		case data[0] == 0xFE && data[1] == 0xFF:
-			return Utf16Le
+			return utf16Le
 		case data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF:
 			// wanna check special ascii codings here?
-			return Utf8withBOM
+			return utf8withBOM
 		}
 	}
 
-	return Other
+	return other
 }
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
