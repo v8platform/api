@@ -8,7 +8,6 @@
       <module fileurl="file://$PROJECT_DIR$/v8dumpMode/v8dumpMode.iml" filepath="$PROJECT_DIR$/v8dumpMode/v8dumpMode.iml" />
       <module fileurl="file://$PROJECT_DIR$/v8platform/v8platform.iml" filepath="$PROJECT_DIR$/v8platform/v8platform.iml" />
       <module fileurl="file://$PROJECT_DIR$/v8run/v8run.iml" filepath="$PROJECT_DIR$/v8run/v8run.iml" />
-      <module fileurl="file://$PROJECT_DIR$/v8storage/v8storage.iml" filepath="$PROJECT_DIR$/v8storage/v8storage.iml" />
       <module fileurl="file://$PROJECT_DIR$/v8tools/v8tools.iml" filepath="$PROJECT_DIR$/v8tools/v8tools.iml" />
     </modules>
   </component>

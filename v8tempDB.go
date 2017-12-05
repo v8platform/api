@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	//"../../go-v8runner"
-	"./v8constants"
-	"./v8tools"
+	"github.com/Khorevaa/go-v8runner/v8constants"
+	"github.com/Khorevaa/go-v8runner/v8tools"
 )
 
 type ВременнаяБаза struct {

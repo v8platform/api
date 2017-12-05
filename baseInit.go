@@ -3,7 +3,7 @@ package v8runner
 import (
 	"fmt"
 
-	"./v8tools"
+	"github.com/Khorevaa/go-v8runner/v8tools"
 	"github.com/pkg/errors"
 )
 

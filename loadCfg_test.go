@@ -3,10 +3,10 @@ package v8runner
 import (
 	"path"
 
-	"./v8dumpMode"
+	"github.com/Khorevaa/go-v8runner/v8dumpMode"
 
-	"./v8constants"
-	"./v8tools"
+	"github.com/Khorevaa/go-v8runner/v8constants"
+	"github.com/Khorevaa/go-v8runner/v8tools"
 	. "gopkg.in/check.v1"
 )
 

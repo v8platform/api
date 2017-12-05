@@ -5,8 +5,8 @@ import (
 	"os/exec"
 	"syscall"
 
-	"../v8platform"
-	"../v8tools"
+	"github.com/Khorevaa/go-v8runner/v8platform"
+	"github.com/Khorevaa/go-v8runner/v8tools"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )

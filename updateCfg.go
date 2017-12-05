@@ -2,7 +2,7 @@ package v8runner
 
 import "fmt"
 import (
-	"./v8tools"
+	"github.com/Khorevaa/go-v8runner/v8tools"
 	"os"
 	"path/filepath"
 )

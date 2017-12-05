@@ -1,8 +1,8 @@
 package КонфигурацияСтартера
 
 import (
-	"../v8tools"
 	"bufio"
+	"github.com/Khorevaa/go-v8runner/v8tools"
 	"strings"
 )
 

@@ -1,8 +1,8 @@
 package v8runner
 
 import (
-	"./v8tools"
 	"fmt"
+	"github.com/Khorevaa/go-v8runner/v8tools"
 	"os"
 	"path/filepath"
 )
