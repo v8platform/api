@@ -3,8 +3,10 @@ package v8runner
 import "fmt"
 import (
 	"github.com/Khorevaa/go-v8runner/v8tools"
+	"github.com/pkg/errors"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type процедурыОбновленияКонфигурации interface {
@@ -29,25 +31,39 @@ func (conf *Конфигуратор) updateCfg(versionDirOrFile string, fullDis
 	fileInfo, errInfo := os.Stat(versionDirOrFile)
 
 	if errInfo != nil {
-		err = errInfo
-		return
+		return errors.Wrapf(errInfo, "Переданный каталог/файл <%s> не существует", versionDirOrFile)
 	}
 
 	versionFile := versionDirOrFile
 	if fileInfo.IsDir() {
 
-		versionFile = filepath.Join(versionDirOrFile, "1cv8.cfu")
-
 		if fullDistr {
 
 			fullDistrFile := filepath.Join(versionDirOrFile, "1cv8.cf")
-			_, err = v8tools.Exists(fullDistrFile)
+			_, errExists := v8tools.Exists(fullDistrFile)
 
-			if err != nil {
-				return
+			if errExists != nil {
+				return errors.Wrapf(errExists, "Файл полного обновления не обнаружен в каталоге <%s>", fullDistrFile)
 			}
 
 			versionFile = fullDistrFile
+		}
+
+		files, _ := filepath.Glob(versionDirOrFile + "1cv8.cf*")
+
+		if cap(files) == 0 {
+
+			return errors.Errorf("Файлов обновления не обнаружен в каталоге <%s>", versionFile)
+		}
+
+		for _, f1cv8 := range files {
+
+			versionFile = f1cv8
+
+			if strings.HasSuffix(strings.ToUpper(f1cv8), ".CFU") {
+				break
+			}
+
 		}
 
 	}
