@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"../v8constants"
+	"github.com/Khorevaa/go-v8runner/v8constants"
 )
 
 var (
