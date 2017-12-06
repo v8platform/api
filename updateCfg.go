@@ -49,11 +49,11 @@ func (conf *Конфигуратор) updateCfg(versionDirOrFile string, fullDis
 			versionFile = fullDistrFile
 		}
 
-		files, _ := filepath.Glob(versionDirOrFile + "1cv8.cf*")
+		files, _ := filepath.Glob(versionDirOrFile + "1??8.cf*")
 
 		if cap(files) == 0 {
 
-			return errors.Errorf("Файлов обновления не обнаружен в каталоге <%s>", versionFile)
+			return errors.Errorf("Не найдено файлов обновления в каталоге <%s>", versionFile)
 		}
 
 		for _, f1cv8 := range files {
@@ -72,7 +72,7 @@ func (conf *Конфигуратор) updateCfg(versionDirOrFile string, fullDis
 
 	if updateDBCfg {
 
-		Параметры = append(Параметры, "-UpdateDBCfg ")
+		Параметры = append(Параметры, "/UpdateDBCfg ")
 
 		if Server {
 			Параметры = append(Параметры, "-Server")
