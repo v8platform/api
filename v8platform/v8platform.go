@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/Khorevaa/go-v8runner/v8config-file"
-	"github.com/Khorevaa/go-v8runner/v8tools"
+	"github.com/khorevaa/go-v8runner/v8config-file"
+	"github.com/khorevaa/go-v8runner/v8tools"
 	"github.com/mcuadros/go-version"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"

@@ -1,9 +1,9 @@
 package v8runner
 
 import (
-	"github.com/Khorevaa/go-v8runner/v8constants"
-	"github.com/Khorevaa/go-v8runner/v8run"
-	"github.com/Khorevaa/go-v8runner/v8tools"
+	"github.com/khorevaa/go-v8runner/v8constants"
+	"github.com/khorevaa/go-v8runner/v8run"
+	"github.com/khorevaa/go-v8runner/v8tools"
 	log "github.com/sirupsen/logrus"
 )
 

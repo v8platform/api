@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/Khorevaa/go-v8runner/v8tools"
+	"github.com/khorevaa/go-v8runner/v8tools"
 	. "gopkg.in/check.v1"
 )
 

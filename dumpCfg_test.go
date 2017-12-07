@@ -5,9 +5,9 @@ import (
 	//_ "github.com/stretchr/testify/suite"
 	"path"
 
-	"github.com/Khorevaa/go-v8runner/v8constants"
-	"github.com/Khorevaa/go-v8runner/v8dumpMode"
-	"github.com/Khorevaa/go-v8runner/v8tools"
+	"github.com/khorevaa/go-v8runner/v8constants"
+	"github.com/khorevaa/go-v8runner/v8dumpMode"
+	"github.com/khorevaa/go-v8runner/v8tools"
 	"github.com/labstack/gommon/log"
 	. "gopkg.in/check.v1"
 	"path/filepath"

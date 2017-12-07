@@ -5,8 +5,8 @@ import (
 	"os/exec"
 	"syscall"
 
-	"github.com/Khorevaa/go-v8runner/v8platform"
-	"github.com/Khorevaa/go-v8runner/v8tools"
+	"github.com/khorevaa/go-v8runner/v8platform"
+	"github.com/khorevaa/go-v8runner/v8tools"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"strings"
@@ -83,7 +83,6 @@ func (conf *ЗапускательКонфигуратора) Выполнить
 }
 
 func (conf *ЗапускательКонфигуратора) ВыполнитьКоманду() (err error) {
-	log.SetLevel(log.DebugLevel)
 
 	err = conf.ВыполнитьКомандуКонфигуратора()
 	return
@@ -325,6 +324,6 @@ func (c *ЗапускательКонфигуратора) прочитатьФ�
 
 func init() {
 
-	log.SetLevel(log.DebugLevel)
+	//log.SetLevel(log.DebugLevel)
 
 }
