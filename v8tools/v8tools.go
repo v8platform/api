@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/khorevaa/go-v8runner/v8constants"
+	"golang.org/x/text/encoding/charmap"
 )
 
 var (
@@ -112,7 +113,14 @@ func ПрочитатьФайл1С(filename string) ([]byte, error) {
 
 	switch {
 	case cs == other:
-		return raw, err
+
+		// Make a Reader that uses utf16bom:
+		unicodeReader := transform.NewReader(bytes.NewReader(raw), charmap.Windows1251.NewDecoder())
+
+		// decode and print:
+		decoded, err := ioutil.ReadAll(unicodeReader)
+		return decoded, err
+
 	case cs == utf8withBOM:
 		return raw[3:], err
 	case cs == utf16Be:

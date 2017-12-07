@@ -5,11 +5,13 @@ import (
 	"os/exec"
 	"syscall"
 
+	"context"
 	"github.com/khorevaa/go-v8runner/v8platform"
 	"github.com/khorevaa/go-v8runner/v8tools"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"strings"
+	"time"
 )
 
 type ЗапускательИнтерфейс interface {
@@ -41,6 +43,7 @@ type ЗапускательКонфигуратора struct {
 	командаКонфигуратора             командаКонфигуратора
 	выводКоманды                     string
 	ключРазрешенияЗапуска            string
+	ВремяОжидания                    time.Duration
 }
 
 const (
@@ -111,6 +114,13 @@ func (conf *ЗапускательКонфигуратора) Установит
 func (conf *ЗапускательКонфигуратора) УстановитьКлючРазрешенияЗапуска(КлючРазрешенияЗапуска string) (err error) {
 
 	conf.ключРазрешенияЗапуска = КлючРазрешенияЗапуска
+
+	return
+}
+
+func (conf *ЗапускательКонфигуратора) УстановитьВремяОжидания(времяОжидания time.Duration) {
+
+	conf.ВремяОжидания = времяОжидания
 
 	return
 }
@@ -269,6 +279,8 @@ func (conf *ЗапускательКонфигуратора) собратьПа
 	conf.параметыЗапуска = append(conf.параметыЗапуска, "/DisableStartupMessages")
 	conf.параметыЗапуска = append(conf.параметыЗапуска, "/DisableStartupDialogs")
 
+	conf.параметыЗапуска = append(conf.параметыЗапуска, "/AppAutoCheckVersion-")
+
 	conf.параметыЗапуска = append(conf.параметыЗапуска, conf.пользовательскиеПараметрыЗапуска...)
 
 	conf.добавитьВыводВФайл()
@@ -278,20 +290,26 @@ func (conf *ЗапускательКонфигуратора) собратьПа
 // private run func
 const defaultFailedCode = 1
 
-func (conf *ЗапускательКонфигуратора) выполнить(args []string) (e error) {
+func (conf *ЗапускательКонфигуратора) выполнить(args []string) (runErr error) {
 
 	var exitCode int
+	if conf.ВремяОжидания == time.Duration(0) {
+		conf.ВремяОжидания = time.Duration(1 * time.Hour)
+	}
+	// Create a new context and add a timeout to it
+	ctx, cancel := context.WithTimeout(context.Background(), conf.ВремяОжидания)
+	defer cancel() // The cancel should be deferred so resources are cleaned up
 
 	procName := conf.версияПлатформы.V8
-	cmd := exec.Command(procName, args...) // strings.Join(args, " "))
+	cmd := exec.CommandContext(ctx, procName, args...) // strings.Join(args, " "))
 
 	log.Debugf("Строка запуска: %s", cmd.Args)
 
-	out, e := cmd.Output()
+	out, runErr := cmd.Output()
 
-	if e != nil {
+	if runErr != nil {
 		// try to get the exit code
-		if exitError, ok := e.(*exec.ExitError); ok {
+		if exitError, ok := runErr.(*exec.ExitError); ok {
 			ws := exitError.Sys().(syscall.WaitStatus)
 			exitCode = ws.ExitStatus()
 		} else {
@@ -303,20 +321,30 @@ func (conf *ЗапускательКонфигуратора) выполнить
 			exitCode = defaultFailedCode
 		}
 	} else {
+
 		// success, exitCode should be 0 if go is ok
 		ws := cmd.ProcessState.Sys().(syscall.WaitStatus)
 		exitCode = ws.ExitStatus()
+
+	}
+
+	// We want to check the context error to see if the timeout was executed.
+	// The error returned by cmd.Output() will be OS specific based on what
+	// happens when a process is killed.
+	if ctx.Err() == context.DeadlineExceeded {
+		runErr = errors.New("Приложение отключили по таймауту")
+		exitCode = defaultFailedCode
 	}
 
 	conf.установитьВыводКоманды(conf.прочитатьФайлИнформации())
 
 	if exitCode != 0 {
-		e = errors.New(conf.выводКоманды)
+		runErr = errors.Wrapf(runErr, conf.выводКоманды)
 	}
 
 	log.Debugf("КодЗавершения команды: %v", exitCode)
 	log.Debugf("Результат выполнения команды: %s, out: %s", conf.выводКоманды, out)
-	return e
+	return runErr
 
 }
 
