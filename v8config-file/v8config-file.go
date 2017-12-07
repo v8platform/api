@@ -50,7 +50,7 @@ func строкаВСоответсвие(s string, sep string) (Соответ�
 	scanner := bufio.NewScanner(strings.NewReader(s))
 	for scanner.Scan() {
 
-		z := strings.SplitN(scanner.Text(), sep, 1)
+		z := strings.Split(scanner.Text(), sep)
 		if cap(z) == 2 {
 			Соответсвие[strings.ToUpper(z[0])] = append(Соответсвие[strings.ToUpper(z[0])], z[1])
 		}
