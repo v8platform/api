@@ -2,11 +2,12 @@ package v8runner
 
 import "fmt"
 import (
-	"github.com/khorevaa/go-v8runner/v8tools"
-	"github.com/pkg/errors"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/khorevaa/go-v8runner/v8tools"
+	"github.com/pkg/errors"
 )
 
 type процедурыОбновленияКонфигурации interface {
