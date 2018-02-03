@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/mash/go-tempfile-suffix"
-	extraStrings "github.com/shomali11/util/strings"
+	extraStrings "github.com/shomali11/util/xstrings"
 	"golang.org/x/text/encoding/unicode"
 	"golang.org/x/text/transform"
 

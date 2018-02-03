@@ -1,0 +1,19 @@
+package: .
+import:
+- package: github.com/mash/go-tempfile-suffix
+- package: github.com/pkg/errors
+  version: ~0.8.0
+- package: github.com/shomali11/util
+  subpackages:
+  - xstrings
+- package: github.com/sirupsen/logrus
+  version: ~1.0.4
+- package: golang.org/x/text
+  subpackages:
+  - encoding/unicode
+  - transform
+testImport:
+- package: github.com/stretchr/testify
+  version: ~1.2.1
+  subpackages:
+  - suite

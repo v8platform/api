@@ -1,0 +1,32 @@
+package: .
+import:
+- package: github.com/khorevaa/go-v8runner
+  version: ~0.5.3
+  subpackages:
+  - v8config-file
+  - v8constants
+  - v8dumpMode
+  - v8platform
+  - v8run
+  - v8tools
+- package: github.com/mash/go-tempfile-suffix
+- package: github.com/mcuadros/go-version
+- package: github.com/pkg/errors
+  version: ~0.8.0
+- package: github.com/shomali11/util
+  subpackages:
+  - xrunes
+  - xstrings
+- package: github.com/sirupsen/logrus
+  version: ~1.0.4
+- package: golang.org/x/text
+  subpackages:
+  - encoding/charmap
+  - encoding/unicode
+  - transform
+testImport:
+- package: github.com/labstack/gommon
+  version: ~0.2.3
+  subpackages:
+  - log
+- package: gopkg.in/check.v1
