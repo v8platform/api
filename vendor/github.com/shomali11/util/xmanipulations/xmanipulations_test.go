@@ -1,11 +1,10 @@
 package xmanipulations
 
 import (
+	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestShuffles(t *testing.T) {

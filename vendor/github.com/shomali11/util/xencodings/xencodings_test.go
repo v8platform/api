@@ -1,9 +1,8 @@
 package xencodings
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestBase32Encode(t *testing.T) {

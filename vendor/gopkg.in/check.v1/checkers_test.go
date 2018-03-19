@@ -2,10 +2,9 @@ package check_test
 
 import (
 	"errors"
+	"gopkg.in/check.v1"
 	"reflect"
 	"runtime"
-
-	"gopkg.in/check.v1"
 )
 
 type CheckersS struct{}

@@ -1,9 +1,8 @@
 package xstrings
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestIsEmpty(t *testing.T) {
