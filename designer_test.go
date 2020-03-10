@@ -1,12 +1,10 @@
-package v8run
+package v8runnner
 
 import (
-	"github.com/khorevaa/go-AutoUpdate1C/v8run/errors"
-	"github.com/khorevaa/go-AutoUpdate1C/v8run/types"
+	"github.com/Khorevaa/go-v8runner/types"
 	"github.com/stretchr/testify/suite"
 	"io/ioutil"
 	"os"
-	"path"
 	"testing"
 )
 
@@ -59,61 +57,62 @@ func (t *designerTestSuite) clearTempInfoBase() {
 	t.r().NoError(err)
 }
 
-func (t *designerTestSuite) TestLoadCfg() {
-
-	confFile := path.Join(pwd, "tests", "fixtures", "0.9", "1Cv8.cf")
-
-	err := Run(t.tempIB, LoadCfg(confFile),
-		WithPath(t.v8path),
-		WithTimeout(30))
-
-	t.r().NoError(err, errors.GetErrorContext(err))
-
-	//t.r().Equal(len(codes), 1, "Промокод должен быть START")
-	//t.r().Equal(codes[0].PromocodeID, "START", "Промокод должен быть START")
-
-}
-
-func (t *designerTestSuite) TestLoadCfgWithUpdateCfgDB() {
-
-	confFile := path.Join(pwd, "tests", "fixtures", "0.9", "1Cv8.cf")
-	loadCfg := LoadCfg(confFile)
-	loadCfg.WithUpdateDBCfg(UpdateDBCfg(false, false))
-
-	err := Run(t.tempIB, loadCfg,
-		WithPath(t.v8path),
-		WithTimeout(30),
-	)
-
-	t.r().NoError(err)
-
-	//t.r().Equal(len(codes), 1, "Промокод должен быть START")
-	//t.r().Equal(codes[0].PromocodeID, "START", "Промокод должен быть START")
-
-}
-
-func (t *designerTestSuite) TestUpdateCfg() {
-
-	confFile := path.Join(pwd, "tests", "fixtures", "0.9", "1Cv8.cf")
-	loadCfg := LoadCfg(confFile)
-	loadCfg.WithUpdateDBCfg(UpdateDBCfg(false, false))
-	err := Run(t.tempIB, loadCfg,
-		WithPath(t.v8path),
-		WithTimeout(30))
-
-	t.r().NoError(err)
-
-	confFile2 := path.Join(pwd, "tests", "fixtures", "1.0", "1Cv8.cf")
-	task := UpdateCfg(confFile2, false)
-	task.WithUpdateDBCfg(UpdateDBCfg(false, false))
-
-	err = Run(t.tempIB, task,
-		WithPath(t.v8path),
-		WithTimeout(30))
-
-	t.r().NoError(err)
-
-	//t.r().Equal(len(codes), 1, "Промокод должен быть START")
-	//t.r().Equal(codes[0].PromocodeID, "START", "Промокод должен быть START")
-
-}
+//
+//func (t *designerTestSuite) TestLoadCfg() {
+//
+//	confFile := path.Join(pwd, "tests", "fixtures", "0.9", "1Cv8.cf")
+//
+//	err := Run(t.tempIB, LoadCfg(confFile),
+//		WithPath(t.v8path),
+//		WithTimeout(30))
+//
+//	t.r().NoError(err, errors.GetErrorContext(err))
+//
+//	//t.r().Equal(len(codes), 1, "Промокод должен быть START")
+//	//t.r().Equal(codes[0].PromocodeID, "START", "Промокод должен быть START")
+//
+//}
+//
+//func (t *designerTestSuite) TestLoadCfgWithUpdateCfgDB() {
+//
+//	confFile := path.Join(pwd, "tests", "fixtures", "0.9", "1Cv8.cf")
+//	loadCfg := LoadCfg(confFile)
+//	loadCfg.WithUpdateDBCfg(UpdateDBCfg(false, false))
+//
+//	err := Run(t.tempIB, loadCfg,
+//		WithPath(t.v8path),
+//		WithTimeout(30),
+//	)
+//
+//	t.r().NoError(err)
+//
+//	//t.r().Equal(len(codes), 1, "Промокод должен быть START")
+//	//t.r().Equal(codes[0].PromocodeID, "START", "Промокод должен быть START")
+//
+//}
+//
+//func (t *designerTestSuite) TestUpdateCfg() {
+//
+//	confFile := path.Join(pwd, "tests", "fixtures", "0.9", "1Cv8.cf")
+//	loadCfg := LoadCfg(confFile)
+//	loadCfg.WithUpdateDBCfg(UpdateDBCfg(false, false))
+//	err := Run(t.tempIB, loadCfg,
+//		WithPath(t.v8path),
+//		WithTimeout(30))
+//
+//	t.r().NoError(err)
+//
+//	confFile2 := path.Join(pwd, "tests", "fixtures", "1.0", "1Cv8.cf")
+//	task := UpdateCfg(confFile2, false)
+//	task.WithUpdateDBCfg(UpdateDBCfg(false, false))
+//
+//	err = Run(t.tempIB, task,
+//		WithPath(t.v8path),
+//		WithTimeout(30))
+//
+//	t.r().NoError(err)
+//
+//	//t.r().Equal(len(codes), 1, "Промокод должен быть START")
+//	//t.r().Equal(codes[0].PromocodeID, "START", "Промокод должен быть START")
+//
+//}

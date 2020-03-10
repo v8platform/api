@@ -1,7 +1,6 @@
-package v8run
+package v8runnner
 
 import (
-	"github.com/khorevaa/go-AutoUpdate1C/v8run/types"
 	"io/ioutil"
 )
 
@@ -77,7 +76,7 @@ func UpdateDBExtensionCfg(extension string, server bool, Dynamic bool) *UpdateDB
 
 }
 
-func DumpIB(file string, opts ...types.UserOption) *DumpIBOptions {
+func DumpIB(file string, opts ...commandOption) *DumpIBOptions {
 
 	command := &DumpIBOptions{
 		Designer: newDefaultDesigner(),
@@ -87,7 +86,7 @@ func DumpIB(file string, opts ...types.UserOption) *DumpIBOptions {
 	return command
 }
 
-func RestoreIB(file string, opts ...types.UserOption) *RestoreIBOptions {
+func RestoreIB(file string, opts ...commandOption) *RestoreIBOptions {
 
 	command := &RestoreIBOptions{
 		Designer: newDefaultDesigner(),
@@ -97,7 +96,7 @@ func RestoreIB(file string, opts ...types.UserOption) *RestoreIBOptions {
 	return command
 }
 
-func CreateInfoBase(opts ...types.UserOption) *CreateInfoBaseOptions {
+func CreateInfoBase(opts ...commandOption) *CreateInfoBaseOptions {
 
 	command := newDefaultCreateInfoBase()
 
@@ -105,7 +104,20 @@ func CreateInfoBase(opts ...types.UserOption) *CreateInfoBaseOptions {
 
 }
 
-func Execute(file string, opts ...types.UserOption) *ExecuteOptions {
+func CreateFileInfoBase(file string, opts ...commandOption) *CreateFileInfoBaseOptions {
+
+	command := newDefaultCreateInfoBase()
+
+	FileInfoBaseOptions := CreateFileInfoBaseOptions{
+		CreateInfoBaseOptions: *command,
+		File:                  file,
+	}
+
+	return &FileInfoBaseOptions
+
+}
+
+func Execute(file string, opts ...commandOption) *ExecuteOptions {
 
 	command := &ExecuteOptions{
 		Enterprise: newDefaultEnterprise(),
@@ -116,64 +128,9 @@ func Execute(file string, opts ...types.UserOption) *ExecuteOptions {
 }
 
 ////////////////////////////////////////////////////////
-// Доступные опции
-
-func WithStartParams(params string) types.UserOption {
-	return func(o types.Optioned) {
-		o.SetOption("/C", params)
-	}
-}
-
-func WithUnlockCode(uc string) types.UserOption {
-	return func(o types.Optioned) {
-		o.SetOption("/UC", uc)
-	}
-}
-
-func WithUpdateDBCfg() types.UserOption {
-	return func(o types.Optioned) {
-		o.SetOption("/UpdateDBCfg", true)
-	}
-}
-
-func WithUpdateDBCfgOptions(options *UpdateDBCfgOptions) types.UserOption {
-	return func(o types.Optioned) {
-		o.SetOption("/UpdateDBCfg", options)
-	}
-}
-
-func WithExtension(ext string) types.UserOption {
-	return func(o types.Optioned) {
-		o.SetOption("-Extension", ext)
-	}
-}
-
-func WithManagedApplication() types.UserOption {
-	return func(o types.Optioned) {
-		o.SetOption("/RunModeManagedApplication", true)
-	}
-}
-
-func WithCredentials(user, password string) types.UserOption {
-	return func(o types.Optioned) {
-
-		if len(user) == 0 {
-			return
-		}
-
-		o.SetOption("/U", user)
-
-		if len(password) > 0 {
-			o.SetOption("/P", user)
-		}
-
-	}
-}
-
-////////////////////////////////////////////////////////
 // Create InfoBases
 
-func NewFileIB(path string, opts ...types.UserOption) *FileInfoBase {
+func NewFileIB(path string, opts ...commandOption) *FileInfoBase {
 
 	ib := &FileInfoBase{
 		baseInfoBase: baseInfoBase{},
@@ -183,7 +140,7 @@ func NewFileIB(path string, opts ...types.UserOption) *FileInfoBase {
 	return ib
 }
 
-func NewTempIB(opts ...types.UserOption) *FileInfoBase {
+func NewTempIB(opts ...commandOption) *FileInfoBase {
 
 	path, _ := ioutil.TempDir("", "1c_DB_")
 
@@ -192,7 +149,7 @@ func NewTempIB(opts ...types.UserOption) *FileInfoBase {
 	return ib
 }
 
-func NewServerIB(server, base string, opts ...types.UserOption) *ServerInfoBase {
+func NewServerIB(server, base string, opts ...commandOption) *ServerInfoBase {
 
 	ib := &ServerInfoBase{
 		baseInfoBase: baseInfoBase{},
@@ -203,7 +160,7 @@ func NewServerIB(server, base string, opts ...types.UserOption) *ServerInfoBase 
 	return ib
 }
 
-func NewWebServerIB(ref string, opts ...types.UserOption) *WSInfoBase {
+func NewWebServerIB(ref string, opts ...commandOption) *WSInfoBase {
 
 	ib := &WSInfoBase{
 		baseInfoBase: baseInfoBase{},

@@ -1,15 +1,15 @@
-package v8run
+package v8runnner
 
 import (
 	"fmt"
-	"github.com/khorevaa/go-AutoUpdate1C/v8run/types"
+	"github.com/Khorevaa/go-v8runner/types"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
 
 	"context"
-	"github.com/khorevaa/go-AutoUpdate1C/v8run/errors"
+	"github.com/Khorevaa/go-v8runner/errors"
 	"time"
 )
 
@@ -23,6 +23,9 @@ const (
 var VERSION_1S = "8.3"
 
 type Option func(options *RunOptions)
+
+type InfoBaseOption func(interface{})
+type commandOption func(interface{})
 
 func WithTimeout(timeout int64) Option {
 	return func(r *RunOptions) {
@@ -68,6 +71,29 @@ func WithVersion(version string) Option {
 	}
 }
 
+func WithCredentials(user, password string) Option {
+
+	ibOption := func(ib *baseInfoBase) {
+
+		ib.Usr = user
+
+		if len(password) > 0 {
+			ib.Pwd = password
+		}
+
+	}
+
+	return func(r *RunOptions) {
+
+		if len(user) == 0 {
+			return
+		}
+
+		r.infoBaseOptions = append(r.infoBaseOptions, ibOption)
+
+	}
+}
+
 type RunOptions struct {
 	Version              string
 	Timeout              int64
@@ -79,6 +105,9 @@ type RunOptions struct {
 	v8path               string
 	Context              context.Context
 	UseLongConnectString bool
+
+	infoBaseOptions []interface{}
+	designerOptions []interface{}
 }
 
 func (ro *RunOptions) NewOutFile() {
@@ -206,6 +235,9 @@ func RunWithOptions(where types.InfoBase, what types.Command, options *RunOption
 		return err
 	}
 
+	applyInfoBaseOptions(where, options.infoBaseOptions)
+	applyCommandOptions(what, options.designerOptions)
+
 	connectString, errConnectString := getConnectString(where, what, options)
 	if errConnectString != nil {
 		return errConnectString
@@ -312,14 +344,14 @@ func appendRunOptionsArgs(in []string, options *RunOptions) (args []string) {
 
 func getConnectString(where types.InfoBase, what types.Command, options *RunOptions) (connectString string, err error) {
 
-	if what.Command() == COMMAND_CREATEINFOBASE {
-		connectString, err = where.CreateString()
-		if err != nil {
-			err = errors.BadConnectString.Wrap(err, "error get create database connection string")
-		}
-
-		return
-	}
+	//if what.Command() == COMMAND_CREATEINFOBASE {
+	//	connectString, err = where.CreateString()
+	//	if err != nil {
+	//		err = errors.BadConnectString.Wrap(err, "error get create database connection string")
+	//	}
+	//
+	//	return
+	//}
 
 	if options.UseLongConnectString {
 		connectString, err = where.IBConnectionString()
@@ -372,6 +404,18 @@ func applyRunOptions(options *RunOptions, opts ...interface{}) {
 		if fn, ok := opt.(Option); ok {
 			fn(options)
 		}
+	}
+}
+
+func applyInfoBaseOptions(infobase types.InfoBase, opts []interface{}) {
+	for _, fn := range opts {
+		infobase.Option(fn)
+	}
+}
+
+func applyCommandOptions(command types.Command, opts []interface{}) {
+	for _, fn := range opts {
+		command.Option(fn)
 	}
 }
 

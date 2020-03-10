@@ -1,4 +1,4 @@
-package v8run
+package v8runnner
 
 import (
 	"github.com/stretchr/testify/suite"
@@ -24,18 +24,18 @@ func (t *createInfoBaseTestSuite) TearDownTest() {
 
 }
 
-func (t *createInfoBaseTestSuite) TestCreateTempInfoBase() {
-
-	ib := NewTempIB()
-
-	err := Run(ib, CreateInfoBase(),
-		WithPath("/opt/1cv8/8.3.15.1194/1cv8"),
-		WithTimeout(30),
-		WithOut("/Users/khorevaa/GolandProjects/go-AutoUpdate1C/v8run/log.txt", false))
-
-	t.r().NoError(err)
-
-	//t.r().Equal(len(codes), 1, "Промокод должен быть START")
-	//t.r().Equal(codes[0].PromocodeID, "START", "Промокод должен быть START")
-
-}
+//func (t *createInfoBaseTestSuite) TestCreateTempInfoBase() {
+//
+//	ib := NewTempIB()
+//
+//	err := Run(ib, CreateInfoBase(),
+//		WithPath("/opt/1cv8/8.3.15.1194/1cv8"),
+//		WithTimeout(30),
+//		WithOut("/Users/khorevaa/GolandProjects/go-AutoUpdate1C/v8run/log.txt", false))
+//
+//	t.r().NoError(err)
+//
+//	//t.r().Equal(len(codes), 1, "Промокод должен быть START")
+//	//t.r().Equal(codes[0].PromocodeID, "START", "Промокод должен быть START")
+//
+//}

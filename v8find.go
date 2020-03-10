@@ -1,4 +1,4 @@
-package v8run
+package v8runnner
 
 type bitnessType int
 type exeType int

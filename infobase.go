@@ -1,29 +1,11 @@
-package v8run
+package v8runnner
 
 import (
-	"errors"
 	"fmt"
-	"github.com/khorevaa/go-AutoUpdate1C/v8run/types"
-	"strconv"
 	"strings"
 )
 
-type FileDBFormat string
-
-const (
-	DB_FORMAT_8_2_14 FileDBFormat = "8.2.14"
-	DB_FORMAT_8_3_8               = "8.3.8"
-)
-
-const (
-	DBMS_MSSQLServer    = "MSSQLServer"
-	DBMS_PostgreSQL     = "PostgreSQL"
-	DBMS_IBMDB2         = "IBMDB2"
-	DBMS_OracleDatabase = "OracleDatabase"
-)
-
 type baseInfoBase struct {
-	types.UserOptions
 
 	// Код доступа к базе
 	UC string
@@ -79,21 +61,6 @@ type FileInfoBase struct {
 	// Параметр Locale задавать не обязательно.
 	// Если не задан, то будут использованы региональные установки текущей информационной базы;
 	Locale string
-
-	// формат базы данных
-	// Допустимые значения: 8.2.14, 8.3.8.
-	// Значение по умолчанию — 8.2.14
-	DBFormat FileDBFormat
-
-	// размер страницы базы данных в байтах
-	// Допустимые значения:
-	//   4096(или 4k),
-	//   8192(или 8k),
-	//   16384(или 16k),
-	//   32768(или 32k),
-	//   65536(или 64k),
-	// Значение по умолчанию —  4k
-	DBPageSize int64
 }
 
 type ServerInfoBase struct {
@@ -107,52 +74,6 @@ type ServerInfoBase struct {
 
 	//имя информационной базы на сервере "1С:Предприятия";
 	Ref string
-
-	//тип используемого сервера баз данных:
-	// MSSQLServer — Microsoft SQL Server;
-	// PostgreSQL — PostgreSQL;
-	// IBMDB2 — IBM DB2;
-	// OracleDatabase — Oracle Database.
-	DBMS string
-
-	//имя сервера баз данных;
-	DBSrvr string
-
-	// имя базы данных в сервере баз данных;
-	DB string
-
-	//имя пользователя сервера баз данных;
-	DBUID string
-
-	//пароль пользователя сервера баз данных.
-	// Если пароль для пользователя сервера баз данных не задан,
-	// то данный параметр можно не указывать;
-	DBPwd string
-
-	// смещение дат, используемое для хранения дат в Microsoft SQL Server.
-	// Может принимать значения 0 или 2000.
-	// Данный параметр задавать не обязательно. Если не задан, принимается значение 0;
-	SQLYOffs int32
-
-	// язык (страна), (аналогично файловому варианту);
-	Locale string
-
-	// создать базу данных в случае ее отсутствия ("Y"|"N".
-	// "Y" — создавать базу данных в случае отсутствия,
-	// "N" — не создавать. Значение по умолчанию — N).
-	CrSQLDB bool
-
-	// в созданной информационной базе запретить выполнение регламентных созданий (Y/N).
-	// Значение по умолчанию — N;
-	SchJobDn bool
-
-	// имя администратора кластера, в котором должен быть создан начальный образ.
-	// Параметр необходимо задавать, если в кластере определены администраторы
-	// и для них аутентификация операционной системы не установлена или не подходит;
-	SUsr string
-
-	// пароль администратора кластера.
-	SPwd string
 }
 
 type WSInfoBase struct {
@@ -251,54 +172,6 @@ func (ib *baseInfoBase) ShortConnectString() string {
 	return strings.Join(arrStrings, " ")
 }
 
-func (serverIB *ServerInfoBase) CreateString() (string, error) {
-
-	connString := "Srvr=" + serverIB.Srvr +
-		";Ref=" + serverIB.Ref +
-		";DBMS=" + serverIB.DBMS +
-		";DBSrvr=" + serverIB.DBSrvr +
-		";DBUID=" + serverIB.DBUID +
-		";DBPwd=" + serverIB.DBPwd +
-		";DB=" + serverIB.DB +
-		";SQLYOffs=" + strconv.FormatInt(int64(serverIB.SQLYOffs), 10)
-
-	if serverIB.CrSQLDB {
-		connString += ";CrSQLDB=Y"
-	} else {
-		connString += ";CrSQLDB=N"
-	}
-	if serverIB.SchJobDn {
-		connString += ";SchJobDn=Y"
-	} else {
-		connString += ";SchJobDn=N"
-	}
-
-	return connString, nil
-}
-
-func (fileIB *FileInfoBase) CreateString() (string, error) {
-
-	connString := "File=" + fileIB.File
-
-	if fileIB.DBPageSize > 0 {
-		connString += ";DBPageSize=" + strconv.FormatInt(fileIB.DBPageSize, 10)
-	}
-	if len(fileIB.DBFormat) > 0 {
-		connString += ";DBFormat=" + string(fileIB.DBFormat)
-	}
-
-	if len(fileIB.Locale) > 0 {
-		connString += ";Locale=" + fileIB.Locale
-	}
-
-	return connString, nil
-}
-
-func (wsIB *WSInfoBase) CreateString() (string, error) {
-
-	return "", errors.New("cannot create base on web server")
-}
-
 func (ib *baseInfoBase) IBConnectionString() (string, error) {
 	return "", nil
 }
@@ -306,10 +179,6 @@ func (ib *baseInfoBase) IBConnectionString() (string, error) {
 func (d *baseInfoBase) Option(opt interface{}) {
 
 	switch opt.(type) {
-
-	case types.UserOption:
-
-		d.UserOptions.Option(opt)
 
 	case func(base *baseInfoBase):
 		fn := opt.(func(base *baseInfoBase))
@@ -322,9 +191,9 @@ func (d *FileInfoBase) Option(opt interface{}) {
 
 	switch opt.(type) {
 
-	case types.UserOption:
+	case func(base *baseInfoBase):
 
-		d.UserOptions.Option(opt)
+		d.baseInfoBase.Option(opt)
 
 	case func(base *FileInfoBase):
 		fn := opt.(func(base *FileInfoBase))
@@ -337,9 +206,9 @@ func (d *ServerInfoBase) Option(opt interface{}) {
 
 	switch opt.(type) {
 
-	case types.UserOption:
+	case func(base *baseInfoBase):
 
-		d.UserOptions.Option(opt)
+		d.baseInfoBase.Option(opt)
 
 	case func(base *ServerInfoBase):
 		fn := opt.(func(base *ServerInfoBase))

@@ -1,16 +1,12 @@
-package v8run
+package v8marshaler
 
 import (
-	"github.com/khorevaa/go-AutoUpdate1C/v8run/types"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
 type marshalTestSuite struct {
-	baseTestSuite
-	tempIB types.InfoBase
-	v8path string
-	ibPath string
+	suite.Suite
 }
 
 func TestMarshaler(t *testing.T) {

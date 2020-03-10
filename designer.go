@@ -1,10 +1,6 @@
-package v8run
-
-import "github.com/khorevaa/go-AutoUpdate1C/v8run/types"
+package v8runnner
 
 type Designer struct {
-	types.UserOptions
-
 	DisableStartupDialogs  bool `v8:"/DisableStartupDialogs" json:"disable_startup_dialogs"`
 	DisableStartupMessages bool `v8:"/DisableStartupDialogs" json:"disable_startup_messages"`
 	Visible                bool `v8:"/Visible" json:"visible"`
@@ -25,14 +21,10 @@ func (d *Designer) Values() (values []string, err error) {
 
 }
 
-func NewDesigner(opts ...types.UserOption) *Designer {
+func NewDesigner() *Designer {
 
 	d := &Designer{
-		UserOptions: make(map[string]interface{}),
-	}
-
-	for _, opt := range opts {
-		d.Option(opt)
+		//UserOptions: make(map[string]interface{}),
 	}
 
 	return d

@@ -1,22 +1,22 @@
-package v8run
+package v8marshaler
 
 import (
 	"errors"
 	"fmt"
-	"github.com/khorevaa/go-AutoUpdate1C/v8run/tags"
 	"reflect"
 	"strconv"
 	"time"
 )
 
-const TAG_NAMESPACE = "v8"
-const COMMAND_FIELD_NAME = "command"
-
 type Marshaler interface {
 	MarshalV8() (string, error)
 }
 
-func v8Marshal(object interface{}) ([]string, error) {
+type Unmarshaler interface {
+	UnmarshalV8() (string, error)
+}
+
+func Marshal(object interface{}) ([]string, error) {
 
 	if object == nil || (reflect.ValueOf(object).Kind() == reflect.Ptr && reflect.ValueOf(object).IsNil()) {
 		return []string{}, nil
@@ -32,13 +32,13 @@ func v8Marshal(object interface{}) ([]string, error) {
 	for i := 0; i < fieldsCount; i++ {
 		field := rType.Field(i)
 
-		fieldInfo := tags.GetFieldTagInfo(field)
+		fieldInfo := GetFieldTagInfo(field)
 
 		if fieldInfo == nil {
 			continue
 		}
 
-		if field.Name == COMMAND_FIELD_NAME {
+		if field.Name == CommandFieldName {
 			fieldsList = append(fieldsList, fieldInfo.Name)
 			continue
 		}
@@ -51,7 +51,7 @@ func v8Marshal(object interface{}) ([]string, error) {
 			// unless it implements marshalText or marshalCSV. Structs that implement this
 			// should result in one iface and not have their fields exposed
 			if fieldInfo.Inherit {
-				inheritFeild, err := v8Marshal(iface)
+				inheritFeild, err := Marshal(iface)
 
 				if err != nil {
 					return nil, err
@@ -136,7 +136,7 @@ func v8Marshal(object interface{}) ([]string, error) {
 
 }
 
-func getArgValue(value string, fieldInfo *tags.FieldTagInfo) string {
+func getArgValue(value string, fieldInfo *FieldTagInfo) string {
 
 	if fieldInfo.Argument {
 
@@ -159,7 +159,7 @@ func newNeedValueError(field reflect.StructField) error {
 
 }
 
-func needFieldValue(value string, tagInfo *tags.FieldTagInfo) bool {
+func needFieldValue(value string, tagInfo *FieldTagInfo) bool {
 
 	if tagInfo.Optional {
 		return false

@@ -1,13 +1,10 @@
-package tags
+package v8marshaler
 
 import (
 	"fmt"
 	"reflect"
 	"strings"
 )
-
-const TagSeparator = ","
-const TAG_NAMESPACE = "v8"
 
 func Tag(data interface{}, tagName, fieldName string) (string, error) {
 	dataType := reflect.TypeOf(data)
@@ -40,7 +37,7 @@ type FieldTagInfo struct {
 
 func GetFieldTagInfo(sField reflect.StructField) *FieldTagInfo {
 
-	tagsString := sField.Tag.Get(TAG_NAMESPACE)
+	tagsString := sField.Tag.Get(TagNamespace)
 	info := &FieldTagInfo{}
 	tags := strings.Split(tagsString, TagSeparator)
 
@@ -48,19 +45,19 @@ func GetFieldTagInfo(sField reflect.StructField) *FieldTagInfo {
 
 		switch strings.TrimSpace(v) {
 
-		case "inherit":
+		case TagInherit:
 
 			info.Inherit = true
 
-		case "optional":
+		case TagOptional:
 
 			info.Optional = true
 
-		case "arg":
+		case TagArgument:
 
 			info.Argument = true
 
-		case "-":
+		case TagIgnore:
 			return nil
 
 		default:
