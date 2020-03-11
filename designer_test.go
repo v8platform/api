@@ -45,7 +45,7 @@ func (t *designerTestSuite) createTempInfoBase() {
 		WithPath(t.v8path),
 		WithTimeout(30))
 
-	t.tempIB = ib
+	t.tempIB = &ib
 
 	t.r().NoError(err)
 

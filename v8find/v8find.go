@@ -60,6 +60,11 @@ func WithVersion(version string) Option {
 func WithFinder(f *Finder) Option {
 
 	return func(o *QueryOptions) {
+
+		if f == nil {
+			return
+		}
+
 		o.finder = f
 	}
 

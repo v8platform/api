@@ -1,6 +1,7 @@
 package v8runnner
 
 import (
+	"github.com/Khorevaa/go-v8runner/types"
 	"strconv"
 )
 
@@ -22,10 +23,6 @@ type CreateInfoBaseOptions struct {
 	DisableStartupDialogs  bool `v8:"/DisableStartupDialogs" json:"disable_startup_dialogs"`
 	DisableStartupMessages bool `v8:"/DisableStartupDialogs" json:"disable_startup_messages"`
 	Visible                bool `v8:"/Visible" json:"visible"`
-}
-
-func (d *CreateInfoBaseOptions) Option(opt interface{}) {
-	//panic("implement me")
 }
 
 type CreateFileInfoBaseOptions struct {
@@ -115,24 +112,24 @@ type CreateServerInfoBaseOptions struct {
 	SPwd string
 }
 
-func (d *CreateInfoBaseOptions) Command() string {
+func (d CreateInfoBaseOptions) Command() string {
 	return COMMAND_CREATEINFOBASE
 }
 
-func (d *CreateInfoBaseOptions) Check() error {
+func (d CreateInfoBaseOptions) Check() error {
 
 	return nil
 }
 
-func (d *CreateInfoBaseOptions) Values() (values []string, err error) {
+func (d CreateInfoBaseOptions) Values() (values []string, err error) {
 
 	return v8Marshal(d)
 
 }
 
-func newDefaultCreateInfoBase() *CreateInfoBaseOptions {
+func newDefaultCreateInfoBase() CreateInfoBaseOptions {
 
-	d := &CreateInfoBaseOptions{
+	d := CreateInfoBaseOptions{
 		DisableStartupDialogs:  true,
 		DisableStartupMessages: true,
 		Visible:                false,
@@ -141,7 +138,7 @@ func newDefaultCreateInfoBase() *CreateInfoBaseOptions {
 	return d
 }
 
-func (serverIB *CreateServerInfoBaseOptions) CreateString() (string, error) {
+func (serverIB CreateServerInfoBaseOptions) CreateString() (string, error) {
 
 	connString := "Srvr=" + serverIB.Srvr +
 		";Ref=" + serverIB.Ref +
@@ -166,7 +163,7 @@ func (serverIB *CreateServerInfoBaseOptions) CreateString() (string, error) {
 	return connString, nil
 }
 
-func (fileIB *CreateFileInfoBaseOptions) CreateString() (string, error) {
+func (fileIB CreateFileInfoBaseOptions) CreateString() (string, error) {
 
 	connString := "File=" + fileIB.File
 
@@ -184,7 +181,7 @@ func (fileIB *CreateFileInfoBaseOptions) CreateString() (string, error) {
 	return connString, nil
 }
 
-func (d *CreateFileInfoBaseOptions) Values() (values []string, err error) {
+func (d CreateFileInfoBaseOptions) Values() types.Values {
 
 	values, err = v8Marshal(d)
 

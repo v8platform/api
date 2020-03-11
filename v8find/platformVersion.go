@@ -35,11 +35,6 @@ func (l VersionList) ApplyFilter(f Filter) (pv PlatformVersion) {
 	return
 }
 
-//
-//func NewPlatformVersion(dir string) PlatformVersion {
-//
-//}
-
 func (v PlatformVersion) IsEmpty() bool {
 
 	return v.Version() == ""

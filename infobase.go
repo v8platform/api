@@ -2,13 +2,10 @@ package v8runnner
 
 import (
 	"fmt"
-	"strings"
+	"github.com/Khorevaa/go-v8runner/types"
 )
 
 type baseInfoBase struct {
-
-	// Код доступа к базе
-	UC string
 
 	// имя пользователя;
 	Usr string
@@ -76,143 +73,51 @@ type ServerInfoBase struct {
 	Ref string
 }
 
-type WSInfoBase struct {
-	baseInfoBase
+func (ib baseInfoBase) Values() types.Values {
 
-	//имя информационной базы на сервере "1С:Предприятия";
-	Ref string
-}
-
-func (fileIB *FileInfoBase) Path() string {
-
-	return fileIB.File
-
-}
-
-func (wsIB *WSInfoBase) Path() string {
-
-	return wsIB.Ref
-
-}
-
-func (serverIB *ServerInfoBase) Path() string {
-
-	return fmt.Sprintf("%s\\%s", serverIB.Srvr, serverIB.Ref)
-
-}
-
-func (fileIB *FileInfoBase) ShortConnectString() string {
-
-	connString := fmt.Sprintf("/F \"%s\"", fileIB.Path())
-	ibConnString := fileIB.baseInfoBase.ShortConnectString()
-
-	if len(ibConnString) > 0 {
-		connString += " " + ibConnString
-	}
-
-	return connString
-}
-
-func (wsIB *WSInfoBase) ShortConnectString() string {
-
-	connString := fmt.Sprintf("/WS \"%s\"", wsIB.Path())
-	ibConnString := wsIB.baseInfoBase.ShortConnectString()
-
-	if len(ibConnString) > 0 {
-		connString += " " + ibConnString
-	}
-
-	return connString
-}
-
-func (serverIB *ServerInfoBase) ShortConnectString() string {
-
-	connString := fmt.Sprintf("/S \"%s\"", serverIB.Path())
-	ibConnString := serverIB.baseInfoBase.ShortConnectString()
-
-	if len(ibConnString) > 0 {
-		connString += " " + ibConnString
-	}
-
-	return connString
-}
-
-func (ib *baseInfoBase) ShortConnectString() string {
-
-	var arrStrings []string
+	v := make(types.Values)
 
 	if len(ib.Usr) > 0 {
 
-		var auth string
-		auth += "/U " + ib.Usr
+		v.Set("Usr", types.EqualSep, ib.Usr)
 
 		if len(ib.Pwd) > 0 {
-			auth += "/P " + ib.Pwd
+			v.Set("Pwd", types.EqualSep, ib.Pwd)
 		}
 
-		arrStrings = append(arrStrings, auth)
-	}
-
-	if len(ib.UC) > 0 {
-		arrStrings = append(arrStrings, "/UC "+ib.UC)
 	}
 
 	if ib.Prmod {
-		arrStrings = append(arrStrings, "/UsePrivilegedMode")
+		v.Set("Prmod", types.EqualSep, "1")
+	}
+	if ib.LicDstr {
+		v.Set("LicDstr", types.EqualSep, "Y")
 	}
 
 	if len(ib.Zn) > 0 {
-		arrStrings = append(arrStrings, "/Z"+ib.Zn)
+		v.Set("Zn", types.EqualSep, ib.Zn)
 	}
 
-	if len(arrStrings) == 0 {
-		return ""
-	}
-
-	return strings.Join(arrStrings, " ")
+	return v
 }
 
-func (ib *baseInfoBase) IBConnectionString() (string, error) {
-	return "", nil
+func (ib FileInfoBase) Values() types.Values {
+
+	v := ib.baseInfoBase.Values()
+
+	v.Set("File", types.EqualSep, fmt.Sprintf("\"%s\"", ib.File))
+	if len(ib.Locale) > 0 {
+		v.Set("Locale", types.EqualSep, ib.Locale)
+	}
+	return v
 }
 
-func (d *baseInfoBase) Option(opt interface{}) {
+func (ib ServerInfoBase) Values() types.Values {
 
-	switch opt.(type) {
+	v := ib.baseInfoBase.Values()
 
-	case func(base *baseInfoBase):
-		fn := opt.(func(base *baseInfoBase))
-		fn(d)
-	}
+	v.Set("Srvr", types.EqualSep, ib.Srvr)
+	v.Set("Ref", types.EqualSep, fmt.Sprintf("\"%s\"", ib.Ref))
 
-}
-
-func (d *FileInfoBase) Option(opt interface{}) {
-
-	switch opt.(type) {
-
-	case func(base *baseInfoBase):
-
-		d.baseInfoBase.Option(opt)
-
-	case func(base *FileInfoBase):
-		fn := opt.(func(base *FileInfoBase))
-		fn(d)
-	}
-
-}
-
-func (d *ServerInfoBase) Option(opt interface{}) {
-
-	switch opt.(type) {
-
-	case func(base *baseInfoBase):
-
-		d.baseInfoBase.Option(opt)
-
-	case func(base *ServerInfoBase):
-		fn := opt.(func(base *ServerInfoBase))
-		fn(d)
-	}
-
+	return v
 }

@@ -45,9 +45,10 @@ func (t *v8runnerTestSuite) TestCreateTempInfoBase() {
 	ib := NewTempIB()
 
 	err := Run(ib, CreateFileInfoBase(ib.File),
-		WithPath("C:\\Program Files (x86)\\1cv8\\8.3.14.1533\\bin\\1cv8.exe"),
+		WithVersion("8.3"),
 		WithTimeout(30),
-		WithOut("F:\\github\\github\\go-v8runner\\log.txt", false))
+		//WithOut("F:\\github\\github\\go-v8runner\\log.txt", false),
+	)
 
 	t.r().NoError(err)
 

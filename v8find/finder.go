@@ -145,6 +145,10 @@ func (f *Finder) seekInDir(options dirOptions) {
 		}
 
 		if len(v) == 0 {
+			v = getVersionFromRAC(dir)
+		}
+
+		if len(v) == 0 {
 			return
 		}
 

@@ -96,7 +96,7 @@ func RestoreIB(file string, opts ...commandOption) *RestoreIBOptions {
 	return command
 }
 
-func CreateInfoBase(opts ...commandOption) *CreateInfoBaseOptions {
+func CreateInfoBase(opts ...commandOption) CreateInfoBaseOptions {
 
 	command := newDefaultCreateInfoBase()
 
@@ -104,22 +104,22 @@ func CreateInfoBase(opts ...commandOption) *CreateInfoBaseOptions {
 
 }
 
-func CreateFileInfoBase(file string, opts ...commandOption) *CreateFileInfoBaseOptions {
+func CreateFileInfoBase(file string, opts ...commandOption) CreateFileInfoBaseOptions {
 
 	command := newDefaultCreateInfoBase()
 
 	FileInfoBaseOptions := CreateFileInfoBaseOptions{
-		CreateInfoBaseOptions: *command,
+		CreateInfoBaseOptions: command,
 		File:                  file,
 	}
 
-	return &FileInfoBaseOptions
+	return FileInfoBaseOptions
 
 }
 
-func Execute(file string, opts ...commandOption) *ExecuteOptions {
+func Execute(file string, opts ...commandOption) ExecuteOptions {
 
-	command := &ExecuteOptions{
+	command := ExecuteOptions{
 		Enterprise: newDefaultEnterprise(),
 		File:       file,
 	}
@@ -130,9 +130,9 @@ func Execute(file string, opts ...commandOption) *ExecuteOptions {
 ////////////////////////////////////////////////////////
 // Create InfoBases
 
-func NewFileIB(path string, opts ...commandOption) *FileInfoBase {
+func NewFileIB(path string, opts ...commandOption) FileInfoBase {
 
-	ib := &FileInfoBase{
+	ib := FileInfoBase{
 		baseInfoBase: baseInfoBase{},
 		File:         path,
 	}
@@ -140,7 +140,7 @@ func NewFileIB(path string, opts ...commandOption) *FileInfoBase {
 	return ib
 }
 
-func NewTempIB(opts ...commandOption) *FileInfoBase {
+func NewTempIB(opts ...commandOption) FileInfoBase {
 
 	path, _ := ioutil.TempDir("", "1c_DB_")
 
@@ -149,22 +149,12 @@ func NewTempIB(opts ...commandOption) *FileInfoBase {
 	return ib
 }
 
-func NewServerIB(server, base string, opts ...commandOption) *ServerInfoBase {
+func NewServerIB(server, base string, opts ...commandOption) ServerInfoBase {
 
-	ib := &ServerInfoBase{
+	ib := ServerInfoBase{
 		baseInfoBase: baseInfoBase{},
 		Srvr:         server,
 		Ref:          base,
-	}
-
-	return ib
-}
-
-func NewWebServerIB(ref string, opts ...commandOption) *WSInfoBase {
-
-	ib := &WSInfoBase{
-		baseInfoBase: baseInfoBase{},
-		Ref:          ref,
 	}
 
 	return ib

@@ -1,12 +1,13 @@
 package v8runnner
 
 import (
-	"fmt"
 	"github.com/Khorevaa/go-v8runner/types"
+	"github.com/Khorevaa/go-v8runner/v8find"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 
 	"context"
 	"github.com/Khorevaa/go-v8runner/errors"
@@ -71,17 +72,13 @@ func WithVersion(version string) Option {
 	}
 }
 
-func WithCredentials(user, password string) Option {
-
-	ibOption := func(ib *baseInfoBase) {
-
-		ib.Usr = user
-
-		if len(password) > 0 {
-			ib.Pwd = password
-		}
-
+func WithCommonValues(cv types.CommonValues) Option {
+	return func(r *RunOptions) {
+		r.commonValues = cv
 	}
+}
+
+func WithCredentials(user, password string) Option {
 
 	return func(r *RunOptions) {
 
@@ -89,9 +86,30 @@ func WithCredentials(user, password string) Option {
 			return
 		}
 
-		r.infoBaseOptions = append(r.infoBaseOptions, ibOption)
+		r.customValues.Set("/U", types.SpaceSep, user)
+
+		if len(password) > 0 {
+			r.customValues.Set("/P", types.SpaceSep, password)
+		}
+	}
+}
+
+func WithUnlockCode(uc string) Option {
+
+	return func(r *RunOptions) {
+
+		if len(uc) == 0 {
+			return
+		}
+
+		r.customValues.Set("/UC", types.SpaceSep, uc)
 
 	}
+}
+
+func WithUC(uc string) Option {
+
+	return WithUnlockCode(uc)
 }
 
 type RunOptions struct {
@@ -105,9 +123,8 @@ type RunOptions struct {
 	v8path               string
 	Context              context.Context
 	UseLongConnectString bool
-
-	infoBaseOptions []interface{}
-	designerOptions []interface{}
+	commonValues         types.CommonValues
+	customValues         types.Values
 }
 
 func (ro *RunOptions) NewOutFile() {
@@ -165,11 +182,17 @@ func getV8Path(options *RunOptions) (string, error) {
 		v8 = options.Version
 	}
 
-	fmt.Println(v8)
+	v8path, err := v8find.PlatformByVersion(v8, v8find.WithBitness(v8find.V8_x64x32))
 
-	err := errors.NotExist.Newf("Version %s not found", options.Version)
-	errors.AddErrorContext(err, "version", options.Version)
-	return "", err
+	if err != nil {
+
+		err = errors.NotExist.Newf("Version %s not found", options.Version)
+		errors.AddErrorContext(err, "version", options.Version)
+
+		return "", err
+	}
+
+	return v8path, nil
 
 }
 
@@ -235,26 +258,31 @@ func RunWithOptions(where types.InfoBase, what types.Command, options *RunOption
 		return err
 	}
 
-	applyInfoBaseOptions(where, options.infoBaseOptions)
-	applyCommandOptions(what, options.designerOptions)
+	values := make(types.Values)
 
-	connectString, errConnectString := getConnectString(where, what, options)
-	if errConnectString != nil {
-		return errConnectString
+	connectString := where.Values()
+	values.Set("/IBConnectionString", types.SpaceSep, strings.Join(connectString.Values(), ";"))
+
+	if what.Command() == COMMAND_CREATEINFOBASE {
+		connectString.Append(what.Values())
+	} else {
+		values.Append(what.Values())
 	}
+
+	values.Append(options.commonValues.Values())
+	values.Append(getOptionsValues(options))
+	values.Append(options.customValues)
 
 	var args []string
+
 	args = append(args, what.Command())
-	args = append(args, connectString)
+	if what.Command() == COMMAND_CREATEINFOBASE {
 
-	whatArgs, errWhatArgs := getWhatArgs(what)
+		values.Del("/IBConnectionString")
 
-	if errWhatArgs != nil {
-		return errWhatArgs
+		args = append(args, strings.Join(connectString.Values(), ";"))
 	}
-	args = append(args, whatArgs...)
-
-	args = appendRunOptionsArgs(args, options)
+	args = append(args, values.Values()...)
 
 	defer options.RemoveTempFiles()
 
@@ -316,56 +344,19 @@ func checkRunResult(options *RunOptions) error {
 
 }
 
-func getWhatArgs(what types.Command) (args []string, err error) {
+func getOptionsValues(options *RunOptions) types.Values {
 
-	args, err = what.Values()
-
-	if err != nil {
-		err = errors.BadRequest.Wrap(err, "cannot get command args")
-
-	}
-
-	return
-}
-
-func appendRunOptionsArgs(in []string, options *RunOptions) (args []string) {
-
-	args = append(in, fmt.Sprintf("/Out %s", options.Out))
+	values := make(types.Values)
+	values.Set("/Out", types.SpaceSep, options.Out)
 
 	if options.NoTruncate {
-		args = append(args, "-NoTruncate")
+		values.Set("-NoTruncate", types.NoSep, "")
 	}
 
-	args = append(args, fmt.Sprintf("/DumpResult %s", options.DumpResult))
+	values.Set("/DumpResult", types.SpaceSep, options.DumpResult)
 
-	return
+	return values
 
-}
-
-func getConnectString(where types.InfoBase, what types.Command, options *RunOptions) (connectString string, err error) {
-
-	//if what.Command() == COMMAND_CREATEINFOBASE {
-	//	connectString, err = where.CreateString()
-	//	if err != nil {
-	//		err = errors.BadConnectString.Wrap(err, "error get create database connection string")
-	//	}
-	//
-	//	return
-	//}
-
-	if options.UseLongConnectString {
-		connectString, err = where.IBConnectionString()
-		if err != nil {
-			err = errors.BadConnectString.Wrap(err, "error get full database connection string")
-		}
-
-		return
-
-	} else {
-		connectString = where.ShortConnectString()
-	}
-
-	return
 }
 
 func defaultOptions() *RunOptions {
@@ -374,6 +365,7 @@ func defaultOptions() *RunOptions {
 
 	options.NewOutFile()
 	options.NewDumpResultFile()
+	options.commonValues = Common{true, true, false, false}
 
 	return &options
 }
@@ -404,18 +396,6 @@ func applyRunOptions(options *RunOptions, opts ...interface{}) {
 		if fn, ok := opt.(Option); ok {
 			fn(options)
 		}
-	}
-}
-
-func applyInfoBaseOptions(infobase types.InfoBase, opts []interface{}) {
-	for _, fn := range opts {
-		infobase.Option(fn)
-	}
-}
-
-func applyCommandOptions(command types.Command, opts []interface{}) {
-	for _, fn := range opts {
-		command.Option(fn)
 	}
 }
 

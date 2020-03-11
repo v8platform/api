@@ -28,7 +28,7 @@ func isOSX() bool {
 
 func findPlatformDir(dir string) (paths []string) {
 
-	match1cv8 := "/*/"
+	match1cv8 := "/*"
 
 	if isWindows() {
 		match1cv8 = "\\*"
@@ -58,7 +58,7 @@ func findPlatform(dir string) (path string) {
 
 func findThinkClient(dir string) (path string) {
 
-	match1cv8 := "/*/1cv8c"
+	match1cv8 := "*/1cv8c"
 
 	if isWindows() {
 		match1cv8 = "\\*\\1cv8c.exe"
@@ -74,7 +74,7 @@ func findThinkClient(dir string) (path string) {
 
 func findRAC(dir string) (path string) {
 
-	match1cv8 := "/*/rac"
+	match1cv8 := "*/rac"
 
 	if isWindows() {
 		match1cv8 = "\\*\\rac.exe"
