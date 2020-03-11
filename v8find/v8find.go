@@ -1,21 +1,13 @@
 package v8find
 
-import (
-	"errors"
-	"os"
-	"path"
-	"runtime"
-	"time"
-)
-
-type bitnessType int
+type BitnessType int
 type exeType int
 
 const (
-	V8_x64 bitnessType = iota
+	V8_x64 BitnessType = iota
 	V8_x32
-	V8_x32x64
 	V8_x64x32
+	V8_x32x64
 )
 
 const (
@@ -24,35 +16,23 @@ const (
 	RACType
 )
 
+const defaultVersion = "8.3"
+
 const SEEK_ERROR_NOT_FOUNDED = "any platform version is not founded"
 
 type dirOptions struct {
 	path      string
 	version   string
-	v8bitness bitnessType
+	v8bitness BitnessType
 }
 
-type Option func(f *FinderOptions)
+type Option func(f *QueryOptions)
 
 var finder *Finder
 
-type Filter struct {
-	version string
-	bitness bitnessType
-}
-
-type Finder struct {
-	scanDirs      []dirOptions
-	foundVersions []PlatformVersion
-	sorted        bool
-
-	seeked    bool
-	seekError error
-}
-
-type FinderOptions struct {
+type QueryOptions struct {
 	finder *Finder
-	filter Filter
+	filter defaultFilter
 }
 
 func init() {
@@ -61,161 +41,9 @@ func init() {
 	finder.DefaultDirs()
 }
 
-func NewPlatformFinder() *Finder {
+func WithBitness(bitness BitnessType) Option {
 
-	return &Finder{
-		scanDirs:      nil,
-		foundVersions: nil,
-		seeked:        false,
-		sorted:        false,
-	}
-
-}
-
-func (f *Finder) DefaultDirs() {
-
-	switch {
-
-	case isWindows():
-
-		// TODO МассивПутейКонфигурационногоФайла = СобратьВозможныеКаталогиУстановкиПлатформыWindows();
-
-		if runtime.GOARCH == "amd64" {
-
-			dirProgram64 := os.Getenv("ProgramW6432")
-			dirProgram86 := os.Getenv("ProgramFiles(x86)")
-
-			f.AddDir(path.Join(dirProgram64, "1Cv8"), "", V8_x64)
-			f.AddDir(path.Join(dirProgram64, "1Cv82"), "", V8_x64)
-
-			f.AddDir(path.Join(dirProgram86, "1Cv8"), "", V8_x32)
-			f.AddDir(path.Join(dirProgram86, "1Cv82"), "", V8_x32)
-
-		} else {
-
-			dirProgram86 := os.Getenv("ProgramFiles")
-			f.AddDir(path.Join(dirProgram86, "1Cv8"), "", V8_x32)
-			f.AddDir(path.Join(dirProgram86, "1Cv82"), "", V8_x32)
-
-		}
-
-	case isLinux():
-
-		f.AddDir(path.Join("/opt", "1C", "v8.3", "x86_64"), "", V8_x64)
-		f.AddDir(path.Join("/opt", "1C", "v8.3", "i386"), "", V8_x32)
-
-	case isOSX():
-
-		f.AddDir(path.Join("/opt", "1cv8"), "", V8_x64)
-
-	}
-
-}
-
-func (f *Finder) AddDir(dir string, ver string, bit bitnessType) {
-
-	f.scanDirs = append(f.scanDirs, dirOptions{
-		path:      dir,
-		version:   ver,
-		v8bitness: bit,
-	})
-
-}
-
-func (f *Finder) Scan() error {
-
-	return f.seek(false)
-
-}
-
-func (f *Finder) ForceScan() (err error) {
-
-	return f.seek(true)
-}
-
-func (f *Finder) matched() bool {
-
-	return f.seeked && cap(f.foundVersions) > 0
-
-}
-
-func (f *Finder) seek(force bool) (err error) {
-
-	if f.seeked && !force {
-		return f.seekError
-	}
-
-	f.seekInDirs()
-
-	f.seeked = true
-	f.seekError = nil
-
-	if !f.matched() {
-
-		f.seekError = errors.New(SEEK_ERROR_NOT_FOUNDED)
-		err = f.seekError
-	}
-
-}
-
-func (f *Finder) seekInDirs() {
-
-	if cap(f.scanDirs) == 0 {
-		return
-	}
-
-	for _, dirOption := range f.scanDirs {
-
-		f.seekInDir(dirOption)
-
-	}
-}
-
-func (f *Finder) seekInDir(options dirOptions) {
-
-	if ok, _ := IsNoExist(options.path); ok {
-		return
-	}
-
-	//TODO Добавить поиск версий в каталоге
-
-}
-
-func (f *Finder) filterVersions(filter Filter) (PlatformVersion, error) {
-
-	return PlatformVersion{}, nil
-}
-
-func (f *Finder) Platform(filter Filter) (string, error) {
-
-	filteredVersion, err := f.filterVersions(filter)
-
-	if err != nil {
-		return "", err
-	}
-
-	return filteredVersion.Platform(), nil
-}
-
-func (f *Finder) ThinkClient(filter Filter) (string, error) {
-	filteredVersion, err := f.filterVersions(filter)
-	if err != nil {
-		return "", err
-	}
-	return filteredVersion.ThinkClient(), nil
-}
-
-func (f *Finder) RAC(filter Filter) (string, error) {
-	filteredVersion, err := f.filterVersions(filter)
-	if err != nil {
-		return "", err
-	}
-	return filteredVersion.RAC(), nil
-}
-
-func WithBitness(bitness bitnessType) Option {
-
-	return func(o FinderOptions) {
+	return func(o *QueryOptions) {
 		o.filter.bitness = bitness
 	}
 
@@ -223,7 +51,7 @@ func WithBitness(bitness bitnessType) Option {
 
 func WithVersion(version string) Option {
 
-	return func(o FinderOptions) {
+	return func(o *QueryOptions) {
 		o.filter.version = version
 	}
 
@@ -231,23 +59,26 @@ func WithVersion(version string) Option {
 
 func WithFinder(f *Finder) Option {
 
-	return func(o FinderOptions) {
+	return func(o *QueryOptions) {
 		o.finder = f
 	}
 
 }
 
-func getPlatformPath(t exeType, version string, opts []Option) (string, error) {
+func getPlatformPath(t exeType, opts []Option) (string, error) {
 
 	f := defaultFinder()
-	f.filter.version = version
 	f.Options(opts)
 
 	if f.finder == nil {
 		f.finder = finder
 	}
 
-	f.finder.Scan()
+	err := f.finder.Scan()
+
+	if err != nil {
+		return "", err
+	}
 
 	switch t {
 
@@ -260,24 +91,11 @@ func getPlatformPath(t exeType, version string, opts []Option) (string, error) {
 
 	}
 
-}
-
-func defaultFinder() *FinderOptions {
-
-	return &FinderOptions{
-		finder: nil,
-		filter: Filter{bitness: V8_x32x64},
-	}
+	return "", nil
 
 }
 
-func Platform(version string, opts ...Option) (string, error) {
-
-	return getPlatformPath(PlatformType, version, opts)
-
-}
-
-func (f *FinderOptions) Options(opts []Option) {
+func (f *QueryOptions) Options(opts []Option) {
 
 	for _, opt := range opts {
 		opt(f)
@@ -285,15 +103,54 @@ func (f *FinderOptions) Options(opts []Option) {
 
 }
 
-func ThinkClient(version string, opts ...Option) (string, error) {
+func defaultFinder() *QueryOptions {
 
-	return getPlatformPath(ThinkClientType, version, opts)
+	return &QueryOptions{
+		finder: nil,
+		filter: defaultFilter{version: defaultVersion, bitness: V8_x32x64},
+	}
 
 }
 
-func RAC(version string, opts ...Option) (string, error) {
+func PlatformByVersion(version string, opts ...Option) (string, error) {
 
-	return getPlatformPath(RACType, version, opts)
+	opts = append(opts, WithVersion(version))
+
+	return getPlatformPath(PlatformType, opts)
+
+}
+
+func ThinkClientByVersion(version string, opts ...Option) (string, error) {
+
+	opts = append(opts, WithVersion(version))
+
+	return getPlatformPath(PlatformType, opts)
+
+}
+
+func RACByVersion(version string, opts ...Option) (string, error) {
+
+	opts = append(opts, WithVersion(version))
+
+	return getPlatformPath(PlatformType, opts)
+
+}
+
+func Platform(opts ...Option) (string, error) {
+
+	return getPlatformPath(PlatformType, opts)
+
+}
+
+func ThinkClient(opts ...Option) (string, error) {
+
+	return getPlatformPath(ThinkClientType, opts)
+
+}
+
+func RAC(opts ...Option) (string, error) {
+
+	return getPlatformPath(RACType, opts)
 
 }
 

@@ -2,8 +2,11 @@ package v8find
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
+	"strings"
 )
 
 const GOOS = runtime.GOOS
@@ -23,46 +26,66 @@ func isOSX() bool {
 	return GOOS == "darwin"
 }
 
-func findPlatform(dir string) (found bool, path []string) {
+func findPlatformDir(dir string) (paths []string) {
 
-	match1cv8 := "/*/1cv8"
+	match1cv8 := "/*/"
 
 	if isWindows() {
-		match1cv8 = "*\\*\\bin\\1cv8.exe"
+		match1cv8 = "\\*"
 	}
 
-	path, _ = filepath.Glob(dir + match1cv8)
+	paths, _ = filepath.Glob(dir + match1cv8)
 
-	found = len(path) > 0
-
+	return
 }
 
-func findThinkClient(dir string) (found bool, path []string) {
+func findPlatform(dir string) (path string) {
+
+	match1cv8 := "*/1cv8"
+
+	if isWindows() {
+		match1cv8 = "\\*\\1cv8.exe"
+	}
+
+	paths, _ := filepath.Glob(dir + match1cv8)
+
+	if len(paths) > 0 {
+		path = paths[0]
+	}
+
+	return
+}
+
+func findThinkClient(dir string) (path string) {
 
 	match1cv8 := "/*/1cv8c"
 
 	if isWindows() {
-		match1cv8 = "*\\*\\bin\\1cv8c.exe"
+		match1cv8 = "\\*\\1cv8c.exe"
 	}
 
-	path, _ = filepath.Glob(dir + match1cv8)
+	paths, _ := filepath.Glob(dir + match1cv8)
 
-	found = len(path) > 0
-
+	if len(paths) > 0 {
+		path = paths[0]
+	}
+	return
 }
 
-func findRAC(dir string) (found bool, path []string) {
+func findRAC(dir string) (path string) {
 
 	match1cv8 := "/*/rac"
 
 	if isWindows() {
-		match1cv8 = "*\\*\\bin\\rac.exe"
+		match1cv8 = "\\*\\rac.exe"
 	}
 
-	path, _ = filepath.Glob(dir + match1cv8)
+	paths, _ := filepath.Glob(dir + match1cv8)
 
-	found = len(path) > 0
-
+	if len(paths) > 0 {
+		path = paths[0]
+	}
+	return
 }
 
 func Exists(name string) (bool, error) {
@@ -76,4 +99,34 @@ func IsNoExist(name string) (bool, error) {
 
 	ok, err := Exists(name)
 	return !ok, err
+}
+
+func getVersionFromPath(path string) (version string) {
+
+	regExpVersion := "\\d+(\\.\\d+)+"
+
+	re := regexp.MustCompile(regExpVersion)
+
+	version = re.FindString(path)
+
+	return
+}
+
+func getVersionFromRAC(path string) (version string) {
+
+	pathRAC := findRAC(path)
+
+	if len(pathRAC) == 0 {
+		return
+	}
+
+	out, execErr := exec.Command(pathRAC, "-v").Output()
+	if execErr != nil {
+		return
+	}
+
+	version = strings.TrimSpace(string(out))
+
+	return
+
 }

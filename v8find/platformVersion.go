@@ -2,7 +2,7 @@ package v8find
 
 type PlatformVersion struct {
 	version string
-	bitness bitnessType
+	bitness BitnessType
 
 	baseDir string
 
@@ -11,7 +11,50 @@ type PlatformVersion struct {
 	rac      string
 }
 
-func NewPlatformVersion(dir string) PlatformVersion {
+type VersionList []PlatformVersion
+
+func (l VersionList) FilterBy(f FilterByfunc) VersionList {
+
+	m := make(VersionList, 0, len(l))
+	for _, v := range l {
+		if f(v) {
+			m = append(m, v)
+		}
+	}
+	return m
+}
+
+func (l VersionList) ApplyFilter(f Filter) (pv PlatformVersion) {
+
+	fl := f.Apply(l)
+
+	if len(fl) > 0 {
+		pv = fl[0]
+	}
+
+	return
+}
+
+//
+//func NewPlatformVersion(dir string) PlatformVersion {
+//
+//}
+
+func (v PlatformVersion) IsEmpty() bool {
+
+	return v.Version() == ""
+
+}
+
+func (v PlatformVersion) Version() string {
+
+	return v.version
+
+}
+
+func (v PlatformVersion) Bitness() BitnessType {
+
+	return v.bitness
 
 }
 
