@@ -1,6 +1,7 @@
-package v8runnner
+package v8
 
 import (
+	"github.com/Khorevaa/go-v8runner/runner"
 	"github.com/Khorevaa/go-v8runner/types"
 	"github.com/stretchr/testify/suite"
 	"io/ioutil"
@@ -9,7 +10,7 @@ import (
 )
 
 type designerTestSuite struct {
-	baseTestSuite
+	runner.baseTestSuite
 	tempIB types.InfoBase
 	v8path string
 	ibPath string
@@ -41,9 +42,9 @@ func (t *designerTestSuite) createTempInfoBase() {
 
 	ib := NewFileIB(t.ibPath)
 
-	err := Run(ib, CreateInfoBase(),
-		WithPath(t.v8path),
-		WithTimeout(30))
+	err := runner.Run(ib, CreateInfoBase(),
+		runner.WithPath(t.v8path),
+		runner.WithTimeout(30))
 
 	t.tempIB = &ib
 

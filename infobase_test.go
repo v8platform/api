@@ -1,12 +1,13 @@
-package v8runnner
+package v8
 
 import (
+	"github.com/Khorevaa/go-v8runner/runner"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
 type infoBaseTestSuite struct {
-	baseTestSuite
+	runner.baseTestSuite
 }
 
 func TestInfobase(t *testing.T) {

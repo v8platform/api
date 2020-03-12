@@ -1,4 +1,4 @@
-package v8runnner
+package v8
 
 import (
 	"github.com/stretchr/testify/require"

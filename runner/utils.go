@@ -1,4 +1,4 @@
-package v8runnner
+package runner
 
 import (
 	"bytes"
@@ -16,53 +16,6 @@ const (
 	utf16Le
 	other
 )
-
-//
-//func processOptions(cmd types.Optioned, opts []types.UserOption) {
-//
-//	for _, v := range opts {
-//		cmd.Option(v)
-//	}
-//
-//}
-//func processUserOptions(options types.UserOptions) (args []string) {
-//
-//	for k, v := range options {
-//
-//		switch v.(type) {
-//
-//		case bool:
-//
-//			val, _ := v.(bool)
-//
-//			if val {
-//				args = append(args, k)
-//			}
-//
-//		case string:
-//
-//			val, _ := v.(string)
-//
-//			if len(val) > 0 {
-//				args = append(args, fmt.Sprintf("%s %s", k, val))
-//			}
-//
-//		case types.Optioned:
-//
-//			userOptions := v.(types.Optioned).Values()
-//
-//			args = append(args, processUserOptions(userOptions)...)
-//
-//		default:
-//
-//			continue
-//
-//		}
-//
-//	}
-//
-//	return
-//}
 
 func detectFileCharset(data []byte) charset {
 

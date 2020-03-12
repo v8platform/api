@@ -1,15 +1,16 @@
 package types
 
 type InfoBase interface {
-	CommonValues
+	Path() string
+	ValuesInterface
 }
 
-type CommonValues interface {
+type ValuesInterface interface {
 	Values() Values
 }
 
 type Command interface {
 	Command() string
 	Check() error
-	CommonValues
+	ValuesInterface
 }

@@ -1,8 +1,20 @@
-package v8runnner
+package v8
 
 import (
+	"github.com/Khorevaa/go-v8runner/runner"
+	"github.com/Khorevaa/go-v8runner/types"
 	"io/ioutil"
 )
+
+func Run(where types.InfoBase, what types.Command, opts ...interface{}) error {
+
+	return runner.Run(where, what, opts...)
+
+}
+
+func WithTimeout(timeout int64) runner.Option {
+	return runner.WithTimeout(timeout)
+}
 
 func LoadCfg(file string) *LoadCfgOptions {
 
@@ -76,7 +88,7 @@ func UpdateDBExtensionCfg(extension string, server bool, Dynamic bool) *UpdateDB
 
 }
 
-func DumpIB(file string, opts ...commandOption) *DumpIBOptions {
+func DumpIB(file string) *DumpIBOptions {
 
 	command := &DumpIBOptions{
 		Designer: newDefaultDesigner(),
@@ -86,7 +98,7 @@ func DumpIB(file string, opts ...commandOption) *DumpIBOptions {
 	return command
 }
 
-func RestoreIB(file string, opts ...commandOption) *RestoreIBOptions {
+func RestoreIB(file string) *RestoreIBOptions {
 
 	command := &RestoreIBOptions{
 		Designer: newDefaultDesigner(),
@@ -96,7 +108,7 @@ func RestoreIB(file string, opts ...commandOption) *RestoreIBOptions {
 	return command
 }
 
-func CreateInfoBase(opts ...commandOption) CreateInfoBaseOptions {
+func CreateInfoBase() CreateInfoBaseOptions {
 
 	command := newDefaultCreateInfoBase()
 
@@ -104,7 +116,7 @@ func CreateInfoBase(opts ...commandOption) CreateInfoBaseOptions {
 
 }
 
-func CreateFileInfoBase(file string, opts ...commandOption) CreateFileInfoBaseOptions {
+func CreateFileInfoBase(file string) CreateFileInfoBaseOptions {
 
 	command := newDefaultCreateInfoBase()
 
@@ -117,7 +129,7 @@ func CreateFileInfoBase(file string, opts ...commandOption) CreateFileInfoBaseOp
 
 }
 
-func Execute(file string, opts ...commandOption) ExecuteOptions {
+func Execute(file string) ExecuteOptions {
 
 	command := ExecuteOptions{
 		Enterprise: newDefaultEnterprise(),
@@ -130,7 +142,7 @@ func Execute(file string, opts ...commandOption) ExecuteOptions {
 ////////////////////////////////////////////////////////
 // Create InfoBases
 
-func NewFileIB(path string, opts ...commandOption) FileInfoBase {
+func NewFileIB(path string) FileInfoBase {
 
 	ib := FileInfoBase{
 		baseInfoBase: baseInfoBase{},
@@ -140,21 +152,21 @@ func NewFileIB(path string, opts ...commandOption) FileInfoBase {
 	return ib
 }
 
-func NewTempIB(opts ...commandOption) FileInfoBase {
+func NewTempIB() FileInfoBase {
 
 	path, _ := ioutil.TempDir("", "1c_DB_")
 
-	ib := NewFileIB(path, opts...)
+	ib := NewFileIB(path)
 
 	return ib
 }
 
-func NewServerIB(server, base string, opts ...commandOption) ServerInfoBase {
+func NewServerIB(srvr, ref string) ServerInfoBase {
 
 	ib := ServerInfoBase{
 		baseInfoBase: baseInfoBase{},
-		Srvr:         server,
-		Ref:          base,
+		Srvr:         srvr,
+		Ref:          ref,
 	}
 
 	return ib

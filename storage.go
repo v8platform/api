@@ -1,4 +1,4 @@
-package v8runnner
+package v8
 
 type RepositoryRightType string
 type RepositorySupportEditObjectsType string

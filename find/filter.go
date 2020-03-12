@@ -1,4 +1,4 @@
-package v8find
+package find
 
 import (
 	"sort"

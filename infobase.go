@@ -1,4 +1,4 @@
-package v8runnner
+package v8
 
 import (
 	"fmt"
@@ -71,6 +71,11 @@ type ServerInfoBase struct {
 
 	//имя информационной базы на сервере "1С:Предприятия";
 	Ref string
+}
+
+func (ib baseInfoBase) Path() string {
+
+	return ""
 }
 
 func (ib baseInfoBase) Values() types.Values {

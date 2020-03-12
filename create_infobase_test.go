@@ -1,12 +1,13 @@
-package v8runnner
+package v8
 
 import (
+	"github.com/Khorevaa/go-v8runner/runner"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
 type createInfoBaseTestSuite struct {
-	baseTestSuite
+	runner.baseTestSuite
 }
 
 func TestPromocodeServiceService(t *testing.T) {
@@ -28,9 +29,9 @@ func (t *createInfoBaseTestSuite) TestCreateTempInfoBase() {
 
 	ib := NewTempIB()
 
-	err := Run(ib, CreateInfoBase(),
-		WithTimeout(30),
-		WithCredentials("User", "pwd"),
+	err := runner.Run(ib, CreateInfoBase(),
+		runner.WithTimeout(30),
+		runner.WithCredentials("User", "pwd"),
 	)
 	t.r().NoError(err)
 

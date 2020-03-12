@@ -1,4 +1,6 @@
-package v8runnner
+package v8
+
+import "github.com/Khorevaa/go-v8runner/runner"
 
 type Designer struct {
 	DisableStartupDialogs  bool `v8:"/DisableStartupDialogs" json:"disable_startup_dialogs"`
@@ -7,7 +9,7 @@ type Designer struct {
 }
 
 func (d *Designer) Command() string {
-	return COMMANE_DESIGNER
+	return runner.COMMANE_DESIGNER
 }
 
 func (d *Designer) Check() error {

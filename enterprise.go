@@ -1,4 +1,8 @@
-package v8runnner
+package v8
+
+import (
+	"github.com/Khorevaa/go-v8runner/types"
+)
 
 type Enterprise struct {
 	disableSplash          bool
@@ -7,7 +11,7 @@ type Enterprise struct {
 }
 
 func (d *Enterprise) Command() string {
-	return COMMAND_ENTERPRISE
+	return types.COMMAND_ENTERPRISE
 }
 
 func (d *Enterprise) Check() error {
@@ -15,7 +19,7 @@ func (d *Enterprise) Check() error {
 	return nil
 }
 
-func NewEnterprise(opts ...commandOption) *Enterprise {
+func NewEnterprise() *Enterprise {
 
 	d := &Enterprise{}
 
