@@ -1,45 +1,42 @@
 package v8
 
 import (
+	"github.com/Khorevaa/go-v8runner/designer"
+	"github.com/Khorevaa/go-v8runner/enterprise"
+	"github.com/Khorevaa/go-v8runner/infobase"
 	"github.com/Khorevaa/go-v8runner/runner"
 	"github.com/Khorevaa/go-v8runner/types"
-	"io/ioutil"
 )
 
 func Run(where types.InfoBase, what types.Command, opts ...interface{}) error {
 
-	return runner.Run(where, what, opts...)
+	return runner.NewRunner().Run(where, what, opts...)
 
 }
 
-func WithTimeout(timeout int64) runner.Option {
-	return runner.WithTimeout(timeout)
-}
+func LoadCfg(file string) designer.LoadCfgOptions {
 
-func LoadCfg(file string) *LoadCfgOptions {
-
-	command := &LoadCfgOptions{
-		File:     file,
-		Designer: newDefaultDesigner(),
+	command := designer.LoadCfgOptions{
+		File: file,
 	}
 
 	return command
 
 }
 
-func UpdateCfg(file string, force bool) *UpdateCfgOptions {
+func UpdateCfg(file string, force bool) designer.UpdateCfgOptions {
 
-	command := &UpdateCfgOptions{
+	command := designer.UpdateCfgOptions{
 		File:     file,
 		Force:    force,
-		Designer: newDefaultDesigner(),
+		Designer: designer.NewDesigner(),
 	}
 
 	return command
 
 }
 
-func LoadExtensionCfg(file, extension string) *LoadCfgOptions {
+func LoadExtensionCfg(file, extension string) designer.LoadCfgOptions {
 
 	command := LoadCfg(file)
 	command.Extension = extension
@@ -48,18 +45,18 @@ func LoadExtensionCfg(file, extension string) *LoadCfgOptions {
 
 }
 
-func DumpCfg(file string) *DumpCfgOptions {
+func DumpCfg(file string) designer.DumpCfgOptions {
 
-	command := &DumpCfgOptions{
+	command := designer.DumpCfgOptions{
 		File:     file,
-		Designer: newDefaultDesigner(),
+		Designer: designer.NewDesigner(),
 	}
 
 	return command
 
 }
 
-func DumpExtensionCfg(file, extension string) *DumpCfgOptions {
+func DumpExtensionCfg(file, extension string) designer.DumpCfgOptions {
 
 	command := DumpCfg(file)
 	command.Extension = extension
@@ -67,10 +64,10 @@ func DumpExtensionCfg(file, extension string) *DumpCfgOptions {
 
 }
 
-func UpdateDBCfg(server bool, Dynamic bool) *UpdateDBCfgOptions {
+func UpdateDBCfg(server bool, Dynamic bool) designer.UpdateDBCfgOptions {
 
-	command := &UpdateDBCfgOptions{
-		Designer: newDefaultDesigner(),
+	command := designer.UpdateDBCfgOptions{
+		Designer: designer.NewDesigner(),
 		Server:   server,
 		Dynamic:  Dynamic,
 	}
@@ -79,7 +76,7 @@ func UpdateDBCfg(server bool, Dynamic bool) *UpdateDBCfgOptions {
 
 }
 
-func UpdateDBExtensionCfg(extension string, server bool, Dynamic bool) *UpdateDBCfgOptions {
+func UpdateDBExtensionCfg(extension string, server bool, Dynamic bool) designer.UpdateDBCfgOptions {
 
 	command := UpdateDBCfg(server, Dynamic)
 	command.Extension = extension
@@ -88,39 +85,39 @@ func UpdateDBExtensionCfg(extension string, server bool, Dynamic bool) *UpdateDB
 
 }
 
-func DumpIB(file string) *DumpIBOptions {
+func DumpIB(file string) designer.DumpIBOptions {
 
-	command := &DumpIBOptions{
-		Designer: newDefaultDesigner(),
+	command := designer.DumpIBOptions{
+		Designer: designer.NewDesigner(),
 		File:     file,
 	}
 
 	return command
 }
 
-func RestoreIB(file string) *RestoreIBOptions {
+func RestoreIB(file string) designer.RestoreIBOptions {
 
-	command := &RestoreIBOptions{
-		Designer: newDefaultDesigner(),
+	command := designer.RestoreIBOptions{
+		Designer: designer.NewDesigner(),
 		File:     file,
 	}
 
 	return command
 }
 
-func CreateInfoBase() CreateInfoBaseOptions {
+func CreateInfoBase() designer.CreateInfoBaseOptions {
 
-	command := newDefaultCreateInfoBase()
+	command := designer.NewCreateInfoBase()
 
 	return command
 
 }
 
-func CreateFileInfoBase(file string) CreateFileInfoBaseOptions {
+func CreateFileInfoBase(file string) designer.CreateFileInfoBaseOptions {
 
-	command := newDefaultCreateInfoBase()
+	command := designer.NewCreateInfoBase()
 
-	FileInfoBaseOptions := CreateFileInfoBaseOptions{
+	FileInfoBaseOptions := designer.CreateFileInfoBaseOptions{
 		CreateInfoBaseOptions: command,
 		File:                  file,
 	}
@@ -129,10 +126,10 @@ func CreateFileInfoBase(file string) CreateFileInfoBaseOptions {
 
 }
 
-func Execute(file string) ExecuteOptions {
+func Execute(file string) enterprise.ExecuteOptions {
 
-	command := ExecuteOptions{
-		Enterprise: newDefaultEnterprise(),
+	command := enterprise.ExecuteOptions{
+		Enterprise: enterprise.NewEnterprise(),
 		File:       file,
 	}
 
@@ -142,31 +139,27 @@ func Execute(file string) ExecuteOptions {
 ////////////////////////////////////////////////////////
 // Create InfoBases
 
-func NewFileIB(path string) FileInfoBase {
+func NewFileIB(path string) infobase.FileInfoBase {
 
-	ib := FileInfoBase{
-		baseInfoBase: baseInfoBase{},
-		File:         path,
+	ib := infobase.FileInfoBase{
+		InfoBase: infobase.InfoBase{},
+		File:     path,
 	}
 
 	return ib
 }
 
-func NewTempIB() FileInfoBase {
+func NewTempIB() infobase.FileInfoBase {
 
-	path, _ := ioutil.TempDir("", "1c_DB_")
-
-	ib := NewFileIB(path)
-
-	return ib
+	return infobase.NewTempIB()
 }
 
-func NewServerIB(srvr, ref string) ServerInfoBase {
+func NewServerIB(srvr, ref string) infobase.ServerInfoBase {
 
-	ib := ServerInfoBase{
-		baseInfoBase: baseInfoBase{},
-		Srvr:         srvr,
-		Ref:          ref,
+	ib := infobase.ServerInfoBase{
+		InfoBase: infobase.InfoBase{},
+		Srvr:     srvr,
+		Ref:      ref,
 	}
 
 	return ib

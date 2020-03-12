@@ -1,4 +1,4 @@
-package v8
+package common
 
 import (
 	"github.com/Khorevaa/go-v8runner/types"

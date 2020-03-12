@@ -1,12 +1,16 @@
-package v8
+package designer
 
 import (
-	"github.com/Khorevaa/go-v8runner/runner"
+	"github.com/Khorevaa/go-v8runner/marshaler"
 	"github.com/Khorevaa/go-v8runner/types"
 	"strconv"
 )
 
 type FileDBFormat string
+
+func (t FileDBFormat) MarshalV8() (string, error) {
+	return string(t), nil
+}
 
 const (
 	DB_FORMAT_8_2_14 FileDBFormat = "8.2.14"
@@ -21,27 +25,27 @@ const (
 )
 
 type CreateInfoBaseOptions struct {
-	DisableStartupDialogs  bool `v8:"/DisableStartupDialogs" json:"disable_startup_dialogs"`
-	DisableStartupMessages bool `v8:"/DisableStartupDialogs" json:"disable_startup_messages"`
-	Visible                bool `v8:"/Visible" json:"visible"`
+	DisableStartupDialogs bool   `v8:"/DisableStartupDialogs" json:"disable_startup_dialogs"`
+	UseTemplate           string `v8:"/UseTemplate" json:"use_template"`
+	AddToList             bool   `v8:"/AddToList" json:"add_to_list"`
 }
 
 type CreateFileInfoBaseOptions struct {
-	CreateInfoBaseOptions
+	CreateInfoBaseOptions `v8:",inherit" json:"common"`
 
 	// имя каталога, в котором размещается файл информационной базы;
-	File string
+	File string `v8:"File, equal_sep, quotes" json:"file"`
 
 	// язык (страна), который будет использован при открытии или создании информационной базы.
 	// Допустимые значения такие же как у параметра <Форматная строка> метода Формат().
 	// Параметр Locale задавать не обязательно.
 	// Если не задан, то будут использованы региональные установки текущей информационной базы;
-	Locale string
+	Locale string `v8:"Locale, optional, equal_sep" json:"locale"`
 
 	// формат базы данных
 	// Допустимые значения: 8.2.14, 8.3.8.
 	// Значение по умолчанию — 8.2.14
-	DBFormat FileDBFormat
+	DBFormat FileDBFormat `v8:"DBFormat, optional, equal_sep" json:"db_format"`
 
 	// размер страницы базы данных в байтах
 	// Допустимые значения:
@@ -51,66 +55,66 @@ type CreateFileInfoBaseOptions struct {
 	//   32768(или 32k),
 	//   65536(или 64k),
 	// Значение по умолчанию —  4k
-	DBPageSize int64
+	DBPageSize int64 `v8:"DBPageSize, optional, equal_sep" json:"db_page_size"`
 }
 
 type CreateServerInfoBaseOptions struct {
-	CreateInfoBaseOptions
+	CreateInfoBaseOptions `v8:",inherit" json:"common"`
 
 	//имя сервера «1С:Предприятия» в формате: [<протокол>://]<адрес>[:<порт>], где:
 	//<протокол> – не обязателен, поддерживается только протокол TCP,
 	//<адрес> – имя сервера или IP-адрес сервера в форматах IPv4 или IPv6,
 	//<порт> – не обязателен, порт главного менеджера кластера, по умолчанию равен 1541.
-	Srvr string
+	Srvr string `v8:"Srvr, equal_sep" json:"server"`
 
 	//имя информационной базы на сервере "1С:Предприятия";
-	Ref string
+	Ref string `v8:"Ref, equal_sep" json:"ref"`
 
 	//тип используемого сервера баз данных:
 	// MSSQLServer — Microsoft SQL Server;
 	// PostgreSQL — PostgreSQL;
 	// IBMDB2 — IBM DB2;
 	// OracleDatabase — Oracle Database.
-	DBMS string
+	DBMS string `v8:"DBMS, equal_sep" json:"dbms"`
 
 	//имя сервера баз данных;
-	DBSrvr string
+	DBSrvr string `v8:"DBSrvr, equal_sep" json:"db_srvr"`
 
 	// имя базы данных в сервере баз данных;
-	DB string
+	DB string `v8:"DB, equal_sep" json:"db_ref"`
 
 	//имя пользователя сервера баз данных;
-	DBUID string
+	DBUID string `v8:"DBUID, equal_sep" json:"db_user"`
 
 	//пароль пользователя сервера баз данных.
 	// Если пароль для пользователя сервера баз данных не задан,
 	// то данный параметр можно не указывать;
-	DBPwd string
+	DBPwd string `v8:"DBPwd, optional, equal_sep" json:"db_pwd"`
 
 	// смещение дат, используемое для хранения дат в Microsoft SQL Server.
 	// Может принимать значения 0 или 2000.
 	// Данный параметр задавать не обязательно. Если не задан, принимается значение 0;
-	SQLYOffs int32
+	SQLYOffs int32 `v8:"SQLYOffs, optional, equal_sep" json:"sql_year_offs"`
 
 	// язык (страна), (аналогично файловому варианту);
-	Locale string
+	Locale string `v8:"Locale, optional, equal_sep" json:"locale"`
 
 	// создать базу данных в случае ее отсутствия ("Y"|"N".
 	// "Y" — создавать базу данных в случае отсутствия,
 	// "N" — не создавать. Значение по умолчанию — N).
-	CrSQLDB bool
+	CrSQLDB bool `v8:"CrSQLDB, optional, equal_sep, bool_true=Y" json:"create_db"`
 
 	// в созданной информационной базе запретить выполнение регламентных созданий (Y/N).
 	// Значение по умолчанию — N;
-	SchJobDn bool
+	SchJobDn bool `v8:"SchJobDn, optional, equal_sep, bool_true=Y" json:"sch_job_on"`
 
 	// имя администратора кластера, в котором должен быть создан начальный образ.
 	// Параметр необходимо задавать, если в кластере определены администраторы
 	// и для них аутентификация операционной системы не установлена или не подходит;
-	SUsr string
+	SUsr string `v8:"SUsr, optional, equal_sep" json:"cluster_user"`
 
 	// пароль администратора кластера.
-	SPwd string
+	SPwd string `v8:"SPwd, optional, equal_sep" json:"cluster_pwd"`
 }
 
 func (d CreateInfoBaseOptions) Command() string {
@@ -122,18 +126,17 @@ func (d CreateInfoBaseOptions) Check() error {
 	return nil
 }
 
-func (d CreateInfoBaseOptions) Values() (values []string, err error) {
+func (d CreateInfoBaseOptions) Values() types.Values {
 
-	return v8Marshal(d)
+	v, _ := marshaler.Marshal(d)
+	return v
 
 }
 
-func newDefaultCreateInfoBase() CreateInfoBaseOptions {
+func NewCreateInfoBase() CreateInfoBaseOptions {
 
 	d := CreateInfoBaseOptions{
-		DisableStartupDialogs:  true,
-		DisableStartupMessages: true,
-		Visible:                false,
+		DisableStartupDialogs: true,
 	}
 
 	return d
@@ -184,11 +187,7 @@ func (fileIB CreateFileInfoBaseOptions) CreateString() (string, error) {
 
 func (d CreateFileInfoBaseOptions) Values() types.Values {
 
-	values, err = v8Marshal(d)
-
-	str, _ := d.CreateString()
-	values = append(values, str)
-
-	return
+	v, _ := marshaler.Marshal(d)
+	return v
 
 }

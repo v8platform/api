@@ -1,8 +1,9 @@
-package v8marshaler
+package marshaler
 
 import (
 	"errors"
 	"fmt"
+	"github.com/Khorevaa/go-v8runner/types"
 	"reflect"
 	"strconv"
 	"time"
@@ -16,15 +17,22 @@ type Unmarshaler interface {
 	UnmarshalV8() (string, error)
 }
 
-func Marshal(object interface{}) ([]string, error) {
+func Marshal(object interface{}) (types.Values, error) {
+
+	fieldsList := make(types.Values)
 
 	if object == nil || (reflect.ValueOf(object).Kind() == reflect.Ptr && reflect.ValueOf(object).IsNil()) {
-		return []string{}, nil
+		return fieldsList, nil
 	}
 
-	var fieldsList []string
+	rType := reflect.TypeOf(object)
+	if _, ok := rType.(reflect.Type); !ok {
+		rType = rType.Elem()
+	}
 
-	rType := reflect.TypeOf(object).Elem()
+	if rType.Kind() == reflect.Ptr {
+		rType = rType.Elem()
+	}
 	fieldsCount := rType.NumField()
 
 	v := reflect.ValueOf(object)
@@ -39,7 +47,8 @@ func Marshal(object interface{}) ([]string, error) {
 		}
 
 		if field.Name == CommandFieldName {
-			fieldsList = append(fieldsList, fieldInfo.Name)
+
+			fieldsList[fieldInfo.Name] = fieldInfo.Name
 			continue
 		}
 
@@ -57,7 +66,8 @@ func Marshal(object interface{}) ([]string, error) {
 					return nil, err
 				}
 
-				fieldsList = append(fieldsList, inheritFeild...)
+				appendMaps(fieldsList, inheritFeild)
+
 				continue
 			}
 		}
@@ -84,7 +94,7 @@ func Marshal(object interface{}) ([]string, error) {
 				continue
 			}
 
-			fieldsList = append(fieldsList, fieldArg)
+			fieldsList[fieldInfo.Name] = fieldArg
 
 		case time.Time, *time.Time:
 			// Although time.Time implements TextMarshaler,
@@ -105,7 +115,7 @@ func Marshal(object interface{}) ([]string, error) {
 				continue
 			}
 
-			fieldsList = append(fieldsList, fieldArg)
+			fieldsList[fieldInfo.Name] = fieldArg
 
 		case bool:
 
@@ -115,17 +125,33 @@ func Marshal(object interface{}) ([]string, error) {
 				continue
 			}
 
+			if needFieldValue(v, fieldInfo) {
+				continue
+			}
+
 			fieldArg := fieldInfo.Name
-			fieldsList = append(fieldsList, fieldArg)
+
+			if v && len(fieldInfo.TrueFormat) > 0 {
+
+				fieldArg = getArgValue(fieldInfo.TrueFormat, fieldInfo)
+			}
+
+			fieldsList[fieldInfo.Name] = fieldArg
 
 		case int, int32, int64:
 
-			fieldArg := getArgValue(strconv.FormatInt(iface.(int64), 10), fieldInfo)
+			v, _ := iface.(int64)
+
+			if v == 0 {
+				continue
+			}
+
+			fieldArg := getArgValue(strconv.FormatInt(v, 10), fieldInfo)
 			if len(fieldArg) == 0 {
 				continue
 			}
 
-			fieldsList = append(fieldsList, fieldArg)
+			fieldsList[fieldInfo.Name] = fieldArg
 
 		case nil:
 			continue
@@ -148,7 +174,15 @@ func getArgValue(value string, fieldInfo *FieldTagInfo) string {
 		return ""
 	}
 
-	fieldArg := fieldInfo.Name + " " + value
+	if fieldInfo.DoubleQuotes {
+		value = fmt.Sprintf("\"\"%s\"\"", value)
+	}
+
+	if fieldInfo.OneQuotes {
+		value = fmt.Sprintf("'%s'", value)
+	}
+
+	fieldArg := fieldInfo.Name + fieldInfo.Sep + value
 
 	return fieldArg
 }
@@ -159,11 +193,31 @@ func newNeedValueError(field reflect.StructField) error {
 
 }
 
-func needFieldValue(value string, tagInfo *FieldTagInfo) bool {
+func needFieldValue(value interface{}, tagInfo *FieldTagInfo) bool {
 
 	if tagInfo.Optional {
 		return false
 	}
 
-	return len(value) == 0
+	switch value.(type) {
+
+	case bool:
+		v, _ := value.(bool)
+		return v
+	case string:
+		v, _ := value.(string)
+		return len(v) == 0
+	default:
+		return false
+	}
+
+}
+
+func appendMaps(m1, m2 map[string]string) {
+
+	for s, s2 := range m2 {
+
+		m1[s] = s2
+	}
+
 }

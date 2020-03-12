@@ -1,4 +1,4 @@
-package v8marshaler
+package marshaler
 
 import (
 	"fmt"
@@ -26,24 +26,29 @@ func Tag(data interface{}, tagName, fieldName string) (string, error) {
 }
 
 type FieldTagInfo struct {
-	Name        string
-	Inherit     bool
-	Optional    bool
-	Argument    bool
-	TrueFormat  string
-	FalseFormat string
-	NoSnap      bool
+	Name         string
+	Inherit      bool
+	Optional     bool
+	Argument     bool
+	TrueFormat   string
+	FalseFormat  string
+	NoSnap       bool
+	Sep          string
+	DoubleQuotes bool
+	OneQuotes    bool
 }
 
 func GetFieldTagInfo(sField reflect.StructField) *FieldTagInfo {
 
 	tagsString := sField.Tag.Get(TagNamespace)
-	info := &FieldTagInfo{}
+	info := &FieldTagInfo{Sep: " "}
 	tags := strings.Split(tagsString, TagSeparator)
 
 	for _, v := range tags {
 
-		switch strings.TrimSpace(v) {
+		tag, value := getTagValue(v)
+
+		switch tag {
 
 		case TagInherit:
 
@@ -58,11 +63,36 @@ func GetFieldTagInfo(sField reflect.StructField) *FieldTagInfo {
 			info.Argument = true
 
 		case TagIgnore:
+
 			return nil
+
+		case TagEqualSep:
+
+			info.Sep = "="
+
+		case TagDoubleQuotes:
+
+			info.DoubleQuotes = true
+
+		case TagOneQuotes:
+
+			info.OneQuotes = true
+
+		case TagNoSnap:
+
+			info.Sep = ""
+
+		case TagBoolTrue:
+
+			info.TrueFormat = value
+
+		case TagBoolFalse:
+
+			info.FalseFormat = value
 
 		default:
 
-			info.Name = v
+			info.Name = tag
 
 		}
 
@@ -73,5 +103,21 @@ func GetFieldTagInfo(sField reflect.StructField) *FieldTagInfo {
 	}
 
 	return info
+
+}
+
+func getTagValue(tagValue string) (string, string) {
+
+	str := strings.SplitAfter(tagValue, "=")
+
+	switch len(str) {
+
+	case 1:
+		return strings.TrimSpace(tagValue), ""
+	case 2:
+		return strings.TrimSpace(strings.ReplaceAll(str[0], "=", "")), str[1]
+	default:
+		return strings.TrimSpace(tagValue), ""
+	}
 
 }

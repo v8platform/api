@@ -1,6 +1,9 @@
-package v8
+package designer
 
-import "github.com/Khorevaa/go-v8runner/runner"
+import (
+	"github.com/Khorevaa/go-v8runner/marshaler"
+	"github.com/Khorevaa/go-v8runner/types"
+)
 
 type Designer struct {
 	DisableStartupDialogs  bool `v8:"/DisableStartupDialogs" json:"disable_startup_dialogs"`
@@ -8,33 +11,24 @@ type Designer struct {
 	Visible                bool `v8:"/Visible" json:"visible"`
 }
 
-func (d *Designer) Command() string {
-	return runner.COMMANE_DESIGNER
+func (d Designer) Command() string {
+	return types.COMMANE_DESIGNER
 }
 
-func (d *Designer) Check() error {
+func (d Designer) Check() error {
 
 	return nil
 }
 
-func (d *Designer) Values() (values []string, err error) {
-
-	return v8Marshal(d)
+func (d Designer) Values() types.Values {
+	v, _ := marshaler.Marshal(d)
+	return v
 
 }
 
-func NewDesigner() *Designer {
+func NewDesigner() Designer {
 
-	d := &Designer{
-		//UserOptions: make(map[string]interface{}),
-	}
-
-	return d
-}
-
-func newDefaultDesigner() *Designer {
-
-	d := &Designer{
+	d := Designer{
 		DisableStartupDialogs:  true,
 		DisableStartupMessages: true,
 		Visible:                false,
@@ -44,7 +38,7 @@ func newDefaultDesigner() *Designer {
 }
 
 type LoadCfgOptions struct {
-	*Designer `v8:",inherit" json:"designer"`
+	Designer `v8:",inherit" json:"designer"`
 
 	File string `v8:"/LoadCfg" json:"file"`
 
@@ -52,29 +46,27 @@ type LoadCfgOptions struct {
 	UpdateDBCfg *UpdateDBCfgOptions `v8:",inherit" json:"update_db_cfg"`
 }
 
-func (d *LoadCfgOptions) Values() (values []string, err error) {
+func (d LoadCfgOptions) Values() types.Values {
 
-	return v8Marshal(d)
+	v, _ := marshaler.Marshal(d)
+	return v
 
-}
-
-func (d *LoadCfgOptions) WithUpdateDBCfg(updateDBCfg *UpdateDBCfgOptions) {
-	d.UpdateDBCfg = updateDBCfg
 }
 
 type DumpCfgOptions struct {
-	*Designer `v8:",inherit" json:"designer"`
+	Designer  `v8:",inherit" json:"designer"`
 	File      string `v8:"/DumpCfg" json:"file"`
 	Extension string `v8:"-Extension, optional" json:"extension"`
 }
 
-func (d *DumpCfgOptions) Values() ([]string, error) {
+func (d DumpCfgOptions) Values() types.Values {
 
-	return v8Marshal(d)
+	v, _ := marshaler.Marshal(d)
+	return v
 }
 
 type UpdateCfgOptions struct {
-	*Designer `v8:",inherit" json:"designer"`
+	Designer `v8:",inherit" json:"designer"`
 	//<имя cf | cfu-файла>
 	File string `v8:"/UpdateCfg" json:"file"`
 
@@ -102,21 +94,20 @@ type UpdateCfgOptions struct {
 	UpdateDBCfg *UpdateDBCfgOptions `v8:",inherit" json:"update_db"`
 }
 
-func (d *UpdateCfgOptions) Values() ([]string, error) {
+func (d UpdateCfgOptions) Values() types.Values {
 
-	return v8Marshal(d)
+	v, _ := marshaler.Marshal(d)
+	return v
 
-}
-
-func (d *UpdateCfgOptions) WithUpdateDBCfg(updateDBCfg *UpdateDBCfgOptions) {
-	d.UpdateDBCfg = updateDBCfg
 }
 
 ///UpdateDBCfg [–Dynamic<Режим>] [-BackgroundStart] [-BackgroundCancel]
 //[-BackgroundFinish [-Visible]] [-BackgroundSuspend] [-BackgroundResume]
 //[-WarningsAsErrors] [-Server [-v1|-v2]][-Extension <имя расширения>]
 type UpdateDBCfgOptions struct {
-	*Designer `v8:",inherit" json:"designer"`
+	Designer `v8:",inherit" json:"designer"`
+
+	command struct{} `v8:"/UpdateDBCfg" json:"update_db_configuration"`
 
 	//-Dynamic<Режим> — признак использования динамического обновления. Режим может принимать следующие значения
 	//-Dynamic+ — Значение параметра по умолчанию.
@@ -174,35 +165,38 @@ type UpdateDBCfgOptions struct {
 	Extension string `v8:"-Extension, optional" json:"extension"`
 }
 
-func (d *UpdateDBCfgOptions) Values() ([]string, error) {
+func (d UpdateDBCfgOptions) Values() types.Values {
 
-	return v8Marshal(d)
+	v, _ := marshaler.Marshal(d)
+	return v
 
 }
 
 // /DumpIB <имя файла>
 //— выгрузка информационной базы в командном режиме.
 type DumpIBOptions struct {
-	*Designer `v8:",inherit" json:"designer"`
+	Designer `v8:",inherit" json:"designer"`
 
 	File string `v8:"/DumpIB" json:"file"`
 }
 
-func (d *DumpIBOptions) Values() ([]string, error) {
+func (d DumpIBOptions) Values() types.Values {
 
-	return v8Marshal(d)
+	v, _ := marshaler.Marshal(d)
+	return v
 }
 
 // /RestoreIB <имя файла>
 // — загрузка информационной базы в командном режиме.
 // Если файл информационной базы отсутствует в указанном каталоге, будет создана новая информационная база.
 type RestoreIBOptions struct {
-	*Designer `v8:",inherit" json:"designer"`
+	Designer `v8:",inherit" json:"designer"`
 
 	File string `v8:"/RestoreIB" json:"file"`
 }
 
-func (d *RestoreIBOptions) Values() ([]string, error) {
+func (d RestoreIBOptions) Values() types.Values {
 
-	return v8Marshal(d)
+	v, _ := marshaler.Marshal(d)
+	return v
 }

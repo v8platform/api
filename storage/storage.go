@@ -1,4 +1,10 @@
-package v8
+package storage
+
+import (
+	"github.com/Khorevaa/go-v8runner/designer"
+	"github.com/Khorevaa/go-v8runner/marshaler"
+	"github.com/Khorevaa/go-v8runner/types"
+)
 
 type RepositoryRightType string
 type RepositorySupportEditObjectsType string
@@ -44,8 +50,8 @@ type Repository struct {
 // должен обладать административными правами.
 // Если пользователь с указанным именем существует, то пользователь добавлен не будет.
 type RepositoryAddUserOptions struct {
-	*Designer   `v8:",inherit" json:"designer"`
-	*Repository `v8:",inherit" json:"repository"`
+	designer.Designer `v8:",inherit" json:"designer"`
+	Repository        `v8:",inherit" json:"repository"`
 
 	command struct{} `v8:"/ConfigurationRepositoryAddUser" json:"-"`
 
@@ -71,7 +77,7 @@ type RepositoryAddUserOptions struct {
 	Rights RepositoryRightType `v8:"-Rights" json:"rights"`
 
 	//-RestoreDeletedUser — Если обнаружен удаленный пользователь с таким же именем, он будет восстановлен.
-	RestoreDeletedUser bool `v8:"-RestoreDeletedUser" json:"restore_deleted_user"`
+	RestoreDeletedUser bool `v8:"-RestoreDeletedUser, optional" json:"restore_deleted_user"`
 }
 
 //ConfigurationRepositoryCreate
@@ -84,8 +90,8 @@ type RepositoryAddUserOptions struct {
 // /ConfigurationRepositoryP "123456" /ConfigurationRepositoryCreate - AllowConfigurationChanges
 // -ChangesAllowedRule ObjectNotEditable -ChangesNotRecommendedRule ObjectNotEditable
 type RepositoryCreateOptions struct {
-	*Designer   `v8:",inherit" json:"designer"`
-	*Repository `v8:",inherit" json:"repository"`
+	designer.Designer `v8:",inherit" json:"designer"`
+	Repository        `v8:",inherit" json:"repository"`
 
 	command struct{} `v8:"/ConfigurationRepositoryCreate" json:"-"`
 
@@ -97,7 +103,7 @@ type RepositoryCreateOptions struct {
 	Extension string `v8:"-Extension, optional" json:"extension"`
 
 	//-AllowConfigurationChanges — если конфигурация находится на поддержке без возможности изменения, будет включена возможность изменения.
-	AllowConfigurationChanges bool `v8:"-AllowConfigurationChanges" json:"allow_configuration_changes"`
+	AllowConfigurationChanges bool `v8:"-AllowConfigurationChanges, optional" json:"allow_configuration_changes"`
 
 	//-ChangesAllowedRule <Правило поддержки> — устанавливает правило поддержки для объектов,
 	// для которых изменения разрешены поставщиком. Может быть установлено одно из следующих правил:
@@ -114,5 +120,12 @@ type RepositoryCreateOptions struct {
 	ChangesNotRecommendedRule RepositorySupportEditObjectsType `v8:"-ChangesAllowedRule, optional" json:"changes_not_recommended_rule"`
 
 	//-NoBind — К созданному хранилищу подключение выполнено не будет.
-	NoBind bool `v8:"-NoBind" json:"no_bind"`
+	NoBind bool `v8:"-NoBind, optional" json:"no_bind"`
+}
+
+func (ib RepositoryCreateOptions) Values() types.Values {
+
+	v, _ := marshaler.Marshal(ib)
+	return v
+
 }

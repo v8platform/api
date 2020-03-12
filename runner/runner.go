@@ -15,83 +15,38 @@ import (
 var VERSION_1S = "8.3"
 
 type Runner struct {
-	Options RunOptions
+	Options *Options
 }
 
-func getV8Path(options *RunOptions) (string, error) {
-	if len(options.v8path) > 0 {
-		return options.v8path, nil
+func NewRunner() *Runner {
+
+	return &Runner{
+		Options: defaultOptions(),
 	}
-
-	v8 := VERSION_1S
-	if len(options.Version) > 0 {
-		v8 = options.Version
-	}
-
-	v8path, err := find.PlatformByVersion(v8, find.WithBitness(find.V8_x64x32))
-
-	if err != nil {
-
-		err = errors.NotExist.Newf("Version %s not found", options.Version)
-		errors.AddErrorContext(err, "version", options.Version)
-
-		return "", err
-	}
-
-	return v8path, nil
 
 }
 
-func readOut(file string) (string, error) {
-	b, err := readV8file(file)
-	return string(b), err
-}
+func (r *Runner) Run(where types.InfoBase, what types.Command, opts ...interface{}) error {
 
-func readDumpResult(file string) int {
-
-	b, _ := readV8file(file)
-	code, _ := strconv.ParseInt(string(b), 10, 64)
-	return int(code)
-}
-
-func runCommand(command string, args []string, opts *RunOptions) (err error) {
-
-	cmd := exec.Command(command, args...)
-	err = cmd.Run()
-
-	if err != nil {
-		errors.Runtime.Wrapf(err, "run command exec error")
+	options := r.Options
+	inlineOptions := getOptions(opts...)
+	if inlineOptions != nil {
+		options = inlineOptions
 	}
 
-	return
-}
-
-func runCommandContext(ctx context.Context, command string, args []string, opts *RunOptions) (err error) {
-
-	runCtx := ctx
-	if opts.Timeout > 0 {
-
-		timeout := int64(time.Second) * opts.Timeout
-		ctxTimeout, cancel := context.WithTimeout(ctx, time.Duration(timeout))
-		defer cancel() // The cancel should be deferred so resources are cleaned up
-		runCtx = ctxTimeout
+	if options == nil {
+		options = defaultOptions()
 	}
 
-	cmd := exec.CommandContext(runCtx, command, args...)
+	o := clearOpts(opts)
 
-	err = cmd.Run()
+	options.Options(o...)
 
-	switch {
-	case ctx.Err() == context.DeadlineExceeded:
-		err = errors.Timeout.Wrap(err, "run command context timeout exceeded")
-	case err != nil:
-		err = errors.Runtime.Wrap(err, "run command context exec error")
-	}
+	return r.RunWithOptions(where, what, options)
 
-	return
 }
 
-func RunWithOptions(where types.InfoBase, what types.Command, options *RunOptions) error {
+func (r *Runner) RunWithOptions(where types.InfoBase, what types.Command, options *Options) error {
 
 	checkErr := what.Check()
 	if checkErr != nil {
@@ -156,7 +111,80 @@ func RunWithOptions(where types.InfoBase, what types.Command, options *RunOption
 	return nil
 }
 
-func checkRunResult(options *RunOptions) error {
+func getV8Path(options *Options) (string, error) {
+	if len(options.v8path) > 0 {
+		return options.v8path, nil
+	}
+
+	v8 := VERSION_1S
+	if len(options.Version) > 0 {
+		v8 = options.Version
+	}
+
+	v8path, err := find.PlatformByVersion(v8, find.WithBitness(find.V8_x64x32))
+
+	if err != nil {
+
+		err = errors.NotExist.Newf("Version %s not found", options.Version)
+		_ = errors.AddErrorContext(err, "version", options.Version)
+
+		return "", err
+	}
+
+	return v8path, nil
+
+}
+
+func readOut(file string) (string, error) {
+	b, err := readV8file(file)
+	return string(b), err
+}
+
+func readDumpResult(file string) int {
+
+	b, _ := readV8file(file)
+	code, _ := strconv.ParseInt(string(b), 10, 64)
+	return int(code)
+}
+
+func runCommand(command string, args []string, opts *Options) (err error) {
+
+	cmd := exec.Command(command, args...)
+	err = cmd.Run()
+
+	if err != nil {
+		errors.Runtime.Wrapf(err, "run command exec error")
+	}
+
+	return
+}
+
+func runCommandContext(ctx context.Context, command string, args []string, opts *Options) (err error) {
+
+	runCtx := ctx
+	if opts.Timeout > 0 {
+
+		timeout := int64(time.Second) * opts.Timeout
+		ctxTimeout, cancel := context.WithTimeout(ctx, time.Duration(timeout))
+		defer cancel() // The cancel should be deferred so resources are cleaned up
+		runCtx = ctxTimeout
+	}
+
+	cmd := exec.CommandContext(runCtx, command, args...)
+
+	err = cmd.Run()
+
+	switch {
+	case ctx.Err() == context.DeadlineExceeded:
+		err = errors.Timeout.Wrap(err, "run command context timeout exceeded")
+	case err != nil:
+		err = errors.Runtime.Wrap(err, "run command context exec error")
+	}
+
+	return
+}
+
+func checkRunResult(options *Options) error {
 
 	dumpCode := readDumpResult(options.DumpResult)
 
@@ -197,7 +225,7 @@ func clearValuesForCreateInfobase(v *types.Values) {
 
 }
 
-func getOptionsValues(options *RunOptions) types.Values {
+func getOptionsValues(options *Options) types.Values {
 
 	values := make(types.Values)
 
@@ -213,50 +241,46 @@ func getOptionsValues(options *RunOptions) types.Values {
 
 }
 
-func defaultOptions() *RunOptions {
+func defaultOptions() *Options {
 
-	options := RunOptions{}
+	options := Options{}
 
 	options.NewOutFile()
 	options.NewDumpResultFile()
+	options.customValues = make(types.Values)
+	options.commonValues = make(types.Values)
 
 	return &options
 }
 
-func getOptions(opts ...interface{}) *RunOptions {
+func getOptions(opts ...interface{}) *Options {
 
 	for _, opt := range opts {
 
 		switch opt.(type) {
 
-		case RunOptions:
-			userOptions, _ := opt.(RunOptions)
+		case Options:
+			userOptions, _ := opt.(Options)
 			return &userOptions
-		case *RunOptions:
-			userOptions, _ := opt.(*RunOptions)
+		case *Options:
+			userOptions, _ := opt.(*Options)
 			return userOptions
 		}
 
 	}
 
-	return defaultOptions()
-
+	return nil
 }
 
-func applyRunOptions(options *RunOptions, opts ...interface{}) {
+func clearOpts(opts []interface{}) []Option {
+
+	var o []Option
+
 	for _, opt := range opts {
 
 		if fn, ok := opt.(Option); ok {
-			fn(options)
+			o = append(o, fn)
 		}
 	}
-}
-
-func Run(where types.InfoBase, what types.Command, opts ...interface{}) error {
-
-	options := getOptions(opts...)
-	applyRunOptions(options, opts...)
-
-	return RunWithOptions(where, what, options)
-
+	return o
 }

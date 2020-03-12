@@ -1,6 +1,7 @@
-package v8marshaler
+package marshaler
 
 import (
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -12,27 +13,27 @@ type marshalTestSuite struct {
 func TestMarshaler(t *testing.T) {
 	suite.Run(t, new(marshalTestSuite))
 }
+func (s *marshalTestSuite) r() *require.Assertions {
+	return s.Require()
+}
 
-func (t *marshalTestSuite) TestUnmarshalRepository() {
+func (t *marshalTestSuite) TestMarshalStrings() {
 
-	object := &RepositoryCreateOptions{
-		Designer: newDefaultDesigner(),
-		Repository: &Repository{
-			Path: "/tem/",
-			User: "Администратор",
-		},
-		Extension:                 "temp",
-		AllowConfigurationChanges: false,
-		//ChangesAllowedRule:        REPOSITORY_SUPPORT_IS_EDITABLE,
-		//ChangesNotRecommendedRule: REPOSITORY_SUPPORT_NOT_EDITABLE,
-		NoBind: true,
+	type test struct {
+		command struct{} `v8:"/command"`
+
+		Str    string `v8:"-str"`
+		StrOpt string `v8:"-strOpt, optional"`
 	}
+	object := test{}
+	object.Str = "TesString"
+	object.StrOpt = "TesOptString"
 
-	args, err := v8Marshal(object)
+	values, err := Marshal(object)
 
 	t.r().NoError(err)
 
-	t.r().Equal(len(args), 1, "len must be equal")
+	t.r().Equal(values["-str"], "-str "+object.Str, "must be equal")
 	//t.r().Equal(codes[0].PromocodeID, "START", "Промокод должен быть START")
 
 }
