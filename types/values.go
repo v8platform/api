@@ -54,6 +54,10 @@ func (v *Values) Set(key string, sep ValueSep, value string) {
 
 func (v *Values) Map(key string, value string) {
 
+	if v.index == nil {
+		v.index = make(map[string]int)
+	}
+
 	index, ok := v.index[key]
 
 	if ok {

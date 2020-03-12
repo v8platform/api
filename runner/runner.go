@@ -19,17 +19,24 @@ type Runner struct {
 	Options *Options
 }
 
-func NewRunner() *Runner {
+func NewRunner(opts ...Option) *Runner {
 
-	return &Runner{
+	r := &Runner{
 		Options: defaultOptions(),
 	}
+
+	r.Options.Options(opts...)
+
+	return r
 
 }
 
 func (r *Runner) Run(where types.InfoBase, what types.Command, opts ...interface{}) error {
 
-	options := r.Options
+	copyOptions := *r.Options
+
+	options := &copyOptions
+
 	inlineOptions := getOptions(opts...)
 	if inlineOptions != nil {
 		options = inlineOptions
@@ -43,11 +50,11 @@ func (r *Runner) Run(where types.InfoBase, what types.Command, opts ...interface
 
 	options.Options(o...)
 
-	return r.RunWithOptions(where, what, options)
+	return r.RunWithOptions(where, what, *options)
 
 }
 
-func (r *Runner) RunWithOptions(where types.InfoBase, what types.Command, options *Options) error {
+func (r *Runner) RunWithOptions(where types.InfoBase, what types.Command, options Options) error {
 
 	checkErr := what.Check()
 	if checkErr != nil {
@@ -71,9 +78,9 @@ func (r *Runner) RunWithOptions(where types.InfoBase, what types.Command, option
 		values.Append(*what.Values())
 	}
 
-	values.Append(*options.commonValues)
-	values.Append(*getOptionsValues(options))
-	values.Append(*options.customValues)
+	values.Append(options.commonValues)
+	values.Append(*options.Values())
+	values.Append(options.customValues)
 
 	var args []string
 
@@ -91,9 +98,20 @@ func (r *Runner) RunWithOptions(where types.InfoBase, what types.Command, option
 	var errRun error
 
 	if options.Context != nil {
-		errRun = runCommandContext(options.Context, commandV8, args, options)
+
+		runCtx := options.Context
+
+		if options.Timeout > 0 {
+
+			timeout := int64(time.Second) * options.Timeout
+			ctxTimeout, cancel := context.WithTimeout(runCtx, time.Duration(timeout))
+			defer cancel() // The cancel should be deferred so resources are cleaned up
+			runCtx = ctxTimeout
+		}
+
+		errRun = runCommandContext(runCtx, commandV8, args)
 	} else {
-		errRun = runCommand(commandV8, args, options)
+		errRun = runCommand(commandV8, args)
 	}
 
 	if errRun != nil {
@@ -111,7 +129,7 @@ func (r *Runner) RunWithOptions(where types.InfoBase, what types.Command, option
 	return nil
 }
 
-func getV8Path(options *Options) (string, error) {
+func getV8Path(options Options) (string, error) {
 	if len(options.v8path) > 0 {
 		return options.v8path, nil
 	}
@@ -147,7 +165,7 @@ func readDumpResult(file string) int {
 	return int(code)
 }
 
-func runCommand(command string, args []string, opts *Options) (err error) {
+func runCommand(command string, args []string) (err error) {
 
 	cmd := exec.Command(command, args...)
 	err = cmd.Run()
@@ -159,18 +177,9 @@ func runCommand(command string, args []string, opts *Options) (err error) {
 	return
 }
 
-func runCommandContext(ctx context.Context, command string, args []string, opts *Options) (err error) {
+func runCommandContext(ctx context.Context, command string, args []string) (err error) {
 
-	runCtx := ctx
-	if opts.Timeout > 0 {
-
-		timeout := int64(time.Second) * opts.Timeout
-		ctxTimeout, cancel := context.WithTimeout(ctx, time.Duration(timeout))
-		defer cancel() // The cancel should be deferred so resources are cleaned up
-		runCtx = ctxTimeout
-	}
-
-	cmd := exec.CommandContext(runCtx, command, args...)
+	cmd := exec.CommandContext(ctx, command, args...)
 
 	err = cmd.Run()
 
@@ -184,7 +193,7 @@ func runCommandContext(ctx context.Context, command string, args []string, opts 
 	return
 }
 
-func checkRunResult(options *Options) error {
+func checkRunResult(options Options) error {
 
 	dumpCode := readDumpResult(options.DumpResult)
 
@@ -225,30 +234,14 @@ func clearValuesForCreateInfobase(v *types.Values) {
 
 }
 
-func getOptionsValues(options *Options) *types.Values {
-
-	values := types.NewValues()
-
-	outValue := options.Out
-	if options.NoTruncate {
-		outValue += " -NoTruncate"
-	}
-
-	values.Set("/Out", types.SpaceSep, outValue)
-	values.Set("/DumpResult", types.SpaceSep, options.DumpResult)
-
-	return values
-
-}
-
 func defaultOptions() *Options {
 
 	options := Options{}
 
 	options.NewOutFile()
 	options.NewDumpResultFile()
-	options.customValues = types.NewValues()
-	options.commonValues = types.NewValues()
+	//options.customValues = *types.NewValues()
+	//options.commonValues = *types.NewValues()
 
 	return &options
 }

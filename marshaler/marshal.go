@@ -202,8 +202,8 @@ func needFieldValue(value interface{}, tagInfo *FieldTagInfo) bool {
 	switch value.(type) {
 
 	case bool:
-		v, _ := value.(bool)
-		return v
+		//v, _ := value.(bool)
+		return false
 	case string:
 		v, _ := value.(string)
 		return len(v) == 0

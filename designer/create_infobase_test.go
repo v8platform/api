@@ -125,7 +125,7 @@ func (t *createInfoBaseTestSuite) TestMarshal() {
 	//	v := cas.test.Values()
 	//
 	//	for s, s2 := range cas.values {
-	//		t.r().Equal(v[s], s2, "Значения должны совпадать")
+	//		t.R().Equal(v[s], s2, "Значения должны совпадать")
 	//	}
 	//
 	//}

@@ -19,13 +19,21 @@ type Options struct {
 	tempDumpResult bool
 	v8path         string
 	Context        context.Context
-	commonValues   *types.Values
-	customValues   *types.Values
+	commonValues   types.Values
+	customValues   types.Values
 }
 
 func (ro *Options) Option(fn Option) {
 
 	fn(ro)
+
+}
+
+func (ro *Options) setCustomValue(key string, sep types.ValueSep, value string) {
+
+	cm := &ro.customValues
+	cm.Set(key, sep, value)
+	ro.customValues = *cm
 
 }
 
@@ -35,6 +43,20 @@ func (ro *Options) Options(opts ...Option) {
 		ro.Option(fn)
 	}
 
+}
+
+func (ro Options) Values() *types.Values {
+	values := types.NewValues()
+
+	outValue := ro.Out
+	if ro.NoTruncate {
+		outValue += " -NoTruncate"
+	}
+
+	values.Set("/Out", types.SpaceSep, outValue)
+	values.Set("/DumpResult", types.SpaceSep, ro.DumpResult)
+
+	return values
 }
 
 func (ro *Options) NewOutFile() {
@@ -128,7 +150,7 @@ func WithVersion(version string) Option {
 
 func WithCommonValues(cv types.ValuesInterface) Option {
 	return func(r *Options) {
-		r.commonValues = cv.Values()
+		r.commonValues = *cv.Values()
 	}
 }
 
@@ -140,10 +162,10 @@ func WithCredentials(user, password string) Option {
 			return
 		}
 
-		r.customValues.Set("/U", types.SpaceSep, user)
+		r.setCustomValue("/U", types.SpaceSep, user)
 
 		if len(password) > 0 {
-			r.customValues.Set("/P", types.SpaceSep, password)
+			r.setCustomValue("/P", types.SpaceSep, password)
 		}
 	}
 }
@@ -156,7 +178,7 @@ func WithUnlockCode(uc string) Option {
 			return
 		}
 
-		r.customValues.Set("/UC", types.SpaceSep, uc)
+		r.setCustomValue("/UC", types.SpaceSep, uc)
 
 	}
 }
