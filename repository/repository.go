@@ -99,7 +99,7 @@ func (ib RepositoryCreateOptions) Check() error {
 
 	if ib.AllowConfigurationChanges && (len(ib.ChangesNotRecommendedRule) == 0 || len(ib.ChangesAllowedRule) == 0) {
 
-		return errors.Check.New("configuration changes must be set").WithContext("msg", "feild ChangesNotRecommendedRule or ChangesAllowedRule not set")
+		return errors.Check.New("configuration changes must be set").WithContext("msg", "field ChangesNotRecommendedRule or ChangesAllowedRule not set")
 
 	}
 
