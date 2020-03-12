@@ -13,7 +13,7 @@ type Common struct {
 
 func (cv Common) Values() *types.Values {
 
-	v := make(types.Values)
+	v := types.NewValues()
 
 	if cv.Visible {
 		v.Set("/Visible", types.NoSep, "")
