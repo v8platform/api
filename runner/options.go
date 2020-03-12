@@ -19,8 +19,8 @@ type Options struct {
 	tempDumpResult bool
 	v8path         string
 	Context        context.Context
-	commonValues   types.Values
-	customValues   types.Values
+	commonValues   *types.Values
+	customValues   *types.Values
 }
 
 func (ro *Options) Option(fn Option) {

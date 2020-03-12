@@ -126,7 +126,7 @@ func (d CreateInfoBaseOptions) Check() error {
 	return nil
 }
 
-func (d CreateInfoBaseOptions) Values() types.Values {
+func (d CreateInfoBaseOptions) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(d)
 	return v
@@ -185,7 +185,7 @@ func (fileIB CreateFileInfoBaseOptions) CreateString() (string, error) {
 	return connString, nil
 }
 
-func (d CreateFileInfoBaseOptions) Values() types.Values {
+func (d CreateFileInfoBaseOptions) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(d)
 	return v

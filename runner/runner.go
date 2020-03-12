@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"fmt"
 	"github.com/Khorevaa/go-v8runner/find"
 	"github.com/Khorevaa/go-v8runner/types"
 	"os/exec"
@@ -59,30 +60,29 @@ func (r *Runner) RunWithOptions(where types.InfoBase, what types.Command, option
 		return err
 	}
 
-	values := make(types.Values)
+	values := types.NewValues()
 
 	connectString := where.Values()
-	values.Set("/IBConnectionString", types.SpaceSep, strings.Join(connectString.Values(), ";"))
 
 	if what.Command() == types.COMMAND_CREATEINFOBASE {
-		connectString.Append(what.Values())
+		connectString.Append(*what.Values())
 	} else {
-		values.Append(what.Values())
+		values.Set("/IBConnectionString", types.SpaceSep, fmt.Sprintf("%s;", strings.Join(connectString.Values(), ";")))
+		values.Append(*what.Values())
 	}
 
-	values.Append(options.commonValues)
-	values.Append(getOptionsValues(options))
-	values.Append(options.customValues)
+	values.Append(*options.commonValues)
+	values.Append(*getOptionsValues(options))
+	values.Append(*options.customValues)
 
 	var args []string
 
 	args = append(args, what.Command())
 	if what.Command() == types.COMMAND_CREATEINFOBASE {
 
-		values.Del("/IBConnectionString")
 		args = append(args, strings.Join(connectString.Values(), ";"))
 
-		clearValuesForCreateInfobase(&values)
+		clearValuesForCreateInfobase(values)
 	}
 	args = append(args, values.Values()...)
 
@@ -225,9 +225,9 @@ func clearValuesForCreateInfobase(v *types.Values) {
 
 }
 
-func getOptionsValues(options *Options) types.Values {
+func getOptionsValues(options *Options) *types.Values {
 
-	values := make(types.Values)
+	values := types.NewValues()
 
 	outValue := options.Out
 	if options.NoTruncate {
@@ -247,8 +247,8 @@ func defaultOptions() *Options {
 
 	options.NewOutFile()
 	options.NewDumpResultFile()
-	options.customValues = make(types.Values)
-	options.commonValues = make(types.Values)
+	options.customValues = types.NewValues()
+	options.commonValues = types.NewValues()
 
 	return &options
 }

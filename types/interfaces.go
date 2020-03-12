@@ -6,7 +6,7 @@ type InfoBase interface {
 }
 
 type ValuesInterface interface {
-	Values() Values
+	Values() *Values
 }
 
 type Command interface {

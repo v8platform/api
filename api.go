@@ -6,6 +6,7 @@ import (
 	"github.com/Khorevaa/go-v8runner/infobase"
 	"github.com/Khorevaa/go-v8runner/runner"
 	"github.com/Khorevaa/go-v8runner/types"
+	"io/ioutil"
 )
 
 func Run(where types.InfoBase, what types.Command, opts ...interface{}) error {
@@ -105,7 +106,7 @@ func RestoreIB(file string) designer.RestoreIBOptions {
 	return command
 }
 
-func CreateInfoBase() designer.CreateInfoBaseOptions {
+func CreateInfoBbase() designer.CreateInfoBaseOptions {
 
 	command := designer.NewCreateInfoBase()
 
@@ -163,4 +164,22 @@ func NewServerIB(srvr, ref string) infobase.ServerInfoBase {
 	}
 
 	return ib
+}
+
+func NewTempFile(dir, pattern string) string {
+
+	tempFile, _ := ioutil.TempFile(dir, pattern)
+
+	defer tempFile.Close()
+
+	return tempFile.Name()
+
+}
+
+func NewTempDir(dir, pattern string) string {
+
+	t, _ := ioutil.TempDir(dir, pattern)
+
+	return t
+
 }

@@ -1,4 +1,4 @@
-package storage
+package repository
 
 import (
 	"github.com/Khorevaa/go-v8runner/designer"
@@ -14,7 +14,7 @@ import (
 	"testing"
 )
 
-type storageTestSuite struct {
+type baseRepositoryTestSuite struct {
 	suite.Suite
 	tempIB types.InfoBase
 	v8path string
@@ -23,15 +23,19 @@ type storageTestSuite struct {
 	pwd    string
 }
 
-func TestStorage(t *testing.T) {
-	suite.Run(t, new(storageTestSuite))
+type RepositoryTestSuite struct {
+	baseRepositoryTestSuite
 }
 
-func (s *storageTestSuite) r() *require.Assertions {
+func TestRepository(t *testing.T) {
+	suite.Run(t, new(RepositoryTestSuite))
+}
+
+func (s *baseRepositoryTestSuite) r() *require.Assertions {
 	return s.Require()
 }
 
-func (t *storageTestSuite) SetupSuite() {
+func (t *baseRepositoryTestSuite) SetupSuite() {
 	t.runner = runner.NewRunner()
 	ibPath, _ := ioutil.TempDir("", "1c_DB_")
 	t.ibPath = ibPath
@@ -41,19 +45,19 @@ func (t *storageTestSuite) SetupSuite() {
 
 }
 
-func (t *storageTestSuite) AfterTest(suite, testName string) {
+func (t *baseRepositoryTestSuite) AfterTest(suite, testName string) {
 	t.clearTempInfoBase()
 }
 
-func (t *storageTestSuite) BeforeTest(suite, testName string) {
+func (t *baseRepositoryTestSuite) BeforeTest(suite, testName string) {
 	t.createTempInfoBase()
 }
 
-func (t *storageTestSuite) TearDownTest() {
+func (t *baseRepositoryTestSuite) TearDownTest() {
 
 }
 
-func (t *storageTestSuite) createTempInfoBase() {
+func (t *baseRepositoryTestSuite) createTempInfoBase() {
 
 	ib := infobase.NewFileIB(t.ibPath)
 
@@ -66,13 +70,13 @@ func (t *storageTestSuite) createTempInfoBase() {
 
 }
 
-func (t *storageTestSuite) clearTempInfoBase() {
+func (t *baseRepositoryTestSuite) clearTempInfoBase() {
 
 	err := os.RemoveAll(t.ibPath)
 	t.r().NoError(err)
 }
 
-func (t *storageTestSuite) TestCreateStorage() {
+func (t *RepositoryTestSuite) TestCreateRepository() {
 
 	confFile := path.Join(t.pwd, "..", "tests", "fixtures", "0.9", "1Cv8.cf")
 
@@ -88,10 +92,12 @@ func (t *storageTestSuite) TestCreateStorage() {
 	createOptions := RepositoryCreateOptions{
 		Repository: Repository{
 			Path: repPath,
+			User: "admin",
 		},
 		NoBind:                    true,
 		AllowConfigurationChanges: true,
-		ChangesAllowedRule:        REPOSITORY_SUPPORT_IS_EDITABLE,
+		ChangesAllowedRule:        REPOSITORY_SUPPORT_NOT_SUPPORTED,
+		ChangesNotRecommendedRule: REPOSITORY_SUPPORT_NOT_SUPPORTED,
 	}
 
 	err = t.runner.Run(t.tempIB, createOptions,

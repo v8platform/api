@@ -21,7 +21,7 @@ func (d Enterprise) Check() error {
 	return nil
 }
 
-func (e Enterprise) Values() types.Values {
+func (e Enterprise) Values() *types.Values {
 	v, _ := marshaler.Marshal(e)
 	return v
 
@@ -39,6 +39,12 @@ func NewEnterprise() Enterprise {
 // непосредственно после старта системы.
 //
 type ExecuteOptions struct {
-	Enterprise
-	File string
+	Enterprise `v8:",inherit" json:"enterprise"`
+	File       string `v8:"/Execute" json:"file"`
+}
+
+func (e ExecuteOptions) Values() *types.Values {
+	v, _ := marshaler.Marshal(e)
+	return v
+
 }

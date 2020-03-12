@@ -1,7 +1,8 @@
-package storage
+package repository
 
 import (
 	"github.com/Khorevaa/go-v8runner/designer"
+	"github.com/Khorevaa/go-v8runner/errors"
 	"github.com/Khorevaa/go-v8runner/marshaler"
 	"github.com/Khorevaa/go-v8runner/types"
 )
@@ -10,10 +11,10 @@ type RepositoryRightType string
 type RepositorySupportEditObjectsType string
 
 const (
-	STORAGE_RIGHT_READ            RepositoryRightType = "ReadOnly"
-	STORAGE_RIGHT_LOCK                                = "LockObjects"
-	STORAGE_RIGHT_MANAGE_VERSIONS                     = "ManageConfigurationVersions"
-	STORAGE_RIGHT_ADMIN                               = "Administration"
+	REPOSITORY_RIGHT_READ            RepositoryRightType = "ReadOnly"
+	REPOSITORY_RIGHT_LOCK                                = "LockObjects"
+	REPOSITORY_RIGHT_MANAGE_VERSIONS                     = "ManageConfigurationVersions"
+	REPOSITORY_RIGHT_ADMIN                               = "Administration"
 )
 
 const (
@@ -42,42 +43,6 @@ type Repository struct {
 	///ConfigurationRepositoryP <пароль>
 	//— указание пароля пользователя хранилища.
 	Password string `v8:"/ConfigurationRepositoryP, optional" json:"password"`
-}
-
-///ConfigurationRepositoryAddUser [-Extension <имя расширения>] -User <Имя> -Pwd <Пароль> -Rights <Права> [-RestoreDeletedUser]
-//— создание пользователя хранилища конфигурации.
-// Пользователь, от имени которого выполняется подключение к хранилищу,
-// должен обладать административными правами.
-// Если пользователь с указанным именем существует, то пользователь добавлен не будет.
-type RepositoryAddUserOptions struct {
-	designer.Designer `v8:",inherit" json:"designer"`
-	Repository        `v8:",inherit" json:"repository"`
-
-	command struct{} `v8:"/ConfigurationRepositoryAddUser" json:"-"`
-
-	//-Extension <имя расширения> — Имя расширения.
-	// Если параметр не указан, выполняется попытка соединения с хранилищем основной конфигурации,
-	// и команда выполняется для основной конфигурации.
-	// Если параметр указан, выполняется попытка соединения с
-	// хранилищем указанного расширения, и команда выполняется для этого хранилища.
-	Extension string `v8:"-Extension, optional" json:"extension"`
-
-	//-User — Имя создаваемого пользователя.
-	NewUser string `v8:"-User" json:"user"`
-
-	//-Pwd — Пароль создаваемого пользователя.
-	NewPassword string `v8:"-pwd, optional" json:"pwd"`
-
-	//-Rights — Права пользователя. Возможные значения:
-	//	ReadOnly — право на просмотр,
-	//	LockObjects — право на захват объектов,
-	//	ManageConfigurationVersions — право на изменение состава версий,
-	//	Administration — право на административные функции.
-	//
-	Rights RepositoryRightType `v8:"-Rights" json:"rights"`
-
-	//-RestoreDeletedUser — Если обнаружен удаленный пользователь с таким же именем, он будет восстановлен.
-	RestoreDeletedUser bool `v8:"-RestoreDeletedUser, optional" json:"restore_deleted_user"`
 }
 
 //ConfigurationRepositoryCreate
@@ -117,15 +82,27 @@ type RepositoryCreateOptions struct {
 	//	ObjectNotEditable - Объект поставщика не редактируется,
 	//	ObjectIsEditableSupportEnabled - Объект поставщика редактируется с сохранением поддержки,
 	//	ObjectNotSupported - Объект поставщика снят с поддержки.
-	ChangesNotRecommendedRule RepositorySupportEditObjectsType `v8:"-ChangesAllowedRule, optional" json:"changes_not_recommended_rule"`
+	ChangesNotRecommendedRule RepositorySupportEditObjectsType `v8:"-ChangesNotRecommendedRule, optional" json:"changes_not_recommended_rule"`
 
 	//-NoBind — К созданному хранилищу подключение выполнено не будет.
 	NoBind bool `v8:"-NoBind, optional" json:"no_bind"`
 }
 
-func (ib RepositoryCreateOptions) Values() types.Values {
+func (ib RepositoryCreateOptions) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(ib)
 	return v
+
+}
+
+func (ib RepositoryCreateOptions) Check() error {
+
+	if ib.AllowConfigurationChanges && (len(ib.ChangesNotRecommendedRule) == 0 || len(ib.ChangesAllowedRule) == 0) {
+
+		return errors.Check.New("configuration changes must be set").WithContext("msg", "feild ChangesNotRecommendedRule or ChangesAllowedRule not set")
+
+	}
+
+	return nil
 
 }

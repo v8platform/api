@@ -20,7 +20,7 @@ func (d Designer) Check() error {
 	return nil
 }
 
-func (d Designer) Values() types.Values {
+func (d Designer) Values() *types.Values {
 	v, _ := marshaler.Marshal(d)
 	return v
 
@@ -46,7 +46,7 @@ type LoadCfgOptions struct {
 	UpdateDBCfg *UpdateDBCfgOptions `v8:",inherit" json:"update_db_cfg"`
 }
 
-func (d LoadCfgOptions) Values() types.Values {
+func (d LoadCfgOptions) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(d)
 	return v
@@ -59,7 +59,7 @@ type DumpCfgOptions struct {
 	Extension string `v8:"-Extension, optional" json:"extension"`
 }
 
-func (d DumpCfgOptions) Values() types.Values {
+func (d DumpCfgOptions) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(d)
 	return v
@@ -94,7 +94,7 @@ type UpdateCfgOptions struct {
 	UpdateDBCfg *UpdateDBCfgOptions `v8:",inherit" json:"update_db"`
 }
 
-func (d UpdateCfgOptions) Values() types.Values {
+func (d UpdateCfgOptions) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(d)
 	return v
@@ -165,7 +165,7 @@ type UpdateDBCfgOptions struct {
 	Extension string `v8:"-Extension, optional" json:"extension"`
 }
 
-func (d UpdateDBCfgOptions) Values() types.Values {
+func (d UpdateDBCfgOptions) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(d)
 	return v
@@ -180,7 +180,7 @@ type DumpIBOptions struct {
 	File string `v8:"/DumpIB" json:"file"`
 }
 
-func (d DumpIBOptions) Values() types.Values {
+func (d DumpIBOptions) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(d)
 	return v
@@ -195,7 +195,7 @@ type RestoreIBOptions struct {
 	File string `v8:"/RestoreIB" json:"file"`
 }
 
-func (d RestoreIBOptions) Values() types.Values {
+func (d RestoreIBOptions) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(d)
 	return v

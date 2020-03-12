@@ -40,19 +40,30 @@ func (t *v8runnerTestSuite) TearDownTest() {
 
 }
 
-func (t *v8runnerTestSuite) TestCreateTempInfoBase() {
+func (t *v8runnerTestSuite) TestCreateTempInfobase() {
 
 	ib := NewTempIB()
 
 	err := Run(ib, CreateFileInfoBase(ib.File),
 		WithVersion("8.3"),
 		WithTimeout(30),
-		//WithOut("F:\\github\\github\\go-v8runner\\log.txt", false),
 	)
 
 	t.r().NoError(err)
 
-	//t.r().Equal(len(codes), 1, "Промокод должен быть START")
-	//t.r().Equal(codes[0].PromocodeID, "START", "Промокод должен быть START")
+}
+
+func (t *v8runnerTestSuite) TestCreateFileInfobase() {
+
+	tempDir := NewTempDir("", "v8_temp_ib")
+
+	ib := NewFileIB(tempDir)
+
+	err := Run(ib, CreateFileInfoBase(ib.File),
+		WithVersion("8.3"),
+		WithTimeout(30),
+	)
+
+	t.r().NoError(err)
 
 }

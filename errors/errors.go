@@ -43,6 +43,7 @@ const (
 	BadConnectString
 	BadCommand
 	Runtime
+	Check
 )
 
 type ErrorType uint

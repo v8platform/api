@@ -1,10 +1,22 @@
 package types
 
-import "strings"
+type Values struct {
+	index  map[string]int
+	values []Value
+}
 
-type Values map[string]string
+type Value struct {
+	key string
+	val string
+}
 
 type ValueSep string
+
+func NewValues() *Values {
+	return &Values{
+		index: make(map[string]int),
+	}
+}
 
 const (
 	SpaceSep ValueSep = " "
@@ -12,20 +24,20 @@ const (
 	NoSep    ValueSep = ""
 )
 
-func (v Values) Values() []string {
+func (v *Values) Values() []string {
 
 	var str []string
 
-	for _, value := range v {
-		str = append(str, value)
+	for _, value := range v.values {
+		str = append(str, value.val)
 	}
 
 	return str
 }
 
-func (v Values) Set(name string, sep ValueSep, value string) {
+func (v *Values) Set(key string, sep ValueSep, value string) {
 
-	str := name
+	str := key
 
 	if len(value) > 0 {
 
@@ -36,50 +48,28 @@ func (v Values) Set(name string, sep ValueSep, value string) {
 		str += value
 	}
 
-	v[name] = str
+	v.Map(key, str)
 
 }
 
-func (v Values) Append(v2 Values) {
+func (v *Values) Map(key string, value string) {
 
-	for s, s2 := range v2 {
+	index, ok := v.index[key]
 
-		v[s] = s2
+	if ok {
+		v.values[index] = Value{key, value}
 	}
 
-}
-
-func (v Values) Get(name string) (string, bool) {
-
-	value, ok := v[name]
-
-	value = strings.Replace(value, name, "", 0)
-
-	value = strings.TrimLeft(value, string(SpaceSep))
-	value = strings.TrimLeft(value, string(EqualSep))
-
-	return value, ok
+	v.values = append(v.values, Value{key, value})
+	index = len(v.values) - 1
+	v.index[key] = index
 
 }
 
-func (v Values) GetBool(name string) (bool, bool) {
+func (v *Values) Append(v2 Values) {
 
-	value, ok := v[name]
-
-	if !ok {
-		return false, false
+	for _, s2 := range v2.values {
+		v.Map(s2.key, s2.val)
 	}
-
-	if ok && len(value) == 0 {
-		return true, ok
-	}
-
-	return false, ok
-
-}
-
-func (v Values) Del(name string) {
-
-	delete(v, name)
 
 }

@@ -11,7 +11,7 @@ type Common struct {
 	ClearCache             bool `v8:"/ClearCache" json:"clear_cache"`
 }
 
-func (cv Common) Values() types.Values {
+func (cv Common) Values() *types.Values {
 
 	v := make(types.Values)
 

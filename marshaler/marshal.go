@@ -17,9 +17,9 @@ type Unmarshaler interface {
 	UnmarshalV8() (string, error)
 }
 
-func Marshal(object interface{}) (types.Values, error) {
+func Marshal(object interface{}) (*types.Values, error) {
 
-	fieldsList := make(types.Values)
+	fieldsList := types.NewValues()
 
 	if object == nil || (reflect.ValueOf(object).Kind() == reflect.Ptr && reflect.ValueOf(object).IsNil()) {
 		return fieldsList, nil
@@ -48,7 +48,7 @@ func Marshal(object interface{}) (types.Values, error) {
 
 		if field.Name == CommandFieldName {
 
-			fieldsList[fieldInfo.Name] = fieldInfo.Name
+			fieldsList.Map(fieldInfo.Name, fieldInfo.Name)
 			continue
 		}
 
@@ -94,7 +94,7 @@ func Marshal(object interface{}) (types.Values, error) {
 				continue
 			}
 
-			fieldsList[fieldInfo.Name] = fieldArg
+			fieldsList.Map(fieldInfo.Name, fieldArg)
 
 		case time.Time, *time.Time:
 			// Although time.Time implements TextMarshaler,
@@ -115,7 +115,7 @@ func Marshal(object interface{}) (types.Values, error) {
 				continue
 			}
 
-			fieldsList[fieldInfo.Name] = fieldArg
+			fieldsList.Map(fieldInfo.Name, fieldArg)
 
 		case bool:
 
@@ -136,7 +136,7 @@ func Marshal(object interface{}) (types.Values, error) {
 				fieldArg = getArgValue(fieldInfo.TrueFormat, fieldInfo)
 			}
 
-			fieldsList[fieldInfo.Name] = fieldArg
+			fieldsList.Map(fieldInfo.Name, fieldArg)
 
 		case int, int32, int64:
 
@@ -151,7 +151,7 @@ func Marshal(object interface{}) (types.Values, error) {
 				continue
 			}
 
-			fieldsList[fieldInfo.Name] = fieldArg
+			fieldsList.Map(fieldInfo.Name, fieldArg)
 
 		case nil:
 			continue
@@ -213,11 +213,8 @@ func needFieldValue(value interface{}, tagInfo *FieldTagInfo) bool {
 
 }
 
-func appendMaps(m1, m2 map[string]string) {
+func appendMaps(m1, m2 *types.Values) {
 
-	for s, s2 := range m2 {
-
-		m1[s] = s2
-	}
+	m1.Append(*m2)
 
 }

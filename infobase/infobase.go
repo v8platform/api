@@ -79,7 +79,7 @@ func (ib InfoBase) Path() string {
 	return ""
 }
 
-func (ib InfoBase) Values() types.Values {
+func (ib InfoBase) Values() *types.Values {
 	v, _ := marshaler.Marshal(ib)
 	return v
 
@@ -109,7 +109,7 @@ func (ib InfoBase) Values() types.Values {
 	//return v
 }
 
-func (ib FileInfoBase) Values() types.Values {
+func (ib FileInfoBase) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(ib)
 	return v
@@ -123,7 +123,7 @@ func (ib FileInfoBase) Values() types.Values {
 	//return v
 }
 
-func (ib ServerInfoBase) Values() types.Values {
+func (ib ServerInfoBase) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(ib)
 	return v
