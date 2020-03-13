@@ -1,7 +1,6 @@
-package designer
+package infobase
 
 import (
-	"github.com/Khorevaa/go-v8runner/infobase"
 	"github.com/Khorevaa/go-v8runner/runner"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -40,7 +39,7 @@ func (t *createInfoBaseTestSuite) SetupSuite() {
 
 func (t *createInfoBaseTestSuite) TestCreateTempInfoBase() {
 
-	ib := infobase.NewTempIB()
+	ib := NewTempIB()
 
 	err := t.runner.Run(ib, CreateFileInfoBaseOptions{},
 		runner.WithTimeout(30),

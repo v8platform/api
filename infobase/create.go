@@ -1,4 +1,4 @@
-package designer
+package infobase
 
 import (
 	"github.com/Khorevaa/go-v8runner/marshaler"

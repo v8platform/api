@@ -12,7 +12,7 @@ type Designer struct {
 }
 
 func (d Designer) Command() string {
-	return types.COMMANE_DESIGNER
+	return types.COMMAND_DESIGNER
 }
 
 func (d Designer) Check() error {

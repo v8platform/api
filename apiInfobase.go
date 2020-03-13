@@ -1,7 +1,6 @@
 package v8
 
 import (
-	"github.com/Khorevaa/go-v8runner/designer"
 	"github.com/Khorevaa/go-v8runner/infobase"
 )
 
@@ -34,19 +33,19 @@ func NewServerIB(srvr, ref string) infobase.ServerInfoBase {
 	return ib
 }
 
-func CreateInfobase() designer.CreateInfoBaseOptions {
+func CreateInfobase() infobase.CreateInfoBaseOptions {
 
-	command := designer.NewCreateInfoBase()
+	command := infobase.NewCreateInfoBase()
 
 	return command
 
 }
 
-func CreateFileInfoBase(file string) designer.CreateFileInfoBaseOptions {
+func CreateFileInfoBase(file string) infobase.CreateFileInfoBaseOptions {
 
-	command := designer.NewCreateInfoBase()
+	command := infobase.NewCreateInfoBase()
 
-	FileInfoBaseOptions := designer.CreateFileInfoBaseOptions{
+	FileInfoBaseOptions := infobase.CreateFileInfoBaseOptions{
 		CreateInfoBaseOptions: command,
 		File:                  file,
 	}
