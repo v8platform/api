@@ -138,7 +138,7 @@ func (c *Communicator) Start(ctx context.Context, cmd *Cmd) error {
 	}
 
 	// Setup command
-	cmd.init(ctx, session)
+	cmd.init(ctx, session, c.out)
 
 	// Setup session
 	session.Stdin = cmd.Stdin
@@ -257,7 +257,7 @@ func (c *Communicator) StartInSession(ctx context.Context, cmd *Cmd) error {
 	session := c.session
 
 	// Setup command
-	cmd.init(ctx, session)
+	cmd.init(ctx, session, c.out)
 
 	c.logger.Println("Starting remote command",
 		"host", c.host,

@@ -91,29 +91,14 @@ func (a *AgentTestSuite) TestStartAgent() {
 	cmd.Command = "options set --show-prompt no"
 	_ = c.StartInSession(ctx, &cmd)
 
+	ctx = context.Background()
 	cmd.Command = "options set --output-format json"
 	_ = c.StartInSession(ctx, &cmd)
+	//if err := cmd.Wait(); err != nil {
+	//	t.Fatalf("command faile: %s -> %s", err, stdout.String())
+	err := cmd.Wait()
 
-	b := make([]byte, 1020)
-	//n, err := pr.Read(b)
-	//
-
-	for {
-		n, err := pr.Read(b)
-		if err == io.EOF {
-			break
-		}
-		logger.Println(string(b[:n]))
-	}
-
-	//logger.Println(string(b))
-
-	cmd.Command = "options set --show-prompt no"
-	_ = c.StartInSession(ctx, &cmd)
-	b = make([]byte, 1020)
-	_, _ = pr.Read(b)
-	logger.Println(string(b))
-
+	ctx = context.Background()
 	cmd.Command = "common connect-ib"
 	_ = c.StartInSession(ctx, &cmd)
 	//_ = cmd.Wait()//if err := c.Start(ctx, &cmd); err != nil {

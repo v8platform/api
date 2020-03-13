@@ -25,6 +25,10 @@ type Cmd struct {
 	Stdout io.Writer
 	Stderr io.Writer
 
+	out chan []byte
+
+	res []Respond
+
 	// Internal fields
 	ctx    context.Context
 	closer io.Closer
@@ -35,10 +39,11 @@ type Cmd struct {
 }
 
 // Init must be called by the Communicator before executing the command.
-func (c *Cmd) init(ctx context.Context, closer io.Closer) {
+func (c *Cmd) init(ctx context.Context, closer io.Closer, out chan []byte) {
 	c.ctx = ctx
 	c.closer = closer
 	c.exitCh = make(chan struct{})
+	c.out = out
 }
 
 // setExitStatus stores the exit status of the remote command as well as any
@@ -55,24 +60,36 @@ func (c *Cmd) setExitStatus(status int, err error) {
 // Wait waits for the remote command completion or cancellation.
 // Wait may return an error from the communicator, or an ExitError if the
 // process exits with a non-zero exit status.
+
 func (c *Cmd) Wait() error {
-	select {
-	case <-c.ctx.Done():
-		c.closer.Close()
-		return c.ctx.Err()
-	case <-c.exitCh:
-		// continue
-	}
 
-	if c.err != nil || c.exitStatus != 0 {
-		return &ExitError{
-			Command:    c.Command,
-			ExitStatus: c.exitStatus,
-			Err:        c.err,
+	for {
+		select {
+		case b := <-c.out:
+
+			res, err := ReadRespond(b)
+			if err == nil {
+				c.res = res
+				break
+			}
+
+		case <-c.ctx.Done():
+			//c.closer.Close()
+			return c.ctx.Err()
+		case <-c.exitCh:
+
+			if c.err != nil || c.exitStatus != 0 {
+				return &ExitError{
+					Command:    c.Command,
+					ExitStatus: c.exitStatus,
+					Err:        c.err,
+				}
+			}
+			break
+
 		}
-	}
 
-	return nil
+	}
 }
 
 // ExitError is returned by Wait to indicate an error while executing the remote
