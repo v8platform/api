@@ -1,16 +1,13 @@
 package agent
 
 import (
-	"bytes"
 	"context"
 	"github.com/Khorevaa/go-v8runner/agent/client"
 	"github.com/Khorevaa/go-v8runner/infobase"
 	"github.com/Khorevaa/go-v8runner/runner"
 	"github.com/Khorevaa/go-v8runner/tests"
 	"github.com/stretchr/testify/suite"
-	"io"
 	"log"
-	"net"
 	"os"
 	"testing"
 	"time"
@@ -44,63 +41,96 @@ func (a *AgentTestSuite) TestStartAgent() {
 	//	RunCommand("\n common shutdown\n", ssh.CommandOptions{
 	//		Stdout: os.Stdout,
 	//		Stderr: os.Stderr,
-	//		Stdin:  os.Stdin,
+	//		Pipein:  os.Pipein,
 	//	})
 	//if err != nil {
 	//	log.Fatal(err)
 	//}
 
-	var (
-		config = sshclient.Config{
-			Port:                1543,
-			ServerAliveInterval: 15 * time.Second,
-			ServerAliveCountMax: 3,
-			//ClientConfig: ssh2.ClientConfig{
-			//	User: "",
-			//	Auth: []ssh2.AuthMethod{
-			//		ssh2.KeyboardInteractive(SshInteractive),
-			//	},
-			//	HostKeyCallback: ssh2.InsecureIgnoreHostKey()},
-			//Pty: true,
-		}
-		dial   = sshclient.ContextDialer(&net.Dialer{})
-		logger = log.New(os.Stdout, "", log.LstdFlags)
-	)
-	config = config.WithPasswordAuth("", "")
+	time.Sleep(time.Second * 5)
 
-	c := sshclient.NewCommunicator("127.0.0.1", config, dial, logger)
+	session, err := sshclient.NewSSHSession("", "", "127.0.0.1:1543")
+	logger := log.New(os.Stdout, "", log.LstdFlags)
+	//
+	//var (
+	//	config = sshclient.Config{
+	//		Port:                1543,
+	//		ServerAliveInterval: 15 * time.Second,
+	//		ServerAliveCountMax: 3,
+	//		//ClientConfig: ssh2.ClientConfig{
+	//		//	User: "",
+	//		//	Auth: []ssh2.AuthMethod{
+	//		//		ssh2.KeyboardInteractive(SshInteractive),
+	//		//	},
+	//		//	HostKeyCallback: ssh2.InsecureIgnoreHostKey()},
+	//		//Pty: true,
+	//	}
+	//	dial   = sshclient.ContextDialer(&net.Dialer{})
+	//	logger = log.New(os.Stdout, "", log.LstdFlags)
+	//)
+	//config = config.WithPasswordAuth("", "")
+	//
+	//c := sshclient.NewCommunicator("127.0.0.1", config, dial, logger)
+	//
+	//if err := c.Connect(context.Background()); err != nil {
+	//	logger.Fatal(err)
+	//}
 
-	if err := c.Connect(context.Background()); err != nil {
+	//re := `(?msU)(?:\[(?:\n|\r\n))(.*)(?:(?:\n|\r\n)\])`
+
+	re := `(?msU)(\A(?:\[\n|\r\n).*?(?:\n|\r\n)\])`
+
+	if err != nil {
 		logger.Fatal(err)
 	}
 
-	var cmd sshclient.Cmd
+	session.WriteChannel(sshclient.CONFIG_COMMAND)
+	str := session.ReadChannelTiming(10)
+	//logger.Println(str)
 
-	pr, pw := io.Pipe()
+	session.WriteChannel("common connect-ib")
+	//time.Sleep(time.Second * 1)
+	session.WriteChannel("common disconnect-ib")
+	str += session.ReadChannelRegExp(1000, re)
+	//logger.Println(str)
+	//str = session.ReadChannelTiming(10)
+	//logger.Println(str)
 
-	//buffer := new(bytes.Buffer)
-	stdin := new(bytes.Buffer)
-	c.Stdin = stdin
-	c.Stdout = pw
-	c.Stderr = pw
+	session.WriteChannel("common connect-ib")
+	str += session.ReadChannelRegExp(1000, re)
+	//logger.Println(str)
 
-	//cmd.Stdout = stdout
+	session.WriteChannel("common shutdown")
+	str += session.ReadChannelExpect(1000, "\r\n]")
+	logger.Println(str)
+	//var cmd sshclient.Cmd
 
-	ctx = context.Background()
-
-	cmd.Command = "options set --show-prompt no"
-	_ = c.StartInSession(ctx, &cmd)
-
-	ctx = context.Background()
-	cmd.Command = "options set --output-format json"
-	_ = c.StartInSession(ctx, &cmd)
-	//if err := cmd.Wait(); err != nil {
-	//	t.Fatalf("command faile: %s -> %s", err, stdout.String())
-	err := cmd.Wait()
-
-	ctx = context.Background()
-	cmd.Command = "common connect-ib"
-	_ = c.StartInSession(ctx, &cmd)
+	//ctx = context.Background()
+	//cmd.Command = "options set --output-format json --show-prompt no"
+	//_ = c.StartInSession(ctx, &cmd)
+	//res, err := cmd.Wait()
+	//
+	//if err != nil {
+	//	println(err)
+	//}
+	//
+	//println(res)
+	//cmd.Command = "options set --show-prompt no"
+	//_ = c.StartInSession(ctx, &cmd)
+	//
+	////if err := cmd.Wait(); err != nil {
+	////	t.Fatalf("command faile: %s -> %s", err, stdout.String())
+	//res, err := cmd.Wait()
+	//
+	//if err != nil {
+	//	println(err)
+	//}
+	//
+	//println(res)
+	//
+	//ctx = context.Background()
+	//cmd.Command = "common connect-ib"
+	//_ = c.StartInSession(ctx, &cmd)
 	//_ = cmd.Wait()//if err := c.Start(ctx, &cmd); err != nil {
 	//	t.Fatalf("error executing remote command: %s -> %s", err, stdout.String())
 	//}
@@ -114,39 +144,44 @@ func (a *AgentTestSuite) TestStartAgent() {
 	//}
 
 	//logger.Println(stdout.String())
-
-	//stdout = new(bytes.Buffer)
-	cmd.Command = "common disconnect-ib"
-	_ = c.StartInSession(ctx, &cmd)
+	//stdout := new(bytes.Buffer)
 	//cmd.Stdout = stdout
-	//
-	//ctx = context.Background()
-	//_ = c.Start(ctx, &cmd)
-	//_ = cmd.Wait()
-	////if err := c.Start(ctx, &cmd); err != nil {
-	////	t.Fatalf("error executing remote command: %s -> %s", err, stdout.String())
-	////}
+	//cmd.Stderr = stdout
+	//cmd.Command = "common connect-ib"
+	//_ = c.StartInSession(ctx, &cmd)
+	//_, _ = cmd.Wait(c.Pipeout)
+	////cmd.Stdout = stdout
 	////
-	////if err := cmd.Wait(); err != nil {
-	////	t.Fatalf("command faile: %s -> %s", err, stdout.String())
-	////}
-	//logger.Println(stdout.String())
-	//
-	//stdout = new(bytes.Buffer)
-	cmd.Command = "common shutdown"
-	_ = c.StartInSession(ctx, &cmd)
-	//cmd.Stdout = stdout
-	//
-	//ctx = context.Background()
-	//_ = c.Start(ctx, &cmd)
-	//_ = cmd.Wait()
-	////if err := c.Start(ctx, &cmd); err != nil {
-	////	t.Fatalf("error executing remote command: %s -> %s", err, stdout.String())
-	////}
+	////ctx = context.Background()
+	////_ = c.Start(ctx, &cmd)
+	////_ = cmd.Wait()
+	//////if err := c.Start(ctx, &cmd); err != nil {
+	//////	t.Fatalf("error executing remote command: %s -> %s", err, stdout.String())
+	//////}
+	//////
+	//////if err := cmd.Wait(); err != nil {
+	//////	t.Fatalf("command faile: %s -> %s", err, stdout.String())
+	//////}
+	////logger.Println(stdout.String())
 	////
-	////if err := cmd.Wait(); err != nil {
-	////	t.Fatalf("command faile: %s -> %s", err, stdout.String())
-	////}
-	//logger.Println(stdout.String())
+	////stdout = new(bytes.Buffer)
+	////stdout2 := new(bytes.Buffer)
+	////cmd.Stdout = stdout2
+	//cmd.Command = "common shutdown"
+	//_ = c.StartInSession(ctx, &cmd)
+	//cmd.Wait(c.Pipeout)
+	////cmd.Stdout = stdout
+	////
+	////ctx = context.Background()
+	////_ = c.Start(ctx, &cmd)
+	////_ = cmd.Wait()
+	//////if err := c.Start(ctx, &cmd); err != nil {
+	//////	t.Fatalf("error executing remote command: %s -> %s", err, stdout.String())
+	//////}
+	//////
+	//////if err := cmd.Wait(); err != nil {
+	//////	t.Fatalf("command faile: %s -> %s", err, stdout.String())
+	//////}
+	////logger.Println(stdout.String())
 
 }

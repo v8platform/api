@@ -23,10 +23,6 @@ type Config struct {
 	// If this threshold is reached while server keepalive messages are being sent,
 	// ssh will disconnect from the server, terminating the session.
 	ServerAliveCountMax int `yaml:"server_alive_count_max"`
-	// Pty specifies if a pty should be associated with sessions on remote
-	// hosts. Enabling pty would make Scylla banner to be printed to commands'
-	// stdout.
-	Pty bool `yaml:"pty"`
 }
 
 // DefaultConfig returns a Config initialized with default values.

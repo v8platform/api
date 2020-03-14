@@ -3,9 +3,12 @@
 package sshclient
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
+	"log"
+	"regexp"
 )
 
 // Cmd represents a remote command being prepared or run.
@@ -15,35 +18,28 @@ type Cmd struct {
 	// necessary.
 	Command string
 
-	// Stdin specifies the process's standard input. If Stdin is nil,
-	// the process reads from an empty bytes.Buffer.
-	Stdin io.Reader
+	in chan Respond
 
-	// Stdout and Stderr represent the process's standard output and error.
-	//
-	// If either is nil, it will be set to ioutil.Discard.
-	Stdout io.Writer
-	Stderr io.Writer
+	//stdOut io.Reader
 
-	out chan []byte
-
-	res []Respond
+	Stdout *bytes.Buffer
+	Stderr *bytes.Buffer
 
 	// Internal fields
 	ctx    context.Context
-	closer io.Closer
-
-	exitStatus int
-	err        error
-	exitCh     chan struct{} // protects exitStatus and err
+	err    error
+	exitCh chan struct{} // protects exitStatus and err
 }
 
 // Init must be called by the Communicator before executing the command.
-func (c *Cmd) init(ctx context.Context, closer io.Closer, out chan []byte) {
+func (c *Cmd) init(ctx context.Context, rw io.Reader, in chan Respond) {
+
 	c.ctx = ctx
-	c.closer = closer
 	c.exitCh = make(chan struct{})
-	c.out = out
+	c.Stdout = new(bytes.Buffer)
+	c.Stderr = new(bytes.Buffer)
+
+	c.in = in
 }
 
 // setExitStatus stores the exit status of the remote command as well as any
@@ -51,7 +47,7 @@ func (c *Cmd) init(ctx context.Context, closer io.Closer, out chan []byte) {
 // to Wait.
 // This should only be called by communicators executing the remote.Cmd.
 func (c *Cmd) setExitStatus(status int, err error) {
-	c.exitStatus = status
+
 	c.err = err
 
 	close(c.exitCh)
@@ -61,35 +57,130 @@ func (c *Cmd) setExitStatus(status int, err error) {
 // Wait may return an error from the communicator, or an ExitError if the
 // process exits with a non-zero exit status.
 
-func (c *Cmd) Wait() error {
+func (c *Cmd) Wait(in io.Reader) ([]Respond, error) {
 
-	for {
-		select {
-		case b := <-c.out:
+	go func(stop chan struct{}) {
+		<-stop
+		close(stop)
+	}(c.exitCh)
 
-			res, err := ReadRespond(b)
-			if err == nil {
-				c.res = res
-				break
-			}
+	fmt.Printf("Start waiting respond\n")
+	var r []Respond
+	var str string
 
-		case <-c.ctx.Done():
-			//c.closer.Close()
-			return c.ctx.Err()
-		case <-c.exitCh:
+	done := make(chan bool)
 
-			if c.err != nil || c.exitStatus != 0 {
-				return &ExitError{
-					Command:    c.Command,
-					ExitStatus: c.exitStatus,
-					Err:        c.err,
-				}
-			}
-			break
-
+	go func() {
+		_, e := io.Copy(c.Stdout, in)
+		if e != nil {
+			log.Println("error read pipeout")
 		}
+		done <- true
+	}()
+
+	<-done
+
+	str = string(c.Stdout.Bytes())
+	if len(str) == 0 {
+		fmt.Printf("Respond is null getted\n")
+	}
+
+	fmt.Printf(string(str))
+
+	//done := make(chan bool)
+	//go func() {
+	//
+	//	for {
+	//
+	//		b := make([]byte, 1024)
+	//		n, err := in.Read(b)
+	//		if err == io.EOF {
+	//			done <- true
+	//		}
+	//
+	//		str = append(str, b[:n]...)
+	//
+	//	}
+	//
+	//}()
+	//<- done
+	////for {
+	////
+	////
+	////
+	////	b := make([]byte, 1024)
+	////	if buf, err := c.stdOut.Read(b); len(b) > 0 {
+	////		log.Print(string(buf))
+	////
+	////	} else if err != nil {
+	////		//close(ch)
+	////		break
+	////	}
+	////
+	////	//select {
+	////	//case res := <-c.in:
+	////	//
+	////	//	r = append(r, res)
+	////	//
+	////	//case <-c.ctx.Done():
+	////	//	return r, c.ctx.Err()
+	////	//case <-c.exitCh:
+	////	//
+	////	//	return r, nil
+	////	//	//if c.err != nil || c.exitStatus != 0 {
+	////	//	//	return &ExitError{
+	////	//	//		Command:    c.Command,
+	////	//	//		ExitStatus: c.exitStatus,
+	////	//	//		Err:        c.err,
+	////	//	//	}
+	////	//	//}
+	////	//	//break
+	////	//
+	////	//}
+	////
+	////}
+	return r, nil
+
+}
+
+var (
+	// admin@localhost# $
+	// admin@localhost> $
+	// localhost> $
+	// localhost# $
+	// the $ means the end of line
+	prompt = regexp.MustCompile(".*@?.*(#|>) $")
+)
+
+// check if the string is a prompt
+func check(s string) bool {
+	m := prompt.FindStringSubmatch(s)
+	// return true if it is
+	return m != nil
+}
+
+func readBuffForString(sshOut io.Reader, buffRead chan string) {
+	buf := make([]byte, 1000)
+	waitingString := ""
+	for {
+		n, err := sshOut.Read(buf) //this reads the ssh terminal
+		if err != nil {
+			// someting wrong
+			break
+		}
+		// for every line
+		current := string(buf[:n])
+		if check(current) {
+			// ignore prompt and break
+			fmt.Print(current)
+			break
+		}
+		// add current line to result string
+		waitingString += current
 
 	}
+	fmt.Println(waitingString)
+	buffRead <- waitingString
 }
 
 // ExitError is returned by Wait to indicate an error while executing the remote

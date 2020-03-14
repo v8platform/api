@@ -4,6 +4,7 @@ package sshclient
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -12,11 +13,14 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh"
 )
+
+const CONFIG_COMMAND = "options set --output-format json --show-prompt no" + "\n"
 
 // Logger is the minimal interface Communicator needs for logging. Note that
 // log.Logger from the standard library implements this interface, and it is
@@ -45,21 +49,26 @@ type Communicator struct {
 	client  *ssh.Client
 	session *ssh.Session
 
-	// Stdin specifies the process's standard input. If Stdin is nil,
+	// Pipein specifies the process's standard input. If Pipein is nil,
 	// the process reads from an empty bytes.Buffer.
-	Stdin io.Writer
+	Pipein  io.WriteCloser
+	Pipeout io.Reader
 
 	// Stdout and Stderr represent the process's standard output and error.
 	//
 	// If either is nil, it will be set to ioutil.Discard.
-	Stdout io.Writer
-	Stderr io.Writer
+	Stdout *bytes.Buffer
+	Stderr *bytes.Buffer
 
 	keepaliveDone chan struct{}
 
 	out chan []byte
 
+	respond chan Respond
+
 	OutReader io.Reader
+
+	stop chan struct{}
 }
 
 type Session struct {
@@ -138,13 +147,8 @@ func (c *Communicator) Start(ctx context.Context, cmd *Cmd) error {
 	}
 
 	// Setup command
-	cmd.init(ctx, session, c.out)
-
-	// Setup session
-	session.Stdin = cmd.Stdin
-	session.Stdout = cmd.Stdout
-	session.Stderr = cmd.Stderr
-
+	//cmd.init(ctx, session, c.out)
+	//
 	c.logger.Println("Starting remote command",
 		"host", c.host,
 		"cmd", cmd.Command,
@@ -195,12 +199,23 @@ func (c *Communicator) StartSession(ctx context.Context) error {
 		return err
 	}
 
-	stdin, err := session.StdinPipe()
+	pipein, err := session.StdinPipe()
+
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	c.Stdin = stdin
+	pipeout, err := session.StdoutPipe()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	c.Stdout = new(bytes.Buffer)
+	c.Stderr = new(bytes.Buffer)
+
+	c.Pipein = pipein
+	c.Pipeout = pipeout
 	// Setup session
 	session.Stdout = c.Stdout
 	session.Stderr = c.Stderr
@@ -214,29 +229,99 @@ func (c *Communicator) StartSession(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	//stopReader := make(chan struct{})
 
-	c.out = make(chan []byte)
+	c.logger.Println("Configure remote shell",
+		"host", c.host,
+	)
+	n, err := io.WriteString(c.Pipein, CONFIG_COMMAND)
+
+	done := make(chan bool)
 
 	go func() {
+		_, e := io.Copy(c.Stdout, c.Pipeout)
 
-		b := make([]byte, 1020)
-
-		for {
-			n, _ := c.OutReader.Read(b)
-
-			c.logger.Println(string(b[:n]))
-
-			c.out <- b
-
-			select {
-			case <-ctx.Done():
-				//c.OutReader.Close()
-				break
-			}
+		if e != nil {
+			c.logger.Println("error read pipeout")
 		}
+		done <- true
 	}()
 
+	<-done
+	c.Pipein.Close()
+
+	if err != nil {
+
+		c.logger.Println("write bytes", "bytes", n, "err", err)
+
+		return err
+	}
+	c.logger.Println("Clearing remote shell pipe",
+		"host", c.host,
+	)
+	//c.clearOut(stdout)
+	//
+	//go func() error {
+	//	for {
+	//		select {
+	//		// handle incoming updates
+	//		case b := <-c.out:
+	//
+	//			res, err := ReadRespond(b)
+	//
+	//			if err != nil {
+	//				continue
+	//			}
+	//
+	//			for _, re := range res {
+	//				c.respond <- re
+	//			}
+	//
+	//		// call to stop polling
+	//		case <-c.stop:
+	//			stopReader <- struct{}{}
+	//
+	//		// polling has stopped
+	//		case <-ctx.Done():
+	//			return ctx.Err()
+	//		}
+	//	}
+	//} ()
+
 	return nil
+}
+
+func readerOut(r io.Reader, dest chan []byte, stop chan struct{}) {
+
+	go func(stop chan struct{}) {
+		<-stop
+		close(stop)
+	}(stop)
+
+	//rj := bufio.NewReader(r)
+	//for {
+	//	if buf, err := rj.ReadBytes(api.NEWLINE); len(buf) > 0 {
+	//		ch <- string(buf)
+	//	} else if err != nil {
+	//		close(ch)
+	//		return
+	//	}
+	//}
+
+	for {
+
+		b := make([]byte, 1024)
+		n, err := r.Read(b)
+		if err == io.EOF {
+			runtime.Gosched()
+			continue
+		}
+		println(string(b[:n]))
+
+		dest <- b
+
+	}
+
 }
 
 // Start starts the specified command but does not wait for it to complete.
@@ -254,25 +339,46 @@ func (c *Communicator) StartInSession(ctx context.Context, cmd *Cmd) error {
 		}
 	}
 
-	session := c.session
+	c.Stdout.Reset()
+	c.Stderr.Reset()
 
+	//session := c.session
+	cmd.Stdout = c.Stdout
+	cmd.Stderr = c.Stderr
 	// Setup command
-	cmd.init(ctx, session, c.out)
+	cmd.init(ctx, c.OutReader, c.respond)
 
 	c.logger.Println("Starting remote command",
 		"host", c.host,
 		"cmd", cmd.Command,
 	)
 
-	_, err := c.Stdin.Write([]byte(cmd.Command + "\n"))
-	//c.Stdin.Write([]byte("N\n"))/
-	//err := session.Wait()
+	n, err := io.WriteString(c.Pipein, cmd.Command+"\n")
 
 	if err != nil {
+
+		c.logger.Println("write bytes", n)
+		c.logger.Println("write err", err)
 		return err
 	}
 
 	return nil
+}
+
+func (c *Communicator) clearOut(stdout io.Reader) {
+
+	b := make([]byte, 1024)
+
+	for {
+
+		_, err := stdout.Read(b)
+		if err == io.EOF {
+			break
+		}
+		//log.Printf("buffer: %s ", string(b[:n]))
+
+	}
+
 }
 
 func (c *Communicator) newSession(ctx context.Context) (session *ssh.Session, err error) {
