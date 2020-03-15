@@ -49,7 +49,7 @@ func (a *AgentTestSuite) TestStartAgent() {
 
 	time.Sleep(time.Second * 5)
 
-	session, err := sshclient.NewSSHSession("", "", "127.0.0.1:1543")
+	session, err := sshclient.NewSeesion("", "", "127.0.0.1:1543")
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 	//
 	//var (
@@ -70,7 +70,7 @@ func (a *AgentTestSuite) TestStartAgent() {
 	//)
 	//config = config.WithPasswordAuth("", "")
 	//
-	//c := sshclient.NewCommunicator("127.0.0.1", config, dial, logger)
+	//c := sshclient.NewClient("127.0.0.1", config, dial, logger)
 	//
 	//if err := c.Connect(context.Background()); err != nil {
 	//	logger.Fatal(err)
@@ -86,6 +86,8 @@ func (a *AgentTestSuite) TestStartAgent() {
 
 	session.WriteChannel(sshclient.CONFIG_COMMAND)
 	str := session.ReadChannelTiming(10)
+	session.WriteChannel("options list")
+	str += session.ReadChannelRegExp(1000, re)
 	//logger.Println(str)
 
 	session.WriteChannel("common connect-ib")

@@ -1,81 +1,132 @@
-// Copyright (C) 2017 ScyllaDB
-
 package sshclient
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"log"
+
 	"net"
-	"os"
-	"path/filepath"
-	"runtime"
-	"strings"
 
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh"
 )
 
-const CONFIG_COMMAND = "options set --output-format json --show-prompt no" + "\n"
+const CONFIG_COMMAND = "options set --output-format json --show-prompt no"
 
-// Logger is the minimal interface Communicator needs for logging. Note that
+// Logger is the minimal interface client needs for logging. Note that
 // log.Logger from the standard library implements this interface, and it is
 // easy to implement by custom loggers, if they don't do so already anyway.
 type Logger interface {
 	Println(v ...interface{})
 }
 
-// Communicator allows for executing commands on a remote host over SSH, it is
+type Client interface {
+	Connect(ctx context.Context) (err error)
+	Disconnect()
+
+	//v8 configuration api
+
+}
+
+type ConfigurationAgent interface {
+
+	//Команды группы common отвечают за общие операции. В состав группы входят следующие команды:
+	//connect-ib ‑ выполнить подключение к информационной базе, параметры которой указаны при старте режима агента.
+	ConnectIB() (err error)
+
+	//disconnect-ib ‑ выполнить отключение от информационной базы, подключение к которой ранее выполнялось с помощью команды connect-ib.
+	DisconnectIB() (err error)
+
+	//shutdown ‑ завершить работу конфигуратора в режиме агента.
+	Shutdown() (err error)
+
+	Options() (ConfigurationOptions, err error)
+
+	SetOption(name string, value string) (err error)
+	GetOption(name string) (value interface{}, err error)
+
+	DebugInfo() (DebugInfo, err error)
+
+	//data-separation-common-attribute-list
+	// TODO Надо найти формат ответа
+
+	DumpIB(file string) (err error)
+	RestoreIB(file string) (err error)
+	EraseData() (err error)
+
+	//	create
+	//	Команда предназначена для создания расширения в информационной базе.
+	//	Расширение создается пустым.
+	//	Для загрузки расширения следует использовать команду config load-cfg
+	//	или config load-config-from-files.
+	//	Допустимо использование следующих параметров:
+	//  --extension <имя> ‑ задает имя расширения. Параметр является обязательным.
+	//  --name-prefix <префикс> ‑ задает префикс имени для расширения. Параметр является обязательным.
+	//  --synonym <синоним> ‑ синоним имени расширения. Многоязычная строка в формате функции Nstr().
+	//  --purpose <назначение> ‑ назначение расширения. <Назначение> может принимать следующие значения:
+	//  	customization ‑ назначение Адаптация (значение по умолчанию);
+	//  	add-on ‑ назначение Дополнение;
+	//  	patch ‑ назначение Исправление.
+	CreateExtension(name)
+}
+
+type DebugInfo struct {
+	//  enabled ‑ признак включения отладки.
+	Enable bool
+	//  protocol ‑ протокол отладки: tcp или http.
+	Protocol string
+	//  server-address ‑ адрес сервера отладки для данной информационной базы.
+	ServerAddress string
+}
+
+type ConfigurationOptions struct {
+
+	//Данная команда позволяет получить значения параметров. Для команды доступны следующие параметры:
+	//
+	//  --output-format ‑ позволяет указать формат вывода результата работы команд:
+	//
+	//  text ‑ команды возвращают результат в текстовом формате.
+	//
+	//  json ‑ команды возвращают результат в формате JSON-сообщений.
+	//
+	//  --show-prompt ‑ позволяет управлять наличием приглашения командной строки designer>:
+	//
+	//  yes ‑ в командной строке есть приглашение;
+	//
+	//  no ‑ в командной строке нет приглашения.
+	//
+	//  --notify-progress ‑ позволяет получить информацию об отображении прогресса выполнения команды.
+	//
+	//  --notify-progress-interval ‑ позволяет получить интервал времени, через который обновляется информация о прогрессе.
+
+	OutputFormat           string `json:"output-format"`
+	ShowPrompt             bool   `json:"show-prompt"`
+	NotifyProgress         bool   `json:"notify-progress"`
+	NotifyProgressInterval int    `json:"notify-progress-interval"`
+}
+
+// client allows for executing commands on a remote host over SSH, it is
 // not thread safe. New communicator is not connected by default, however,
 // calling Start or Upload on not connected communicator would try to establish
 // SSH connection before executing.
-type Communicator struct {
+type client struct {
 	host   string
 	config Config
 	dial   DialContextFunc
 	logger Logger
 
-	// OnDial is a listener that may be set to track openning SSH connection to
-	// the remote host. It is called for both successful and failed trials.
-	OnDial func(host string, err error)
-	// OnConnClose is a listener that may be set to track closing of SSH
-	// connection.
+	OnDial      func(host string, err error)
 	OnConnClose func(host string)
 
-	client  *ssh.Client
-	session *ssh.Session
+	nativeClient *ssh.Client
+	session      *Session
 
-	// Pipein specifies the process's standard input. If Pipein is nil,
-	// the process reads from an empty bytes.Buffer.
-	Pipein  io.WriteCloser
-	Pipeout io.Reader
-
-	// Stdout and Stderr represent the process's standard output and error.
-	//
-	// If either is nil, it will be set to ioutil.Discard.
-	Stdout *bytes.Buffer
-	Stderr *bytes.Buffer
+	user, password, ipPort string
 
 	keepaliveDone chan struct{}
-
-	out chan []byte
-
-	respond chan Respond
-
-	OutReader io.Reader
-
-	stop chan struct{}
 }
 
-type Session struct {
-}
-
-func NewCommunicator(host string, config Config, dial DialContextFunc, logger Logger) *Communicator {
-	return &Communicator{
+func NewClient(host string, config Config, dial DialContextFunc, logger Logger) Client {
+	return &client{
 		host:   host,
 		config: config,
 		dial:   dial,
@@ -86,7 +137,7 @@ func NewCommunicator(host string, config Config, dial DialContextFunc, logger Lo
 // Connect must be called to connect the communicator to remote host. It can
 // be called multiple times, in that case the current SSH connection is closed
 // and a new connection is established.
-func (c *Communicator) Connect(ctx context.Context) (err error) {
+func (c *client) Connect(ctx context.Context) (err error) {
 	c.logger.Println("Connecting to remote host", "host", c.host)
 
 	defer func() {
@@ -101,9 +152,25 @@ func (c *Communicator) Connect(ctx context.Context) (err error) {
 	if err != nil {
 		return errors.Wrap(err, "ssh: dial failed")
 	}
-	c.client = client
+	c.nativeClient = client
 
 	c.logger.Println("Connected!", "host", c.host)
+
+	session, err := client.NewSession()
+	if err != nil {
+		return err
+	}
+
+	c.session = &Session{
+		session: session,
+	}
+
+	if err := c.session.shell(); err != nil {
+		return err
+	}
+	if err := c.session.start(); err != nil {
+		return err
+	}
 
 	if c.config.KeepaliveEnabled() {
 		c.logger.Println("Starting ssh KeepAlives", "host", c.host)
@@ -115,278 +182,31 @@ func (c *Communicator) Connect(ctx context.Context) (err error) {
 }
 
 // Disconnect closes the current SSH connection.
-func (c *Communicator) Disconnect() {
+func (c *client) Disconnect() {
 	c.reset()
 }
 
-func (c *Communicator) reset() {
+func (c *client) reset() {
 	if c.keepaliveDone != nil {
 		close(c.keepaliveDone)
 	}
 	c.keepaliveDone = nil
 
-	if c.client != nil {
-		c.client.Close()
+	if c.nativeClient != nil {
+		c.nativeClient.Close()
 		if c.OnConnClose != nil {
 			c.OnConnClose(c.host)
 		}
 	}
-	c.client = nil
+	c.nativeClient = nil
 }
 
-// Start starts the specified command but does not wait for it to complete.
-// Each command is executed in a new SSH session. If context is canceled
-// the session is immediately closed and error is returned.
-//
-// The cmd Wait method will return the exit code and release associated
-// resources once the command exits.
-func (c *Communicator) Start(ctx context.Context, cmd *Cmd) error {
-	session, err := c.newSession(ctx)
-	if err != nil {
-		return err
-	}
-
-	// Setup command
-	//cmd.init(ctx, session, c.out)
-	//
-	c.logger.Println("Starting remote command",
-		"host", c.host,
-		"cmd", cmd.Command,
-	)
-	err = session.Start(strings.TrimSpace(cmd.Command) + "\n")
-	if err != nil {
-		return err
-	}
-
-	// Start a goroutine to wait for the session to end
-	go func() {
-		defer session.Close()
-
-		err := session.Wait()
-		exitStatus := 0
-		if err != nil {
-			if exitErr, ok := err.(*ssh.ExitError); ok {
-				exitStatus = exitErr.ExitStatus()
-			} else {
-				exitStatus = -1
-			}
-		}
-
-		if err != nil {
-			c.logger.Println("Remote command exited with error",
-				"host", c.host,
-				"cmd", cmd.Command,
-				"status", exitStatus,
-				"error", err,
-			)
-		} else {
-			c.logger.Println("Remote command exited",
-				"host", c.host,
-				"cmd", cmd.Command,
-				"status", exitStatus,
-			)
-		}
-
-		cmd.setExitStatus(exitStatus, err)
-	}()
-
-	return nil
-}
-
-func (c *Communicator) StartSession(ctx context.Context) error {
-	session, err := c.newSession(ctx)
-	if err != nil {
-		return err
-	}
-
-	pipein, err := session.StdinPipe()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	pipeout, err := session.StdoutPipe()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	c.Stdout = new(bytes.Buffer)
-	c.Stderr = new(bytes.Buffer)
-
-	c.Pipein = pipein
-	c.Pipeout = pipeout
-	// Setup session
-	session.Stdout = c.Stdout
-	session.Stderr = c.Stderr
-
-	c.session = session
-
-	c.logger.Println("Opening remote shell",
-		"host", c.host,
-	)
-	err = session.Shell()
-	if err != nil {
-		return err
-	}
-	//stopReader := make(chan struct{})
-
-	c.logger.Println("Configure remote shell",
-		"host", c.host,
-	)
-	n, err := io.WriteString(c.Pipein, CONFIG_COMMAND)
-
-	done := make(chan bool)
-
-	go func() {
-		_, e := io.Copy(c.Stdout, c.Pipeout)
-
-		if e != nil {
-			c.logger.Println("error read pipeout")
-		}
-		done <- true
-	}()
-
-	<-done
-	c.Pipein.Close()
-
-	if err != nil {
-
-		c.logger.Println("write bytes", "bytes", n, "err", err)
-
-		return err
-	}
-	c.logger.Println("Clearing remote shell pipe",
-		"host", c.host,
-	)
-	//c.clearOut(stdout)
-	//
-	//go func() error {
-	//	for {
-	//		select {
-	//		// handle incoming updates
-	//		case b := <-c.out:
-	//
-	//			res, err := ReadRespond(b)
-	//
-	//			if err != nil {
-	//				continue
-	//			}
-	//
-	//			for _, re := range res {
-	//				c.respond <- re
-	//			}
-	//
-	//		// call to stop polling
-	//		case <-c.stop:
-	//			stopReader <- struct{}{}
-	//
-	//		// polling has stopped
-	//		case <-ctx.Done():
-	//			return ctx.Err()
-	//		}
-	//	}
-	//} ()
-
-	return nil
-}
-
-func readerOut(r io.Reader, dest chan []byte, stop chan struct{}) {
-
-	go func(stop chan struct{}) {
-		<-stop
-		close(stop)
-	}(stop)
-
-	//rj := bufio.NewReader(r)
-	//for {
-	//	if buf, err := rj.ReadBytes(api.NEWLINE); len(buf) > 0 {
-	//		ch <- string(buf)
-	//	} else if err != nil {
-	//		close(ch)
-	//		return
-	//	}
-	//}
-
-	for {
-
-		b := make([]byte, 1024)
-		n, err := r.Read(b)
-		if err == io.EOF {
-			runtime.Gosched()
-			continue
-		}
-		println(string(b[:n]))
-
-		dest <- b
-
-	}
-
-}
-
-// Start starts the specified command but does not wait for it to complete.
-// Each command is executed in a new SSH session. If context is canceled
-// the session is immediately closed and error is returned.
-//
-//The cmd Wait method will return the exit code and release associated
-// resources once the command exits.
-func (c *Communicator) StartInSession(ctx context.Context, cmd *Cmd) error {
-
-	if c.session == nil {
-		err := c.StartSession(ctx)
-		if err != nil {
-			return err
-		}
-	}
-
-	c.Stdout.Reset()
-	c.Stderr.Reset()
-
-	//session := c.session
-	cmd.Stdout = c.Stdout
-	cmd.Stderr = c.Stderr
-	// Setup command
-	cmd.init(ctx, c.OutReader, c.respond)
-
-	c.logger.Println("Starting remote command",
-		"host", c.host,
-		"cmd", cmd.Command,
-	)
-
-	n, err := io.WriteString(c.Pipein, cmd.Command+"\n")
-
-	if err != nil {
-
-		c.logger.Println("write bytes", n)
-		c.logger.Println("write err", err)
-		return err
-	}
-
-	return nil
-}
-
-func (c *Communicator) clearOut(stdout io.Reader) {
-
-	b := make([]byte, 1024)
-
-	for {
-
-		_, err := stdout.Read(b)
-		if err == io.EOF {
-			break
-		}
-		//log.Printf("buffer: %s ", string(b[:n]))
-
-	}
-
-}
-
-func (c *Communicator) newSession(ctx context.Context) (session *ssh.Session, err error) {
+func (c *client) newSession(ctx context.Context) (session *ssh.Session, err error) {
 	c.logger.Println("Opening new ssh session", "host", c.host)
-	if c.client == nil {
-		err = errors.New("ssh client is not connected")
+	if c.nativeClient == nil {
+		err = errors.New("ssh nativeClient is not connected")
 	} else {
-		session, err = c.client.NewSession()
+		session, err = c.nativeClient.NewSession()
 	}
 
 	if err != nil {
@@ -395,228 +215,8 @@ func (c *Communicator) newSession(ctx context.Context) (session *ssh.Session, er
 			return nil, err
 		}
 
-		return c.client.NewSession()
+		return c.nativeClient.NewSession()
 	}
 
 	return session, nil
-}
-
-// Upload creates a file with a given path and permissions and content on
-// a remote host. If context is canceled the upload is interrupted, file is not
-// saved and error is returned.
-func (c *Communicator) Upload(ctx context.Context, path string, perm os.FileMode, src io.Reader) error {
-	// The target directory and file for talking the SCP protocol
-	targetDir := filepath.Dir(path)
-	targetFile := filepath.Base(path)
-
-	// On windows, filepath.Dir uses backslash separators (ie. "\tmp").
-	// This does not work when the target host is unix.  Switch to forward slash
-	// which works for unix and windows
-	targetDir = filepath.ToSlash(targetDir)
-
-	// Skip copying if we can get the file size directly from common io.Readers
-	size := int64(0)
-
-	switch s := src.(type) {
-	case interface {
-		Stat() (os.FileInfo, error)
-	}:
-		fi, err := s.Stat()
-		if err == nil {
-			size = fi.Size()
-		}
-	case interface {
-		Len() int
-	}:
-		size = int64(s.Len())
-	}
-
-	c.logger.Println("Uploading file",
-		"host", c.host,
-		"path", path,
-		"perm", perm.Perm(),
-	)
-
-	scpFunc := func(w io.Writer, stdoutR *bufio.Reader) error {
-		return scpUploadFile(w, src, stdoutR, targetFile, perm, size)
-	}
-	err := c.scpSession(ctx, "scp -vt "+targetDir, scpFunc)
-
-	if err != nil {
-		c.logger.Println("Uploading file ended with error",
-			"host", c.host,
-			"path", path,
-			"perm", perm.Perm(),
-			"error", err,
-		)
-	} else {
-		c.logger.Println("Uploading file ended",
-			"host", c.host,
-			"path", path,
-			"perm", perm.Perm(),
-		)
-	}
-
-	return err
-}
-
-func (c *Communicator) scpSession(ctx context.Context, scpCommand string, f func(io.Writer, *bufio.Reader) error) error {
-	session, err := c.newSession(ctx)
-	if err != nil {
-		return err
-	}
-	defer session.Close()
-
-	// Get a pipe to stdin so that we can send data down
-	stdinW, err := session.StdinPipe()
-	if err != nil {
-		return err
-	}
-
-	// We only want to close once, so we nil w after we close it,
-	// and only close in the defer if it hasn't been closed already.
-	defer func() {
-		if stdinW != nil {
-			stdinW.Close()
-		}
-	}()
-
-	// Get a pipe to stdout so that we can get responses back
-	stdoutPipe, err := session.StdoutPipe()
-	if err != nil {
-		return err
-	}
-	stdoutR := bufio.NewReader(stdoutPipe)
-
-	// Start the sink mode on the other side
-	if err := session.Start(scpCommand); err != nil {
-		return err
-	}
-
-	// Call our callback that executes in the context of SCP. We ignore
-	// EOF errors if they occur because it usually means that SCP prematurely
-	// ended on the other side.
-	if err := f(stdinW, stdoutR); err != nil && err != io.EOF {
-		return err
-	}
-
-	// Close the stdin, which sends an EOF, and then set w to nil so that
-	// our defer func doesn't close it again since that is unsafe with
-	// the Go SSH package.
-	stdinW.Close()
-	stdinW = nil
-
-	// Wait for the SCP connection to close, meaning it has consumed all
-	// our data and has completed. Or has errored.
-	exitCh := make(chan struct{})
-	go func() {
-		// Ignore result if context was cancelled
-		if ctx.Err() != nil {
-			return
-		}
-		err = session.Wait()
-		close(exitCh)
-	}()
-
-	select {
-	case <-ctx.Done():
-		err = ctx.Err()
-	case <-exitCh:
-		// continue
-	}
-
-	if err != nil {
-		if exitErr, ok := err.(*ssh.ExitError); ok {
-			// Otherwise, we have an ExitErorr, meaning we can just read
-			// the exit status
-			c.logger.Println("scp error", "host", c.host, "error", exitErr)
-
-			// If we exited with status 127, it means SCP isn't available.
-			// Return a more descriptive error for that.
-			if exitErr.ExitStatus() == 127 {
-				return errors.New("SCP failed to start, this usually means that SCP is not properly installed on the remote system")
-			}
-		}
-
-		return err
-	}
-
-	return nil
-}
-
-// checkSCPStatus checks that a prior command sent to SCP completed
-// successfully. If it did not complete successfully, an error will
-// be returned.
-func checkSCPStatus(r *bufio.Reader) error {
-	code, err := r.ReadByte()
-	if err != nil {
-		return err
-	}
-
-	if code != 0 {
-		// Treat any non-zero (really 1 and 2) as fatal errors
-		message, _, err := r.ReadLine()
-		if err != nil {
-			return errors.Wrapf(err, "error reading error message")
-		}
-
-		return errors.New(string(message))
-	}
-
-	return nil
-}
-
-func scpUploadFile(dst io.Writer, src io.Reader, stdout *bufio.Reader, file string, perm os.FileMode, size int64) error {
-	if size == 0 {
-		// Create a temporary file where we can copy the contents of the src
-		// so that we can determine the length, since SCP is length-prefixed.
-		tf, err := ioutil.TempFile("", "scylla-manager-upload")
-		if err != nil {
-			return errors.Wrapf(err, "error creating temporary file for upload")
-		}
-		defer os.Remove(tf.Name()) // nolint: errcheck
-		defer tf.Close()
-
-		if _, err := io.Copy(tf, src); err != nil {
-			return err
-		}
-
-		// Sync the file so that the contents are definitely on disk, then
-		// read the length of it.
-		if err := tf.Sync(); err != nil {
-			return errors.Wrapf(err, "error creating temporary file for upload")
-		}
-
-		// Seek the file to the beginning so we can re-read all of it
-		if _, err := tf.Seek(0, 0); err != nil {
-			return errors.Wrapf(err, "error creating temporary file for upload")
-		}
-
-		fi, err := tf.Stat()
-		if err != nil {
-			return errors.Wrapf(err, "error creating temporary file for upload")
-		}
-
-		src = tf
-		size = fi.Size()
-	}
-
-	// Start the protocol
-	mode := fmt.Sprintf("C%04o", uint32(perm.Perm()))
-
-	fmt.Fprintln(dst, mode, size, file)
-	if err := checkSCPStatus(stdout); err != nil {
-		return err
-	}
-
-	if _, err := io.Copy(dst, src); err != nil {
-		return err
-	}
-
-	fmt.Fprint(dst, "\x00")
-	if err := checkSCPStatus(stdout); err != nil {
-		return err
-	}
-
-	return nil
 }

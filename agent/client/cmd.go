@@ -1,5 +1,3 @@
-// Copyright (C) 2017 ScyllaDB
-
 package sshclient
 
 import (
@@ -31,7 +29,7 @@ type Cmd struct {
 	exitCh chan struct{} // protects exitStatus and err
 }
 
-// Init must be called by the Communicator before executing the command.
+// Init must be called by the client before executing the command.
 func (c *Cmd) init(ctx context.Context, rw io.Reader, in chan Respond) {
 
 	c.ctx = ctx
