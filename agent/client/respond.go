@@ -23,12 +23,23 @@ type Respond struct {
 	Type      RespondType      `json:"type, not_null"`
 	ErrorType RespondErrorType `json:"error-type"`
 	Message   string           `json:"message"`
-	Body      string           `json:"body, raw"`
+	Body      json.RawMessage  `json:"body"`
 }
 
 func (res Respond) IsSuccess() bool {
 
 	return res.Type == SuccessType
+
+}
+
+func (res Respond) ReadBody(t interface{}) error {
+
+	err := json.Unmarshal(res.Body, &t)
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }
 
