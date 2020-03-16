@@ -1,7 +1,7 @@
 package sshclient
 
 type Agent interface {
-	Exec(Cmd AgentCommand) (respond Respond, err error)
+	Exec(Cmd AgentCommand, opts ...execOption) (res []Respond, err error)
 
 	//Команды группы common отвечают за общие операции. В состав группы входят следующие команды:
 	//connect-ib ‑ выполнить подключение к информационной базе, параметры которой указаны при старте режима агента.

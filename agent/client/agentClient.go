@@ -1,8 +1,9 @@
 package sshclient
 
 import (
-	"errors"
-	"fmt"
+	"context"
+	"github.com/Khorevaa/go-v8runner/agent/client/errors"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -10,24 +11,37 @@ import (
 var _ Agent = (*AgentClient)(nil)
 
 const (
-	reqExpRespond    = `(?msU)(\A(?:\[\n|\r\n).*?(?:\n|\r\n)\])`
+	reqExpRespond    = `(?msU)((?:^\[(?:\n|\r\n)).*?(\n|\r\n)\])`
 	configureCommand = "options set --output-format json --show-prompt no"
 	defaultTimeout   = time.Second
 )
 
 type AgentClient struct {
-	session     *Session
-	ibConnected bool
-	options     ConfigurationOptions
+	user, password, ipPort string
+	session                *Session
+	ibConnected            bool
+	options                ConfigurationOptions
+}
+
+type ChannelDataReader func(date string, doneChan chan bool) error
+
+type DataReader interface {
+	DataRead(date string, doneChan chan bool) error
 }
 
 type execOptions struct {
-	timeout  int64
-	ReadFunc func(string) bool
+	timeout time.Duration
+	ticker  *time.Ticker
+	Read    ChannelDataReader
 }
 
 type Option func(c *AgentClient)
 type execOption func(o *execOptions)
+
+var nullReader = func(data string, chanDone chan bool) error {
+	chanDone <- true
+	return nil
+}
 
 func WithOptions(opt ConfigurationOptions) Option {
 	return func(c *AgentClient) {
@@ -35,17 +49,38 @@ func WithOptions(opt ConfigurationOptions) Option {
 	}
 }
 
+func WithReader(r ChannelDataReader) execOption {
+	return func(c *execOptions) {
+		c.Read = r
+	}
+}
+
+func WithTimeout(t time.Duration) execOption {
+	return func(c *execOptions) {
+
+		c.timeout = t
+	}
+}
+
+func WithSuccessReader() execOption {
+	return func(c *execOptions) {
+		c.Read = successReader()
+	}
+}
+
+func WithNullReader() execOption {
+	return func(c *execOptions) {
+		c.Read = nullReader
+	}
+}
+
 func NewAgentClient(user, password, ipPort string, opts ...Option) (client Agent, err error) {
 
-	s, err := NewSeesion(user, password, ipPort)
-
-	if err != nil {
-		return nil, err
-	}
-
 	agent := &AgentClient{
-		session:     s,
 		ibConnected: false,
+		user:        user,
+		password:    password,
+		ipPort:      ipPort,
 	}
 
 	agent.options = ConfigurationOptions{
@@ -54,13 +89,24 @@ func NewAgentClient(user, password, ipPort string, opts ...Option) (client Agent
 		NotifyProgress:         false,
 		NotifyProgressInterval: 0,
 	}
-
 	agent._Options(opts...)
-	agent.configure()
+
+	err = agent.Start()
+
+	if err != nil {
+		return nil, err
+	}
 
 	return agent, nil
 
 }
+
+func (c *AgentClient) isActive() bool {
+
+	return c.session != nil
+
+}
+
 func (c *AgentClient) _Option(fn Option) {
 
 	fn(c)
@@ -72,6 +118,28 @@ func (c *AgentClient) _Options(opts ...Option) {
 	for _, fn := range opts {
 		c._Option(fn)
 	}
+
+}
+
+func (c *AgentClient) Start() error {
+
+	s, err := NewSeesion(c.user, c.password, c.ipPort)
+
+	if err != nil {
+		return err
+	}
+
+	c.session = s
+
+	err = c.configure()
+
+	return err
+}
+
+func (c *AgentClient) Stop() {
+
+	c.session.ClearChannel()
+	c.session.Close()
 
 }
 
@@ -128,13 +196,29 @@ func haveSuccessRespond(res []Respond) bool {
 	return false
 }
 
+func haveErrorRespond(res []Respond) bool {
+
+	for _, re := range res {
+
+		ok := re.IsError()
+
+		if ok {
+			return true
+		}
+	}
+	return false
+}
+
 func (c *AgentClient) Exec(cmd AgentCommand, opts ...execOption) (res []Respond, err error) {
 
-	o := &execOptions{}
+	o := &execOptions{timeout: time.Second * 60}
 
 	for _, opt := range opts {
 		opt(o)
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), o.timeout)
+	defer cancel()
 
 	session := c.session
 
@@ -142,39 +226,117 @@ func (c *AgentClient) Exec(cmd AgentCommand, opts ...execOption) (res []Respond,
 
 	session.WriteChannel(cmdString)
 
-	rawRespond := session.ReadChannelRegExp(defaultTimeout, reqExpRespond)
+	switch {
+	case o.Read != nil:
 
-	res, err = readRespondString(rawRespond)
+		err = session.RawReadChannel(ctx, o.Read, o.ticker)
 
-	if err != nil {
-		return res, err
+	default:
+
+		err = session.RawReadChannel(ctx, defaultReader(&res), o.ticker)
+
 	}
 
 	return
 }
 
-func (c *AgentClient) Connect() (err error) {
+func defaultReader(res *[]Respond) ChannelDataReader {
 
-	_, err = c.Exec(CommonConnectInfobase{})
+	var resData string
+	re := regexp.MustCompile(reqExpRespond)
+	readRespondData := func(data string, chanDone chan bool) error {
 
-	if err != nil {
+		resData += data
+		if ok := re.MatchString(resData); !ok {
+			return nil
+		}
+		newRes, err := readRespondString(resData)
+
+		if err != nil {
+			chanDone <- true
+			return err
+		}
+		*res = newRes
+		chanDone <- true
+		return nil
+	}
+
+	return readRespondData
+}
+
+func successReader() ChannelDataReader {
+
+	var resData string
+
+	re := regexp.MustCompile(reqExpRespond)
+	readRespondData := func(data string, chanDone chan bool) error {
+
+		resData += data
+		if ok := re.MatchString(resData); !ok {
+			return nil
+		}
+
+		res, err := readRespondString(resData)
+
+		if err != nil {
+			chanDone <- true
+			return err
+		}
+
+		switch {
+
+		case getRespond(res, SuccessType).IsSuccess():
+			chanDone <- true
+			return nil
+
+		case getRespond(res, ErrorType).IsError():
+			chanDone <- true
+			return getRespond(res, ErrorType).Error()
+		}
+
+		chanDone <- true
+		return nil
+	}
+
+	return readRespondData
+}
+
+func getRespond(res []Respond, t RespondType) Respond {
+
+	for _, re := range res {
+
+		if re.Type == t {
+			return re
+		}
+	}
+
+	return UnknownRespond
+
+}
+
+func (c *AgentClient) Connect() error {
+
+	_, err := c.Exec(CommonConnectInfobase{}, WithReader(successReader()))
+
+	if err != nil &&
+		!errors.Is(errors.DesignerAlreadyConnectedToInfoBase, err) {
 		return err
 	}
 
 	c.ibConnected = true
 
-	return
+	return err
 
 }
 
 func (c *AgentClient) Disconnect() (err error) {
 
-	_, err = c.Exec(CommonDisconnectInfobase{})
+	_, err = c.Exec(CommonDisconnectInfobase{}, WithReader(successReader()))
 
-	if err != nil {
+	if err != nil &&
+		!errors.Is(errors.DesignerNotConnectedToInfoBase, err) {
 		return err
 	}
-
 	c.ibConnected = false
 
 	return
@@ -183,7 +345,7 @@ func (c *AgentClient) Disconnect() (err error) {
 
 func (c *AgentClient) Shutdown() (err error) {
 
-	_, err = c.Exec(CommonShutdown{})
+	_, err = c.Exec(CommonShutdown{}, WithNullReader())
 
 	if err != nil {
 		return err
@@ -191,39 +353,38 @@ func (c *AgentClient) Shutdown() (err error) {
 
 	c.ibConnected = false
 
+	c.Stop()
+
 	return
 }
 
 // options
 func (c *AgentClient) Options() (opts ConfigurationOptions, err error) {
 
-	session := c.session
-
-	cmd := getCommand(OptionsList{})
-
-	session.WriteChannel(cmd)
-	rawRespond := session.ReadChannelRegExp(defaultTimeout, reqExpRespond)
-
-	res, err := readRespondString(rawRespond)
+	res, err := c.Exec(OptionsList{})
 
 	if err != nil {
 		return opts, err
 	}
 
-	if !haveSuccessRespond(res) {
-		return opts, errors.New(fmt.Sprintf("cannot configure remote agent cmd: %s", configureCommand))
+	respond := res[0]
+
+	if respond.IsError() {
+		return opts, err
+	}
+	if !respond.IsSuccess() {
+		return opts, errors.Wrapf(err, "cannot configure remote agent cmd: %s", configureCommand)
 	}
 
 	err = res[0].ReadBody(&opts)
 	if err != nil {
-		return opts, err
+		return opts, errors.Wrapf(err, "cannot read body data")
 	}
 
 	return
 }
 
 func (c *AgentClient) SetOptions(opt ConfigurationOptions) error {
-	session := c.session
 
 	setOpt := SetOptions{
 		OutputFormat:           opt.OutputFormat,
@@ -232,22 +393,9 @@ func (c *AgentClient) SetOptions(opt ConfigurationOptions) error {
 		NotifyProgressInterval: opt.NotifyProgressInterval,
 	}
 
-	cmd := getCommand(setOpt)
+	_, err := c.Exec(setOpt, WithSuccessReader())
 
-	session.WriteChannel(cmd)
-	rawRespond := session.ReadChannelRegExp(defaultTimeout, reqExpRespond)
-
-	res, err := readRespondString(rawRespond)
-
-	if err != nil {
-		return err
-	}
-
-	if !haveSuccessRespond(res) {
-		return errors.New(fmt.Sprintf("cannot configure remote agent cmd: %s", cmd))
-	}
-
-	return nil
+	return err
 }
 
 // Configuration support

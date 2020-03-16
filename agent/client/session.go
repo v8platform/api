@@ -1,6 +1,9 @@
 package sshclient
 
 import (
+	"context"
+	"errors"
+	"fmt"
 	"golang.org/x/crypto/ssh"
 	"net"
 	"regexp"
@@ -130,17 +133,22 @@ func (this *Session) start() error {
 	return nil
 }
 
-func (this *Session) Close() {
-	defer func() {
+func (this *Session) Close() error {
+	defer func() error {
 		if err := recover(); err != nil {
-			//LogError("Session Close err:%s", err)
+			return errors.New(fmt.Sprintf("Session Close err:%s", err))
 		}
+		return nil
 	}()
 	if err := this.session.Close(); err != nil {
+		return err
+
 		//LogError("Close session err:%s", err.Error())
 	}
 	close(this.in)
 	close(this.out)
+
+	return nil
 }
 
 func (this *Session) WriteChannel(cmds ...string) {
@@ -235,6 +243,44 @@ func (this *Session) ReadChannel(timeout time.Duration, fn func(string) bool) st
 
 func (this *Session) ClearChannel() {
 	this.readChannelData()
+}
+
+func (this *Session) RawReadChannel(ctx context.Context, fn ChannelDataReader, ticker *time.Ticker) error {
+
+	output := ""
+
+	if ticker == nil {
+		ticker = time.NewTicker(time.Millisecond * 100)
+	}
+
+	doneChan := make(chan bool, 1)
+	var err error
+	for {
+		select {
+
+		case <-doneChan:
+
+			ticker.Stop()
+			return err
+
+		case <-ctx.Done():
+
+			ticker.Stop()
+			return ctx.Err()
+
+		case <-ticker.C:
+
+			newData := this.readChannelData()
+			if newData != "" {
+				output += newData
+				continue
+			}
+			if len(output) > 0 {
+				err = fn(output, doneChan)
+				output = ""
+			}
+		}
+	}
 }
 
 func (this *Session) readChannelData() string {
