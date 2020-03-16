@@ -69,41 +69,6 @@ type ConfigurationAgent interface {
 	CreateExtension(name)
 }
 
-type DebugInfo struct {
-	//  enabled ‑ признак включения отладки.
-	Enable bool
-	//  protocol ‑ протокол отладки: tcp или http.
-	Protocol string
-	//  server-address ‑ адрес сервера отладки для данной информационной базы.
-	ServerAddress string
-}
-
-type ConfigurationOptions struct {
-
-	//Данная команда позволяет получить значения параметров. Для команды доступны следующие параметры:
-	//
-	//  --output-format ‑ позволяет указать формат вывода результата работы команд:
-	//
-	//  text ‑ команды возвращают результат в текстовом формате.
-	//
-	//  json ‑ команды возвращают результат в формате JSON-сообщений.
-	//
-	//  --show-prompt ‑ позволяет управлять наличием приглашения командной строки designer>:
-	//
-	//  yes ‑ в командной строке есть приглашение;
-	//
-	//  no ‑ в командной строке нет приглашения.
-	//
-	//  --notify-progress ‑ позволяет получить информацию об отображении прогресса выполнения команды.
-	//
-	//  --notify-progress-interval ‑ позволяет получить интервал времени, через который обновляется информация о прогрессе.
-
-	OutputFormat           string `json:"output-format"`
-	ShowPrompt             bool   `json:"show-prompt"`
-	NotifyProgress         bool   `json:"notify-progress"`
-	NotifyProgressInterval int    `json:"notify-progress-interval"`
-}
-
 // client allows for executing commands on a remote host over SSH, it is
 // not thread safe. New communicator is not connected by default, however,
 // calling Start or Upload on not connected communicator would try to establish
