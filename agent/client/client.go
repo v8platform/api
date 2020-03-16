@@ -28,6 +28,7 @@ type Client interface {
 }
 
 type ConfigurationAgent interface {
+	Exec(Cmd AgentCommand) error
 
 	//Команды группы common отвечают за общие операции. В состав группы входят следующие команды:
 	//connect-ib ‑ выполнить подключение к информационной базе, параметры которой указаны при старте режима агента.
@@ -39,34 +40,44 @@ type ConfigurationAgent interface {
 	//shutdown ‑ завершить работу конфигуратора в режиме агента.
 	Shutdown() (err error)
 
+	// options
 	Options() (ConfigurationOptions, err error)
+	SetOptions(opt ConfigurationOptions) error
 
-	SetOption(name string, value string) (err error)
-	GetOption(name string) (value interface{}, err error)
+	// Configuration support
+	DisableCfgSupport() error
 
+	// Configuration
+	DumpCfgToFiles(dir string, force bool) error
+	LoadCfgFromFiles(dir string, updateConfigDumpInfo bool) error
+
+	DumpExtensionToFiles(ext string, dir string, force bool) error
+	LoadExtensionFromFiles(ext string, dir string, updateConfigDumpInfo bool) error
+	DumpAllExtensionsToFiles(dir string, force bool) error
+	LoadAllExtensionsFromFiles(dir string, updateConfigDumpInfo bool) error
+
+	// update
+	UpdateDbCfg(server bool) error
+	UpdateDbExtension(extension string, server bool) error
+	StartBackgroundUpdateDBCfg() error
+	StopBackgroundUpdateDBCfg() error
+	FinishBackgroundUpdateDBCfg() error
+	ResumeBackgroundUpdateDBCfg() error
+
+	// Infobase
+	IBDataSeparationList() (DataSeparationList, error)
 	DebugInfo() (DebugInfo, err error)
-
-	//data-separation-common-attribute-list
-	// TODO Надо найти формат ответа
-
 	DumpIB(file string) (err error)
 	RestoreIB(file string) (err error)
 	EraseData() (err error)
 
-	//	create
-	//	Команда предназначена для создания расширения в информационной базе.
-	//	Расширение создается пустым.
-	//	Для загрузки расширения следует использовать команду config load-cfg
-	//	или config load-config-from-files.
-	//	Допустимо использование следующих параметров:
-	//  --extension <имя> ‑ задает имя расширения. Параметр является обязательным.
-	//  --name-prefix <префикс> ‑ задает префикс имени для расширения. Параметр является обязательным.
-	//  --synonym <синоним> ‑ синоним имени расширения. Многоязычная строка в формате функции Nstr().
-	//  --purpose <назначение> ‑ назначение расширения. <Назначение> может принимать следующие значения:
-	//  	customization ‑ назначение Адаптация (значение по умолчанию);
-	//  	add-on ‑ назначение Дополнение;
-	//  	patch ‑ назначение Исправление.
-	CreateExtension(name)
+	//Extensions
+	CreateExtension(name, prefix string, synonym string, purpose ExtensionPurposeType) error
+	DeleteExtension(name string) error
+	DeleteAllExtensions() error
+	GetExtensionProperties(name string) (ExtensionProperties, error)
+	GetAllExtensionsProperties() ([]ExtensionProperties, error)
+	SetExtensionProperties(props ExtensionProperties) error
 }
 
 // client allows for executing commands on a remote host over SSH, it is

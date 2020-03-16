@@ -9,10 +9,10 @@ import (
 	"regexp"
 )
 
-// Cmd represents a remote command being prepared or run.
+// Cmd represents a remote AgentCommand being prepared or run.
 type Cmd struct {
-	// Command is the command to run remotely. This is executed as if
-	// it were a shell command, so you are expected to do any shell escaping
+	// Command is the AgentCommand to run remotely. This is executed as if
+	// it were a shell AgentCommand, so you are expected to do any shell escaping
 	// necessary.
 	Command string
 
@@ -29,7 +29,7 @@ type Cmd struct {
 	exitCh chan struct{} // protects exitStatus and err
 }
 
-// Init must be called by the client before executing the command.
+// Init must be called by the client before executing the AgentCommand.
 func (c *Cmd) init(ctx context.Context, rw io.Reader, in chan Respond) {
 
 	c.ctx = ctx
@@ -40,7 +40,7 @@ func (c *Cmd) init(ctx context.Context, rw io.Reader, in chan Respond) {
 	c.in = in
 }
 
-// setExitStatus stores the exit status of the remote command as well as any
+// setExitStatus stores the exit status of the remote AgentCommand as well as any
 // communicator related error. SetExitStatus then unblocks any pending calls
 // to Wait.
 // This should only be called by communicators executing the remote.Cmd.
@@ -51,7 +51,7 @@ func (c *Cmd) setExitStatus(status int, err error) {
 	close(c.exitCh)
 }
 
-// Wait waits for the remote command completion or cancellation.
+// Wait waits for the remote AgentCommand completion or cancellation.
 // Wait may return an error from the communicator, or an ExitError if the
 // process exits with a non-zero exit status.
 
@@ -182,7 +182,7 @@ func readBuffForString(sshOut io.Reader, buffRead chan string) {
 }
 
 // ExitError is returned by Wait to indicate an error while executing the remote
-// command, or a non-zero exit status.
+// AgentCommand, or a non-zero exit status.
 type ExitError struct {
 	Command    string
 	ExitStatus int

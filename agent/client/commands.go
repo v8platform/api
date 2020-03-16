@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-type command interface {
+type AgentCommand interface {
 	Command() string
 	Args() []string
 }

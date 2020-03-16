@@ -19,6 +19,16 @@ type DebugInfo struct {
 	ServerAddress string `json:"server-address"`
 }
 
+type ExtensionProperties struct {
+	Extension                 string
+	Active                    ExtensionPropertiesBoolType
+	SafeMode                  ExtensionPropertiesBoolType
+	SecurityProfileName       string
+	UnsafeActionProtection    ExtensionPropertiesBoolType
+	UsedInDistributedInfobase ExtensionPropertiesBoolType
+	Scope                     ExtensionPropertiesScopeType
+}
+
 //Данная команда позволяет получить значения параметров. Для команды доступны следующие параметры:
 type ConfigurationOptions struct {
 
