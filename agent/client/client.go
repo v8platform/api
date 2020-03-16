@@ -10,8 +10,6 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-const CONFIG_COMMAND = "options set --output-format json --show-prompt no"
-
 // Logger is the minimal interface client needs for logging. Note that
 // log.Logger from the standard library implements this interface, and it is
 // easy to implement by custom loggers, if they don't do so already anyway.
@@ -23,61 +21,11 @@ type Client interface {
 	Connect(ctx context.Context) (err error)
 	Disconnect()
 
+	Start(cmd string) error
+	ReadAnswer()
+
 	//v8 configuration api
 
-}
-
-type ConfigurationAgent interface {
-	Exec(Cmd AgentCommand) error
-
-	//Команды группы common отвечают за общие операции. В состав группы входят следующие команды:
-	//connect-ib ‑ выполнить подключение к информационной базе, параметры которой указаны при старте режима агента.
-	ConnectIB() (err error)
-
-	//disconnect-ib ‑ выполнить отключение от информационной базы, подключение к которой ранее выполнялось с помощью команды connect-ib.
-	DisconnectIB() (err error)
-
-	//shutdown ‑ завершить работу конфигуратора в режиме агента.
-	Shutdown() (err error)
-
-	// options
-	Options() (ConfigurationOptions, err error)
-	SetOptions(opt ConfigurationOptions) error
-
-	// Configuration support
-	DisableCfgSupport() error
-
-	// Configuration
-	DumpCfgToFiles(dir string, force bool) error
-	LoadCfgFromFiles(dir string, updateConfigDumpInfo bool) error
-
-	DumpExtensionToFiles(ext string, dir string, force bool) error
-	LoadExtensionFromFiles(ext string, dir string, updateConfigDumpInfo bool) error
-	DumpAllExtensionsToFiles(dir string, force bool) error
-	LoadAllExtensionsFromFiles(dir string, updateConfigDumpInfo bool) error
-
-	// update
-	UpdateDbCfg(server bool) error
-	UpdateDbExtension(extension string, server bool) error
-	StartBackgroundUpdateDBCfg() error
-	StopBackgroundUpdateDBCfg() error
-	FinishBackgroundUpdateDBCfg() error
-	ResumeBackgroundUpdateDBCfg() error
-
-	// Infobase
-	IBDataSeparationList() (DataSeparationList, error)
-	DebugInfo() (DebugInfo, err error)
-	DumpIB(file string) (err error)
-	RestoreIB(file string) (err error)
-	EraseData() (err error)
-
-	//Extensions
-	CreateExtension(name, prefix string, synonym string, purpose ExtensionPurposeType) error
-	DeleteExtension(name string) error
-	DeleteAllExtensions() error
-	GetExtensionProperties(name string) (ExtensionProperties, error)
-	GetAllExtensionsProperties() ([]ExtensionProperties, error)
-	SetExtensionProperties(props ExtensionProperties) error
 }
 
 // client allows for executing commands on a remote host over SSH, it is

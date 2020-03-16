@@ -26,7 +26,13 @@ type Respond struct {
 	Body      string           `json:"body, raw"`
 }
 
-func ReadRespond(data []byte) ([]Respond, error) {
+func (res Respond) IsSuccess() bool {
+
+	return res.Type == SuccessType
+
+}
+
+func readRespond(data []byte) ([]Respond, error) {
 
 	// json data
 	var r []Respond
@@ -38,4 +44,10 @@ func ReadRespond(data []byte) ([]Respond, error) {
 	}
 
 	return r, nil
+}
+
+func readRespondString(str string) (r []Respond, err error) {
+
+	return readRespond([]byte(str))
+
 }
