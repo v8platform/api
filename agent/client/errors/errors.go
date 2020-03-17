@@ -12,54 +12,56 @@ var (
 type Kind uint
 
 const (
-	UnknownError                       Kind = iota // UnknownError ‑ неизвестная ошибка.
-	DesignerNotConnectedToInfoBase                 // DesignerNotConnectedToInfoBase ‑ соединение с информационной базой не установлено.
-	DesignerAlreadyConnectedToInfoBase             // DesignerAlreadyConnectedToInfoBase ‑ соединение с информационной базой уже установлено.
-	CommandFormatError                             // CommandFormatError ‑ неверный формат команды.
-	DBRestructInfo                                 // DBRestructInfo ‑ ошибка реструктуризации базы данных.
-	InfoBaseNotFound                               // InfoBaseNotFound ‑ информационная база не найдена.
-	AdministrationAccessRightRequired              // AdministrationAccessRightRequired ‑ для выполнения операции требуются административные права.
-	ConfigFilesError                               // ConfigFilesError ‑ ошибки в процессе загрузки/выгрузки конфигурации из/в файла.
-	DesignerAlreadyStarted                         // DesignerAlreadyStarted ‑ обнаружен запущенный конфигуратор.
-	InfoBaseExclusiveLockRequired                  // InfoBaseExclusiveLockRequired ‑ требуется исключительная блокировка информационной базы.
-	LanguageNotFound                               // LanguageNotFound ‑ язык не обнаружен.
-	ExtensionWithDataIsActive                      // ExtensionWithDataIsActive ‑ расширение конфигурации активно и содержит данные.
-	ExtensionNotFound                              // ExtensionNotFound ‑ расширение не обнаружено.
+	NullError                          Kind = iota
+	UnknownError                            // NullError ‑ неизвестная ошибка.
+	DesignerNotConnectedToInfoBase          // DesignerNotConnectedToInfoBase ‑ соединение с информационной базой не установлено.
+	DesignerAlreadyConnectedToInfoBase      // DesignerAlreadyConnectedToInfoBase ‑ соединение с информационной базой уже установлено.
+	CommandFormatError                      // CommandFormatError ‑ неверный формат команды.
+	DBRestructInfo                          // DBRestructInfo ‑ ошибка реструктуризации базы данных.
+	InfoBaseNotFound                        // InfoBaseNotFound ‑ информационная база не найдена.
+	AdministrationAccessRightRequired       // AdministrationAccessRightRequired ‑ для выполнения операции требуются административные права.
+	ConfigFilesError                        // ConfigFilesError ‑ ошибки в процессе загрузки/выгрузки конфигурации из/в файла.
+	DesignerAlreadyStarted                  // DesignerAlreadyStarted ‑ обнаружен запущенный конфигуратор.
+	InfoBaseExclusiveLockRequired           // InfoBaseExclusiveLockRequired ‑ требуется исключительная блокировка информационной базы.
+	LanguageNotFound                        // LanguageNotFound ‑ язык не обнаружен.
+	ExtensionWithDataIsActive               // ExtensionWithDataIsActive ‑ расширение конфигурации активно и содержит данные.
+	ExtensionNotFound                       // ExtensionNotFound ‑ расширение не обнаружено.
 )
 
-type ErrorType uint
-
-func (k Kind) String() string {
-	switch k {
-	case UnknownError:
-		return "неизвестная ошибка"
-	case DesignerNotConnectedToInfoBase:
-		return "соединение с информационной базой не установлено"
-	case DesignerAlreadyConnectedToInfoBase:
-		return "соединение с информационной базой уже установлено"
-	case CommandFormatError:
-		return "неверный формат команды"
-	case DBRestructInfo:
-		return "ошибка реструктуризации базы данных"
-	case InfoBaseNotFound:
-		return "информационная база не найдена"
-	case AdministrationAccessRightRequired:
-		return "для выполнения операции требуются административные права"
-	case ConfigFilesError:
-		return "ошибки в процессе загрузки/выгрузки конфигурации из/в файла"
-	case DesignerAlreadyStarted:
-		return "обнаружен запущенный конфигуратор"
-	case InfoBaseExclusiveLockRequired:
-		return "требуется исключительная блокировка информационной базы"
-	case LanguageNotFound:
-		return "язык не обнаружен"
-	case ExtensionWithDataIsActive:
-		return "расширение конфигурации активно и содержит данные"
-	case ExtensionNotFound:
-		return "расширение не обнаружено"
-	}
-	return "unknown error kind"
-}
+//
+//func (e Kind) String() string {
+//	switch e {
+//	case NullError:
+//		return "пустая ошибка"
+//	case UnknownError:
+//		return "неизвестная ошибка"
+//	case DesignerNotConnectedToInfoBase:
+//		return "соединение с информационной базой не установлено"
+//	case DesignerAlreadyConnectedToInfoBase:
+//		return "соединение с информационной базой уже установлено"
+//	case CommandFormatError:
+//		return "неверный формат команды"
+//	case DBRestructInfo:
+//		return "ошибка реструктуризации базы данных"
+//	case InfoBaseNotFound:
+//		return "информационная база не найдена"
+//	case AdministrationAccessRightRequired:
+//		return "для выполнения операции требуются административные права"
+//	case ConfigFilesError:
+//		return "ошибки в процессе загрузки/выгрузки конфигурации из/в файла"
+//	case DesignerAlreadyStarted:
+//		return "обнаружен запущенный конфигуратор"
+//	case InfoBaseExclusiveLockRequired:
+//		return "требуется исключительная блокировка информационной базы"
+//	case LanguageNotFound:
+//		return "язык не обнаружен"
+//	case ExtensionWithDataIsActive:
+//		return "расширение конфигурации активно и содержит данные"
+//	case ExtensionNotFound:
+//		return "расширение не обнаружено"
+//	}
+//	return "unknown error kind"
+//}
 
 type Error struct {
 	kind        Kind
@@ -91,7 +93,8 @@ func (e *Error) IsZero() bool {
 
 // New creates a new Error
 func (e Kind) New(msg string) Error {
-	return Error{kind: e, err: errors.New(msg)}
+	err := Error{kind: e, err: errors.New(msg)}
+	return err
 }
 
 // New creates a new Error with formatted message
@@ -134,7 +137,7 @@ func Wrapf(err error, msg string, args ...interface{}) error {
 		}
 	}
 
-	return Error{kind: UnknownError, err: wrappedError}
+	return Error{kind: NullError, err: wrappedError}
 }
 
 // AddErrorContext adds a context to an error
@@ -144,7 +147,7 @@ func AddErrorContext(err error, field, message string) error {
 		return Error{kind: customErr.kind, err: customErr.err, contextInfo: context}
 	}
 
-	return Error{kind: UnknownError, err: err, contextInfo: context}
+	return Error{kind: NullError, err: err, contextInfo: context}
 }
 
 // GetErrorContext returns the error context
@@ -159,7 +162,7 @@ func GetErrorContext(err error) map[string]string {
 }
 
 func New(msg string) error {
-	return UnknownError.New(msg)
+	return NullError.New(msg)
 }
 
 // GetType returns the error type
@@ -168,17 +171,23 @@ func GetType(err error) Kind {
 		return customErr.kind
 	}
 
-	return UnknownError
+	return NullError
 }
 
 // Is reports whether err is an *Error of the given Kind.
 // If err is nil then Is returns false.
 func Is(kind Kind, err error) bool {
-	e, ok := err.(*Error)
-	if !ok {
-		return false
+
+	var e Error
+	switch err.(type) {
+	case *Error:
+		e1, _ := err.(*Error)
+		e = *e1
+	case Error:
+		e, _ = err.(Error)
 	}
-	if e.kind != UnknownError {
+
+	if e.kind != NullError {
 		return e.kind == kind
 	}
 	if e.err != nil {

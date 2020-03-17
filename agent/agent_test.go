@@ -1,16 +1,12 @@
 package agent
 
 import (
-	"context"
 	"github.com/Khorevaa/go-v8runner/agent/client"
-	"github.com/Khorevaa/go-v8runner/infobase"
-	"github.com/Khorevaa/go-v8runner/runner"
 	"github.com/Khorevaa/go-v8runner/tests"
 	"github.com/stretchr/testify/suite"
 	"log"
 	"os"
 	"testing"
-	"time"
 )
 
 type AgentTestSuite struct {
@@ -23,15 +19,26 @@ func TestAgent(t *testing.T) {
 
 func (a *AgentTestSuite) TestStartAgent() {
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	//t := a.T()
-
-	go a.Runner.Run(infobase.NewFileIB(a.TempIB), AgentModeOptions{
-		Visible:        true,
-		SSHHostKeyAuto: true},
-		runner.WithContext(ctx))
+	//ctx, cancel := context.WithCancel(context.Background())
+	//defer cancel()
+	//
+	////t := a.T()
+	//
+	//go func() {
+	//	defer func() error {
+	//		if err := recover(); err != nil {
+	//			return errors.New(fmt.Sprintf("v8 run agent err:%s", err))
+	//		}
+	//		return nil
+	//	}()
+	//
+	//	a.Runner.Run(infobase.NewFileIB(a.TempIB), AgentModeOptions{
+	//		Visible:        true,
+	//		SSHHostKeyAuto: true,
+	//		BaseDir: "./"},
+	//		runner.WithContext(ctx))
+	//
+	//}()
 
 	//t.R().NoError(err, errors.GetErrorContext(err))
 
@@ -47,15 +54,48 @@ func (a *AgentTestSuite) TestStartAgent() {
 	//	log.Fatal(err)
 	//}
 
-	time.Sleep(time.Second * 5)
-
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 
-	_, err := sshclient.NewAgentClient("", "", "localhost:1543")
+	client, err := sshclient.NewAgentClient("", "", "localhost:1543")
 
+	if err != nil {
+		logger.Fatalf("create agent client %v", err)
+	}
+
+	err = client.CopyFileTo("C:\\GitHub\\go-v8runner\\tests\\fixtures\\1.0\\1Cv8.cf", "./1Cv8.cf")
+	if err != nil {
+		logger.Fatalf("copy file %v", err)
+	}
+
+	//err = client.Disconnect()
+	//if err != nil {
+	//	logger.Fatal(err)
+	//}
+	//
+	err = client.Connect()
 	if err != nil {
 		logger.Fatal(err)
 	}
+
+	err = client.LoadCfg("./1Cv8.cf")
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	err = client.DumpCfgToFiles("./src", true)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	//err = client.Disconnect()
+	//if err != nil {
+	//	logger.Fatal(err)
+	//}
+	//
+	//err = client.Shutdown()
+	//if err != nil {
+	//	logger.Fatal(err)
+	//}
 
 	//session.WriteChannel(sshclient.CONFIG_COMMAND)
 	//str := session.ReadChannelTiming(10)

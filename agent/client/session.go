@@ -12,6 +12,7 @@ import (
 )
 
 type Session struct {
+	conn          *ssh.Client
 	session       *ssh.Session
 	in            chan string
 	out           chan string
@@ -52,6 +53,7 @@ func (this *Session) createConnection(user, password, ipPort string) error {
 		return err
 	}
 
+	this.conn = client
 	ServerAliveInterval := 15 * time.Second
 	ServerAliveCountMax := 3
 	//c.logger.Println("Starting ssh KeepAlives", "host", c.host)
@@ -87,7 +89,7 @@ func (this *Session) shell() error {
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
-				//LogError("Goroutine shell write err:%s", err)
+				fmt.Printf("Goroutine shell write err:%s", err)
 			}
 		}()
 		for cmd := range in {
@@ -102,7 +104,7 @@ func (this *Session) shell() error {
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
-				//LogError("Goroutine shell read err:%s", err)
+				fmt.Printf("Goroutine shell read err:%s", err)
 			}
 		}()
 		var (
@@ -254,6 +256,7 @@ func (this *Session) RawReadChannel(ctx context.Context, fn ChannelDataReader, t
 	}
 
 	doneChan := make(chan bool, 1)
+	defer close(doneChan)
 	var err error
 	for {
 		select {

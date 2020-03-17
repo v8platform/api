@@ -101,6 +101,23 @@ func (res Respond) ReadBody(t interface{}) error {
 
 }
 
+type ProgressInfo struct {
+	Message string `json:"message"`
+	Percent int    `json:"percent"`
+}
+
+type LoadingIssueLevel string
+
+const (
+	LoadingIssueLevelWarning LoadingIssueLevel = "warning"
+	LoadingIssueLevelError                     = "error"
+)
+
+type LoadingIssue struct {
+	Message string            `json:"message"`
+	Level   LoadingIssueLevel `json:"level"`
+}
+
 func readRespond(data []byte) ([]Respond, error) {
 
 	// json data

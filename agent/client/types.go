@@ -3,6 +3,9 @@ package sshclient
 type Agent interface {
 	Exec(Cmd AgentCommand, opts ...execOption) (res []Respond, err error)
 
+	CopyFileTo(src, dest string) error
+	CopyFileFrom(src, dest string) error
+
 	//Команды группы common отвечают за общие операции. В состав группы входят следующие команды:
 	//connect-ib ‑ выполнить подключение к информационной базе, параметры которой указаны при старте режима агента.
 	Connect() (err error)
@@ -23,6 +26,12 @@ type Agent interface {
 	// Configuration
 	DumpCfgToFiles(dir string, force bool) error
 	LoadCfgFromFiles(dir string, updateConfigDumpInfo bool) error
+
+	DumpCfg(file string) error
+	LoadCfg(file string) error
+
+	DumpExtensionCfg(ext string, file string) error
+	LoadExtensionCfg(ext string, file string) error
 
 	DumpExtensionToFiles(ext string, dir string, force bool) error
 	LoadExtensionFromFiles(ext string, dir string, updateConfigDumpInfo bool) error

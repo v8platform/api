@@ -97,7 +97,7 @@ type SetOptions struct {
 	//  no ‑ в командной строке нет приглашения.
 	ShowPrompt OptionsBoolType `json:"show-prompt"`
 	//  --notify-progress ‑ позволяет получить информацию об отображении прогресса выполнения команды.
-	NotifyProgress bool `json:"notify-progress"`
+	NotifyProgress OptionsBoolType `json:"notify-progress"`
 	//  --notify-progress-interval ‑ позволяет получить интервал времени, через который обновляется информация о прогрессе.
 	NotifyProgressInterval int `json:"notify-progress-interval"`
 }
@@ -118,8 +118,8 @@ func (c SetOptions) Args() []string {
 		v = append(v, "--show-prompt", c.ShowPrompt.String())
 	}
 
-	if c.NotifyProgress {
-		v = append(v, "--notify-progress")
+	if len(c.NotifyProgress) > 0 {
+		v = append(v, "--notify-progress", c.NotifyProgress.String())
 	}
 
 	if c.NotifyProgressInterval > 0 {
@@ -287,7 +287,7 @@ type LoadCfg struct {
 }
 
 func (c LoadCfg) Command() string {
-	return c.cmdConfig.Command() + " " + "dump-cfg"
+	return c.cmdConfig.Command() + " " + "load-cfg"
 }
 
 func (c LoadCfg) Args() []string {

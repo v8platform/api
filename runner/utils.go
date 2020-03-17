@@ -38,7 +38,7 @@ func detectFileCharset(data []byte) charset {
 // Similar to ioutil.ReadFile() but decodes UTF-16.  Useful when
 func readV8file(filename string) ([]byte, error) {
 
-	// Read the file into a []byte:
+	// Reader the file into a []byte:
 	raw, err := ioutil.ReadFile(filename)
 	cs := detectFileCharset(raw)
 
