@@ -22,7 +22,7 @@ func (c *AgentClient) Options(opts ...execOption) (ConfigurationOptions, error) 
 		return configurationOptions, err
 	}
 
-	err = json.Unmarshal(body, &opts)
+	err = json.Unmarshal(body, &configurationOptions)
 	if err != nil {
 		return configurationOptions, errors.Wrapf(err, "cannot read body data")
 	}

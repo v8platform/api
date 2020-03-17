@@ -6,6 +6,9 @@ type Agent interface {
 	CopyFileTo(src, dest string) error
 	CopyFileFrom(src, dest string) error
 
+	CopyDirTo(src, dest string) error
+	CopyDirFrom(src, dest string) error
+
 	//Команды группы common отвечают за общие операции. В состав группы входят следующие команды:
 	//connect-ib ‑ выполнить подключение к информационной базе, параметры которой указаны при старте режима агента.
 	Connect(opts ...execOption) (err error)

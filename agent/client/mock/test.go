@@ -33,4 +33,30 @@ func main() {
 		BaseDir:        "./"},
 		runner.WithContext(ctx))
 
+	//srcDir := "./agent"
+	//destDir := "./src"
+	//
+	//type file struct {
+	//	src string
+	//	dest string
+	//}
+	//
+	//fileList := make([]file, 0)
+	//e := filepath.Walk(srcDir, func(path string, f os.FileInfo, err error) error {
+	//
+	//	if f.IsDir() {
+	//		return err
+	//	}
+	//
+	//	p, _ := filepath.Rel(srcDir, path)
+	//	destFile := filepath.Join(destDir, p)
+	//	srcFile, _ := filepath.Abs(path)
+	//	fileList = append(fileList, file{srcFile, destFile})
+	//	//err = uploadFile(fileTransfer, f.Name(), dest)
+	//	return err
+	//})
+	//
+	//println(fileList)
+	//println(e)
+
 }

@@ -62,30 +62,39 @@ func (a *AgentTestSuite) TestStartAgent() {
 		logger.Fatalf("create agent client %v", err)
 	}
 
-	err = client.CopyFileTo("C:\\GitHub\\go-v8runner\\tests\\fixtures\\1.0\\1Cv8.cf", "./1Cv8.cf")
+	//err = client.CopyDirTo("./", "./src")
+	//if err != nil {
+	//	logger.Fatalf("copy file %v", err)
+	//}
+	//err = client.CopyFileFrom("./src/agent.go", "./tmp/")
+	//if err != nil {
+	//	logger.Fatalf("copy file %v", err)
+	//}
+	logger.Printf("copy dir")
+
+	err = client.CopyDirFrom("./src", "./tmp/")
 	if err != nil {
 		logger.Fatalf("copy file %v", err)
 	}
-
 	//err = client.Disconnect()
 	//if err != nil {
 	//	logger.Fatal(err)
 	//}
 	//
-	err = client.Connect()
-	if err != nil {
-		logger.Fatal(err)
-	}
-
-	err = client.LoadCfg("./1Cv8.cf")
-	if err != nil {
-		logger.Fatal(err)
-	}
-
-	err = client.DumpCfgToFiles("./src", true)
-	if err != nil {
-		logger.Fatal(err)
-	}
+	//err = client.Connect()
+	//if err != nil {
+	//	logger.Fatal(err)
+	//}
+	//
+	//err = client.LoadCfg("./1Cv8.cf")
+	//if err != nil {
+	//	logger.Fatal(err)
+	//}
+	//
+	//err = client.DumpCfgToFiles("./src", true)
+	//if err != nil {
+	//	logger.Fatal(err)
+	//}
 
 	//err = client.Disconnect()
 	//if err != nil {
