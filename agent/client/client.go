@@ -11,19 +11,20 @@ import (
 )
 
 var _ Agent = (*AgentClient)(nil)
+var re = regexp.MustCompile(reqExpRespond)
 
 const (
-	reqExpRespond    = `(?msU)((?:^\[(?:\n|\r\n)).*?(\n|\r\n)\])`
-	configureCommand = "options set --output-format json --show-prompt no"
-	defaultTimeout   = time.Second
+	reqExpRespond  = `(?msU)((?:^\[(?:\n|\r\n)).*?(\n|\r\n)\])`
+	defaultTimeout = time.Second
 )
 
 type AgentClient struct {
 	user, password, ipPort string
 	session                *Session
-	client                 *SftpClient
 	ibConnected            bool
 	options                ConfigurationOptions
+	dial                   DialContextFunc
+	keepaliveDone          chan struct{}
 }
 
 type ChannelDataReader func(date string, doneChan chan bool) error
@@ -49,6 +50,12 @@ type execOption func(o *execOptions)
 func WithOptions(opt ConfigurationOptions) Option {
 	return func(c *AgentClient) {
 		c.options = opt
+	}
+}
+
+func WithDialer(dial DialContextFunc) Option {
+	return func(c *AgentClient) {
+		c.dial = dial
 	}
 }
 
@@ -146,7 +153,17 @@ func (c *AgentClient) configure() error {
 
 func (c *AgentClient) Start() error {
 
-	s, err := NewSeesion(c.user, c.password, c.ipPort)
+	client, err := c.newConnection()
+	if err != nil {
+		return err
+	}
+
+	ServerAliveInterval := 15 * time.Second
+	ServerAliveCountMax := 3
+	c.keepaliveDone = make(chan struct{})
+	go StartKeepalive(client, ServerAliveInterval, ServerAliveCountMax, c.keepaliveDone)
+
+	s, err := NewSeesion(client)
 
 	if err != nil {
 		return err
@@ -162,7 +179,10 @@ func (c *AgentClient) Start() error {
 func (c *AgentClient) Stop() {
 
 	c.session.ClearChannel()
-	c.session.Close()
+	_ = c.session.Close()
+
+	c.keepaliveDone <- struct{}{}
+	close(c.keepaliveDone)
 
 }
 
@@ -196,6 +216,10 @@ func (c *AgentClient) Exec(cmd AgentCommand, opts ...execOption) (res []Respond,
 	err = session.RawReadChannel(ctx, newChannelDataReader(&res, reader, o.OnSuccess, o.OnError, o.OnProgress), o.ticker)
 
 	return
+}
+
+func newExecOptions() []execOption {
+	return []execOption{}
 }
 
 func boolToString(b bool) string {
@@ -232,8 +256,6 @@ func newChannelDataReader(res *[]Respond, fn RespondReader, onSuccess OnSuccessR
 }
 
 func defaultReader(res *[]Respond, data string, done chan bool, onSuccess OnSuccessRespond, onError OnErrorRespond, OnProgress OnProgressRespond) error {
-
-	re := regexp.MustCompile(reqExpRespond)
 
 	var resData string
 	resData += data
@@ -304,7 +326,13 @@ func successChecker(body *[]byte, err *error) (OnSuccessRespond, OnErrorRespond,
 
 func (c *AgentClient) newConnection() (*ssh.Client, error) {
 
-	client, err := ssh.Dial("tcp", c.ipPort, &ssh.ClientConfig{
+	dial := c.dial
+	if dial == nil {
+		dial = ContextDialer(&net.Dialer{})
+	}
+
+	ctx := context.Background()
+	client, err := dial(ctx, "tcp", c.ipPort, &ssh.ClientConfig{
 		User: c.user,
 		Auth: []ssh.AuthMethod{
 			ssh.Password(c.password),

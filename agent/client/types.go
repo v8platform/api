@@ -8,58 +8,58 @@ type Agent interface {
 
 	//Команды группы common отвечают за общие операции. В состав группы входят следующие команды:
 	//connect-ib ‑ выполнить подключение к информационной базе, параметры которой указаны при старте режима агента.
-	Connect() (err error)
+	Connect(opts ...execOption) (err error)
 
 	//disconnect-ib ‑ выполнить отключение от информационной базы, подключение к которой ранее выполнялось с помощью команды connect-ib.
-	Disconnect() (err error)
+	Disconnect(opts ...execOption) (err error)
 
 	//shutdown ‑ завершить работу конфигуратора в режиме агента.
-	Shutdown() (err error)
+	Shutdown(opts ...execOption) (err error)
 
 	// options
-	Options() (opts ConfigurationOptions, err error)
-	SetOptions(opts ConfigurationOptions) error
+	Options(opts ...execOption) (confOpts ConfigurationOptions, err error)
+	SetOptions(confOpts ConfigurationOptions, opts ...execOption) error
 
 	// Configuration support
-	DisableCfgSupport() error
+	DisableCfgSupport(opts ...execOption) error
 
 	// Configuration
-	DumpCfgToFiles(dir string, force bool) error
-	LoadCfgFromFiles(dir string, updateConfigDumpInfo bool) error
+	DumpCfgToFiles(dir string, force bool, opts ...execOption) error
+	LoadCfgFromFiles(dir string, updateConfigDumpInfo bool, opts ...execOption) error
 
-	DumpCfg(file string) error
-	LoadCfg(file string) error
+	DumpCfg(file string, opts ...execOption) error
+	LoadCfg(file string, opts ...execOption) error
 
-	DumpExtensionCfg(ext string, file string) error
-	LoadExtensionCfg(ext string, file string) error
+	DumpExtensionCfg(ext string, file string, opts ...execOption) error
+	LoadExtensionCfg(ext string, file string, opts ...execOption) error
 
-	DumpExtensionToFiles(ext string, dir string, force bool) error
-	LoadExtensionFromFiles(ext string, dir string, updateConfigDumpInfo bool) error
-	DumpAllExtensionsToFiles(dir string, force bool) error
-	LoadAllExtensionsFromFiles(dir string, updateConfigDumpInfo bool) error
+	DumpExtensionToFiles(ext string, dir string, force bool, opts ...execOption) error
+	LoadExtensionFromFiles(ext string, dir string, updateConfigDumpInfo bool, opts ...execOption) error
+	DumpAllExtensionsToFiles(dir string, force bool, opts ...execOption) error
+	LoadAllExtensionsFromFiles(dir string, updateConfigDumpInfo bool, opts ...execOption) error
 
 	// update
-	UpdateDbCfg(server bool) error
-	UpdateDbExtension(extension string, server bool) error
-	StartBackgroundUpdateDBCfg() error
-	StopBackgroundUpdateDBCfg() error
-	FinishBackgroundUpdateDBCfg() error
-	ResumeBackgroundUpdateDBCfg() error
+	UpdateDbCfg(server bool, opts ...execOption) error
+	UpdateDbExtension(extension string, server bool, opts ...execOption) error
+	StartBackgroundUpdateDBCfg(opts ...execOption) error
+	StopBackgroundUpdateDBCfg(opts ...execOption) error
+	FinishBackgroundUpdateDBCfg(opts ...execOption) error
+	ResumeBackgroundUpdateDBCfg(opts ...execOption) error
 
 	// Infobase
-	IBDataSeparationList() (DataSeparationList, error)
-	DebugInfo() (info DebugInfo, err error)
-	DumpIB(file string) (err error)
-	RestoreIB(file string) (err error)
-	EraseData() (err error)
+	IBDataSeparationList(opts ...execOption) (DataSeparationList, error)
+	DebugInfo(opts ...execOption) (info DebugInfo, err error)
+	DumpIB(file string, opts ...execOption) (err error)
+	RestoreIB(file string, opts ...execOption) (err error)
+	EraseData(opts ...execOption) (err error)
 
 	//Extensions
-	CreateExtension(name, prefix string, synonym string, purpose ExtensionPurposeType) error
-	DeleteExtension(name string) error
-	DeleteAllExtensions() error
-	GetExtensionProperties(name string) (ExtensionProperties, error)
-	GetAllExtensionsProperties() ([]ExtensionProperties, error)
-	SetExtensionProperties(props ExtensionProperties) error
+	CreateExtension(name, prefix string, synonym string, purpose ExtensionPurposeType, opts ...execOption) error
+	DeleteExtension(name string, opts ...execOption) error
+	DeleteAllExtensions(opts ...execOption) error
+	GetExtensionProperties(name string, opts ...execOption) (ExtensionProperties, error)
+	GetAllExtensionsProperties(opts ...execOption) ([]ExtensionProperties, error)
+	SetExtensionProperties(props ExtensionProperties, opts ...execOption) error
 }
 
 type DebugInfo struct {

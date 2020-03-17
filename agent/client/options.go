@@ -6,36 +6,46 @@ import (
 )
 
 // options
-func (c *AgentClient) Options() (ConfigurationOptions, error) {
+func (c *AgentClient) Options(opts ...execOption) (ConfigurationOptions, error) {
 
-	var opts ConfigurationOptions
+	var configurationOptions ConfigurationOptions
 	var body []byte
 	var e error
-	_, err := c.Exec(OptionsList{}, WithRespondCheck(successChecker(&body, &e)))
+
+	options := newExecOptions()
+	options = append(options, WithRespondCheck(successChecker(&body, &e)))
+	options = append(options, opts...)
+
+	_, err := c.Exec(OptionsList{}, options...)
 
 	if err != nil {
-		return opts, err
+		return configurationOptions, err
 	}
 
 	err = json.Unmarshal(body, &opts)
 	if err != nil {
-		return opts, errors.Wrapf(err, "cannot read body data")
+		return configurationOptions, errors.Wrapf(err, "cannot read body data")
 	}
 
-	return opts, nil
+	return configurationOptions, nil
 }
 
-func (c *AgentClient) SetOptions(opt ConfigurationOptions) error {
+func (c *AgentClient) SetOptions(configurationOptions ConfigurationOptions, opts ...execOption) error {
 
 	setOpt := SetOptions{
-		OutputFormat:           opt.OutputFormat,
-		ShowPrompt:             OptionsBoolType(boolToString(opt.ShowPrompt)),
-		NotifyProgress:         OptionsBoolType(boolToString(opt.NotifyProgress)),
-		NotifyProgressInterval: opt.NotifyProgressInterval,
+		OutputFormat:           configurationOptions.OutputFormat,
+		ShowPrompt:             OptionsBoolType(boolToString(configurationOptions.ShowPrompt)),
+		NotifyProgress:         OptionsBoolType(boolToString(configurationOptions.NotifyProgress)),
+		NotifyProgressInterval: configurationOptions.NotifyProgressInterval,
 	}
 	var body []byte
 	var e error
-	_, err := c.Exec(setOpt, WithRespondCheck(successChecker(&body, &e)))
+
+	options := newExecOptions()
+	options = append(options, WithRespondCheck(successChecker(&body, &e)))
+	options = append(options, opts...)
+
+	_, err := c.Exec(setOpt, options...)
 
 	if err != nil {
 		return err

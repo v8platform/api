@@ -1,8 +1,10 @@
 package sshclient
 
-import "github.com/Khorevaa/go-v8runner/agent/client/errors"
+import (
+	"github.com/Khorevaa/go-v8runner/agent/client/errors"
+)
 
-func (c *AgentClient) Connect() error {
+func (c *AgentClient) Connect(opts ...execOption) error {
 
 	onSuccess := func(body []byte, stop chan bool) {
 		c.ibConnected = true
@@ -20,7 +22,11 @@ func (c *AgentClient) Connect() error {
 		stop <- true
 	}
 
-	_, err := c.Exec(CommonConnectInfobase{}, WithRespondCheck(onSuccess, onError, nil))
+	options := newExecOptions()
+	options = append(options, WithRespondCheck(onSuccess, onError, nil))
+	options = append(options, opts...)
+
+	_, err := c.Exec(CommonConnectInfobase{}, options...)
 
 	if err != nil {
 		return err
@@ -30,7 +36,7 @@ func (c *AgentClient) Connect() error {
 
 }
 
-func (c *AgentClient) Disconnect() error {
+func (c *AgentClient) Disconnect(opts ...execOption) error {
 
 	onSuccess := func(body []byte, stop chan bool) {
 		c.ibConnected = false
@@ -47,7 +53,11 @@ func (c *AgentClient) Disconnect() error {
 		stop <- true
 	}
 
-	_, errExec := c.Exec(CommonDisconnectInfobase{}, WithRespondCheck(onSuccess, onError, nil))
+	options := newExecOptions()
+	options = append(options, WithRespondCheck(onSuccess, onError, nil))
+	options = append(options, opts...)
+
+	_, errExec := c.Exec(CommonDisconnectInfobase{}, options...)
 
 	if errExec != nil {
 		return errExec
@@ -57,9 +67,13 @@ func (c *AgentClient) Disconnect() error {
 
 }
 
-func (c *AgentClient) Shutdown() (err error) {
+func (c *AgentClient) Shutdown(opts ...execOption) (err error) {
 
-	_, err = c.Exec(CommonShutdown{}, WithNullReader())
+	options := newExecOptions()
+	options = append(options, WithNullReader())
+	options = append(options, opts...)
+
+	_, err = c.Exec(CommonShutdown{}, options...)
 
 	if err != nil {
 		return err

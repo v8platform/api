@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"golang.org/x/crypto/ssh"
-	"net"
 	"regexp"
 	"strings"
 	"time"
@@ -19,11 +18,9 @@ type Session struct {
 	keepaliveDone chan struct{}
 }
 
-func NewSeesion(user, password, ipPort string) (*Session, error) {
+func NewSeesion(conn *ssh.Client) (*Session, error) {
 	sshSession := new(Session)
-	if err := sshSession.createConnection(user, password, ipPort); err != nil {
-		return nil, err
-	}
+	sshSession.conn = conn
 	if err := sshSession.shell(); err != nil {
 		return nil, err
 	}
@@ -33,47 +30,19 @@ func NewSeesion(user, password, ipPort string) (*Session, error) {
 	return sshSession, nil
 }
 
-func (this *Session) createConnection(user, password, ipPort string) error {
-	client, err := ssh.Dial("tcp", ipPort, &ssh.ClientConfig{
-		User: user,
-		Auth: []ssh.AuthMethod{
-			ssh.Password(password),
-		},
-		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
-			return nil
-		},
-		Timeout: 20 * time.Second,
-		Config: ssh.Config{
-			Ciphers: []string{"aes128-ctr", "aes192-ctr", "aes256-ctr", "aes128-gcm@openssh.com",
-				"arcfour256", "arcfour128", "aes128-cbc", "aes256-cbc", "3des-cbc", "des-cbc",
-			},
-		},
-	})
-	if err != nil {
-		return err
-	}
-
-	this.conn = client
-	ServerAliveInterval := 15 * time.Second
-	ServerAliveCountMax := 3
-	//c.logger.Println("Starting ssh KeepAlives", "host", c.host)
-	this.keepaliveDone = make(chan struct{})
-	go StartKeepalive(client, ServerAliveInterval, ServerAliveCountMax, this.keepaliveDone)
-
-	session, err := client.NewSession()
-	if err != nil {
-		return err
-	}
-	this.session = session
-	return nil
-}
-
 func (this *Session) shell() error {
 	defer func() {
 		if err := recover(); err != nil {
 			//LogError("Session shell err:%s", err)
 		}
 	}()
+
+	session, err := this.conn.NewSession()
+	if err != nil {
+		return err
+	}
+
+	this.session = session
 
 	w, err := this.session.StdinPipe()
 	if err != nil {
@@ -254,7 +223,7 @@ func (this *Session) RawReadChannel(ctx context.Context, fn ChannelDataReader, t
 	if ticker == nil {
 		ticker = time.NewTicker(time.Millisecond * 100)
 	}
-
+	defer ticker.Stop()
 	doneChan := make(chan bool, 1)
 	defer close(doneChan)
 	var err error
@@ -263,12 +232,10 @@ func (this *Session) RawReadChannel(ctx context.Context, fn ChannelDataReader, t
 
 		case <-doneChan:
 
-			ticker.Stop()
 			return err
 
 		case <-ctx.Done():
 
-			ticker.Stop()
 			return ctx.Err()
 
 		case <-ticker.C:
