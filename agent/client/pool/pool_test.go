@@ -53,7 +53,10 @@ func (t *PoolTestSuite) SetupSuite() {
 
 func (t *PoolTestSuite) TestPoolDownload() {
 
-	pool := NewPool(t.client, WithMaxSize(1), WithUpload(uploadFileMock), WithDownload(downloadFileMock))
+	pool := NewPool(t.client,
+		WithMaxSize(5),
+		WithUpload(uploadFileMock),
+		WithDownload(downloadFileMock))
 
 	pool.DownloadFile("/test", "/tes/ttt/")
 	pool.DownloadFile("/test2", "/tes/ttt/")

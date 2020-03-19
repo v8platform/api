@@ -294,7 +294,7 @@ func (p *WorkerPool) transferFile(file fileTransfer) {
 	p.wg.Add(1)
 
 	go func() {
-		p.running <- worker
+		//p.running <- worker
 		var fn transferFn
 
 		switch file.direction {
@@ -311,7 +311,8 @@ func (p *WorkerPool) transferFile(file fileTransfer) {
 			p.err = multierror.Append(p.err, err)
 			p.mu.Unlock()
 		}
-		<-p.running
+		//<-p.running
+		p.pool <- worker
 		p.wg.Done()
 	}()
 
