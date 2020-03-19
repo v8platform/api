@@ -16,26 +16,29 @@ import (
 type transferFn func(ctx context.Context, client *sftp.Client, src, dest string) error
 
 type WorkerPool struct {
-	maxSize int
-	ctx     context.Context
-	cancel  func()
-	conn    *ssh.Client
+	maxSize   int
+	ctx       context.Context
+	cancel    func()
+	ipPort    string
+	sshConfig *ssh.ClientConfig
 
 	// Protects access to fields below
 	mu      sync.Mutex
 	wg      sync.WaitGroup
 	pool    chan *sftp.Client
-	running chan *sftp.Client
+	started int
 
 	download transferFn
 	upload   transferFn
 
-	cls []closer
+	cls []Closer
 	err *multierror.Error
 }
 
 type Option func(wp *WorkerPool)
-type closer func() error
+type Closer interface {
+	Close() error
+}
 
 func WithMaxSize(max int) Option {
 
@@ -200,14 +203,15 @@ func uploadFile(ctx context.Context, client *sftp.Client, src, dest string) erro
 
 // NewPool creates a new pool of connections and starts GC. If no configuration
 // is specified (nil), defaults values are used.
-func NewPool(conn *ssh.Client, opts ...Option) *WorkerPool {
+func NewPool(config *ssh.ClientConfig, ipPort string, opts ...Option) *WorkerPool {
 
 	p := &WorkerPool{
-		conn:     conn,
-		maxSize:  1,
-		ctx:      context.Background(),
-		download: downloadFile,
-		upload:   uploadFile,
+		sshConfig: config,
+		ipPort:    ipPort,
+		maxSize:   1,
+		ctx:       context.Background(),
+		download:  downloadFile,
+		upload:    uploadFile,
 	}
 
 	for _, opt := range opts {
@@ -221,7 +225,6 @@ func NewPool(conn *ssh.Client, opts ...Option) *WorkerPool {
 	}
 
 	p.pool = make(chan *sftp.Client, p.maxSize)
-	p.running = make(chan *sftp.Client, p.maxSize)
 
 	return p
 }
@@ -231,10 +234,18 @@ func (p *WorkerPool) newClient() (*sftp.Client, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	client, err := sftp.NewClient(p.conn)
+	conn, err := ssh.Dial("tcp", p.ipPort, p.sshConfig)
+
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := sftp.NewClient(conn)
 
 	if err == nil {
-		p.cls = append(p.cls, client.Close)
+		p.cls = append(p.cls, conn)
+		p.cls = append(p.cls, client)
+		p.started += 1
 	}
 
 	return client, err
@@ -242,18 +253,18 @@ func (p *WorkerPool) newClient() (*sftp.Client, error) {
 
 func (p *WorkerPool) gerWorker() (*sftp.Client, error) {
 
-	availableNew := p.maxSize - (len(p.pool) + len(p.running))
+	availableNew := p.maxSize - p.started
 
-	if availableNew > 0 {
+	if availableNew > 0 && len(p.pool) == 0 {
 
 		client, err := p.newClient()
 
 		if err != nil {
 			return nil, err
 		}
-		p.pool <- client
 		return client, nil
 	}
+
 	w, _ := <-p.pool
 
 	return w, nil
@@ -294,7 +305,6 @@ func (p *WorkerPool) transferFile(file fileTransfer) {
 	p.wg.Add(1)
 
 	go func() {
-		//p.running <- worker
 		var fn transferFn
 
 		switch file.direction {
@@ -311,17 +321,17 @@ func (p *WorkerPool) transferFile(file fileTransfer) {
 			p.err = multierror.Append(p.err, err)
 			p.mu.Unlock()
 		}
-		//<-p.running
 		p.pool <- worker
 		p.wg.Done()
 	}()
 
 }
 
-func (p *WorkerPool) Wait() {
+func (p *WorkerPool) Wait() error {
 
 	p.wg.Wait()
 
+	return p.err.ErrorOrNil()
 }
 
 func (p *WorkerPool) Close() {
@@ -331,17 +341,9 @@ func (p *WorkerPool) Close() {
 	defer p.mu.Unlock()
 
 	for _, cl := range p.cls {
-		_ = cl() // TODO Сделайть чтение ошибок закрытия
+		_ = cl.Close() // TODO Сделайть чтение ошибок закрытия
 	}
 
 	close(p.pool)
-	close(p.running)
 
-}
-
-func (p *WorkerPool) ActiveWorkers() int {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	return len(p.running)
 }

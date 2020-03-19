@@ -15,6 +15,8 @@ import (
 type PoolTestSuite struct {
 	client *ssh.Client
 	suite.Suite
+	config *ssh.ClientConfig
+	ipPort string
 }
 
 func TestPool(t *testing.T) {
@@ -23,10 +25,10 @@ func TestPool(t *testing.T) {
 
 func (t *PoolTestSuite) SetupSuite() {
 
-	client, err := ssh.Dial("tcp", "0.0.0.0:2022", &ssh.ClientConfig{
-		User: "testuser",
+	t.config = &ssh.ClientConfig{
+		User: "",
 		Auth: []ssh.AuthMethod{
-			ssh.Password("tiger"),
+			ssh.Password(""),
 		},
 		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
 			return nil
@@ -37,13 +39,16 @@ func (t *PoolTestSuite) SetupSuite() {
 				"arcfour256", "arcfour128", "aes128-cbc", "aes256-cbc", "3des-cbc", "des-cbc",
 			},
 		},
-	})
-
-	if err != nil {
-		t.Error(err)
 	}
 
-	t.client = client
+	t.ipPort = "0.0.0.0:1543"
+	//client, err := ssh.Dial("tcp", "0.0.0.0:1543", )
+	//
+	//if err != nil {
+	//	t.Error(err)
+	//}
+	//
+	//t.client = client
 	//if err := svr.Serve(); err != nil {
 	//	fmt.Fprintf(debugStream, "sftp server completed with error: %v", err)
 	//	os.Exit(1)
@@ -53,7 +58,7 @@ func (t *PoolTestSuite) SetupSuite() {
 
 func (t *PoolTestSuite) TestPoolDownload() {
 
-	pool := NewPool(t.client,
+	pool := NewPool(t.config, t.ipPort,
 		WithMaxSize(5),
 		WithUpload(uploadFileMock),
 		WithDownload(downloadFileMock))
@@ -71,7 +76,7 @@ func uploadFileMock(ctx context.Context, client *sftp.Client, src, dest string) 
 
 	targetDir := filepath.Dir(dest)
 	targetDir = filepath.ToSlash(targetDir)
-	log.Printf("upload file %s -> %s", src, dest)
+	log.Printf("(%v) upload file %s -> %s", client, src, dest)
 
 	//size := int64(0)
 
@@ -109,7 +114,7 @@ func downloadFileMock(ctx context.Context, client *sftp.Client, src, dest string
 	targetDir := filepath.Dir(dest)
 	targetDir = filepath.ToSlash(targetDir)
 
-	log.Printf("download file %s -> %s", src, dest)
+	log.Printf("(%v) download file %s -> %s", client, src, dest)
 
 	//size := int64(0)
 
