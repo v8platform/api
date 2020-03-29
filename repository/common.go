@@ -5,6 +5,7 @@ import (
 	"github.com/Khorevaa/go-v8runner/errors"
 	"github.com/Khorevaa/go-v8runner/marshaler"
 	"github.com/Khorevaa/go-v8runner/types"
+	"github.com/hashicorp/go-multierror"
 )
 
 type RepositoryRightType string
@@ -38,11 +39,18 @@ type Repository struct {
 
 	///ConfigurationRepositoryN <имя>
 	//— указание имени пользователя хранилища.
-	User string `v8:"/ConfigurationRepositoryN" json:"user"`
+	User string `v8:"/ConfigurationRepositoryN, default=Администратор" json:"user"`
 
 	///ConfigurationRepositoryP <пароль>
 	//— указание пароля пользователя хранилища.
 	Password string `v8:"/ConfigurationRepositoryP, optional" json:"password"`
+}
+
+func (ib Repository) Values() *types.Values {
+
+	v, _ := marshaler.Marshal(ib)
+	return v
+
 }
 
 //ConfigurationRepositoryCreate
@@ -88,6 +96,33 @@ type RepositoryCreateOptions struct {
 	NoBind bool `v8:"-NoBind, optional" json:"no_bind"`
 }
 
+func (o RepositoryCreateOptions) WithAuth(user, pass string) RepositoryCreateOptions {
+
+	newO := o
+	newO.User = user
+	newO.Password = pass
+	return newO
+
+}
+
+func (o RepositoryCreateOptions) WithPath(path string) RepositoryCreateOptions {
+
+	newO := o
+	newO.Path = path
+	return newO
+
+}
+
+func (o RepositoryCreateOptions) WithRepository(repository Repository) RepositoryCreateOptions {
+
+	newO := o
+	newO.Path = repository.Path
+	newO.User = repository.User
+	newO.Password = repository.Password
+	return newO
+
+}
+
 func (ib RepositoryCreateOptions) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(ib)
@@ -97,12 +132,15 @@ func (ib RepositoryCreateOptions) Values() *types.Values {
 
 func (ib RepositoryCreateOptions) Check() error {
 
+	var err multierror.Error
+
 	if ib.AllowConfigurationChanges && (len(ib.ChangesNotRecommendedRule) == 0 || len(ib.ChangesAllowedRule) == 0) {
 
-		return errors.Check.New("configuration changes must be set").WithContext("msg", "field ChangesNotRecommendedRule or ChangesAllowedRule not set")
+		multierror.Append(&err, errors.Check.New("configuration changes must be set").
+			WithContext("msg", "field ChangesNotRecommendedRule or ChangesAllowedRule not set"))
 
 	}
 
-	return nil
+	return err.ErrorOrNil()
 
 }

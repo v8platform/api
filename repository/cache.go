@@ -29,6 +29,33 @@ func (ib RepositoryClearGlobalCacheOptions) Values() *types.Values {
 
 }
 
+func (o RepositoryClearGlobalCacheOptions) WithAuth(user, pass string) RepositoryClearGlobalCacheOptions {
+
+	newO := o
+	newO.User = user
+	newO.Password = pass
+	return newO
+
+}
+
+func (o RepositoryClearGlobalCacheOptions) WithPath(path string) RepositoryClearGlobalCacheOptions {
+
+	newO := o
+	newO.Path = path
+	return newO
+
+}
+
+func (o RepositoryClearGlobalCacheOptions) WithRepository(repository Repository) RepositoryClearGlobalCacheOptions {
+
+	newO := o
+	newO.Path = repository.Path
+	newO.User = repository.User
+	newO.Password = repository.Password
+	return newO
+
+}
+
 ///ConfigurationRepositoryClearCache [-Extension <имя расширения>]
 //— очистка локальной базы данных хранилища конфигурации.
 type RepositoryClearCacheOptions struct {
@@ -52,6 +79,33 @@ func (ib RepositoryClearCacheOptions) Values() *types.Values {
 
 }
 
+func (o RepositoryClearCacheOptions) WithAuth(user, pass string) RepositoryClearCacheOptions {
+
+	newO := o
+	newO.User = user
+	newO.Password = pass
+	return newO
+
+}
+
+func (o RepositoryClearCacheOptions) WithPath(path string) RepositoryClearCacheOptions {
+
+	newO := o
+	newO.Path = path
+	return newO
+
+}
+
+func (o RepositoryClearCacheOptions) WithRepository(repository Repository) RepositoryClearCacheOptions {
+
+	newO := o
+	newO.Path = repository.Path
+	newO.User = repository.User
+	newO.Password = repository.Password
+	return newO
+
+}
+
 ///ConfigurationRepositoryClearLocalCache [-Extension <имя расширения>]
 //- очистка локального кэша версий конфигурации
 type RepositoryClearLocalCacheOptions struct {
@@ -72,5 +126,32 @@ func (ib RepositoryClearLocalCacheOptions) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(ib)
 	return v
+
+}
+
+func (o RepositoryClearLocalCacheOptions) WithAuth(user, pass string) RepositoryClearLocalCacheOptions {
+
+	newO := o
+	newO.User = user
+	newO.Password = pass
+	return newO
+
+}
+
+func (o RepositoryClearLocalCacheOptions) WithPath(path string) RepositoryClearLocalCacheOptions {
+
+	newO := o
+	newO.Path = path
+	return newO
+
+}
+
+func (o RepositoryClearLocalCacheOptions) WithRepository(repository Repository) RepositoryClearLocalCacheOptions {
+
+	newO := o
+	newO.Path = repository.Path
+	newO.User = repository.User
+	newO.Password = repository.Password
+	return newO
 
 }

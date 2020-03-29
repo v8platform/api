@@ -180,11 +180,121 @@ type RepositoryUpdateCfgOptions struct {
 	//Если параметр используется, будет выполнена попытка обновления только объектов, указанных в файле.
 	//Если параметр не используется, обновляется вся конфигурация целиком.
 	Objects string `v8:"-objects, optional" json:"objects"`
+
+	UpdateDBCfg *designer.UpdateDBCfgOptions `v8:",inherit" json:"update_db_cfg"`
 }
 
 func (ib RepositoryUpdateCfgOptions) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(ib)
 	return v
+
+}
+
+func (o RepositoryUpdateCfgOptions) WithAuth(user, pass string) RepositoryUpdateCfgOptions {
+
+	newO := o
+	newO.User = user
+	newO.Password = pass
+	return newO
+
+}
+
+func (o RepositoryUpdateCfgOptions) WithPath(path string) RepositoryUpdateCfgOptions {
+
+	newO := o
+	newO.Path = path
+	return newO
+
+}
+
+func (o RepositoryUpdateCfgOptions) WithRepository(repository Repository) RepositoryUpdateCfgOptions {
+
+	newO := o
+	newO.Path = repository.Path
+	newO.User = repository.User
+	newO.Password = repository.Password
+	return newO
+
+}
+
+func (o RepositoryDumpCfgOptions) WithAuth(user, pass string) RepositoryDumpCfgOptions {
+
+	newO := o
+	newO.User = user
+	newO.Password = pass
+	return newO
+
+}
+
+func (o RepositoryDumpCfgOptions) WithPath(path string) RepositoryDumpCfgOptions {
+
+	newO := o
+	newO.Path = path
+	return newO
+
+}
+
+func (o RepositoryDumpCfgOptions) WithRepository(repository Repository) RepositoryDumpCfgOptions {
+
+	newO := o
+	newO.Path = repository.Path
+	newO.User = repository.User
+	newO.Password = repository.Password
+	return newO
+
+}
+
+func (o RepositoryBindCfgOptions) WithAuth(user, pass string) RepositoryBindCfgOptions {
+
+	newO := o
+	newO.User = user
+	newO.Password = pass
+	return newO
+
+}
+
+func (o RepositoryBindCfgOptions) WithPath(path string) RepositoryBindCfgOptions {
+
+	newO := o
+	newO.Path = path
+	return newO
+
+}
+
+func (o RepositoryBindCfgOptions) WithRepository(repository Repository) RepositoryBindCfgOptions {
+
+	newO := o
+	newO.Path = repository.Path
+	newO.User = repository.User
+	newO.Password = repository.Password
+	return newO
+
+}
+
+func (o RepositoryUnbindCfgOptions) WithAuth(user, pass string) RepositoryUnbindCfgOptions {
+
+	newO := o
+	newO.User = user
+	newO.Password = pass
+	return newO
+
+}
+
+func (o RepositoryUnbindCfgOptions) WithPath(path string) RepositoryUnbindCfgOptions {
+
+	newO := o
+	newO.Path = path
+	return newO
+
+}
+
+func (o RepositoryUnbindCfgOptions) WithRepository(repository Repository) RepositoryUnbindCfgOptions {
+
+	newO := o
+	newO.Path = repository.Path
+	newO.User = repository.User
+	newO.Password = repository.Password
+	return newO
 
 }

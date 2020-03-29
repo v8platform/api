@@ -2,6 +2,7 @@ package v8
 
 import (
 	"github.com/Khorevaa/go-v8runner/infobase"
+	"io/ioutil"
 )
 
 ////////////////////////////////////////////////////////
@@ -33,23 +34,20 @@ func NewServerIB(srvr, ref string) infobase.ServerInfoBase {
 	return ib
 }
 
-func CreateInfobase() infobase.CreateInfoBaseOptions {
+func NewTempDir(dir, pattern string) string {
 
-	command := infobase.NewCreateInfoBase()
+	t, _ := ioutil.TempDir(dir, pattern)
 
-	return command
+	return t
 
 }
 
-func CreateFileInfoBase(file string) infobase.CreateFileInfoBaseOptions {
+func NewTempFile(dir, pattern string) string {
 
-	command := infobase.NewCreateInfoBase()
+	tempFile, _ := ioutil.TempFile(dir, pattern)
 
-	FileInfoBaseOptions := infobase.CreateFileInfoBaseOptions{
-		CreateInfoBaseOptions: command,
-		File:                  file,
-	}
+	defer tempFile.Close()
 
-	return FileInfoBaseOptions
+	return tempFile.Name()
 
 }

@@ -34,15 +34,11 @@ func (t *RepositoryTestSuite) TestCreateRepository() {
 	repPath, _ := ioutil.TempDir("", "1c_rep_")
 
 	createOptions := RepositoryCreateOptions{
-		Repository: Repository{
-			Path: repPath,
-			User: "admin",
-		},
 		NoBind:                    true,
 		AllowConfigurationChanges: true,
 		ChangesAllowedRule:        REPOSITORY_SUPPORT_NOT_SUPPORTED,
 		ChangesNotRecommendedRule: REPOSITORY_SUPPORT_NOT_SUPPORTED,
-	}
+	}.WithPath(repPath)
 
 	err = t.Runner.Run(infobase.NewFileIB(t.TempIB), createOptions,
 		runner.WithTimeout(30))

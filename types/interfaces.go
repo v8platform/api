@@ -9,8 +9,11 @@ type ValuesInterface interface {
 	Values() *Values
 }
 
+type CheckInterface interface {
+	Check() error
+}
 type Command interface {
 	Command() string
-	Check() error
+	CheckInterface
 	ValuesInterface
 }

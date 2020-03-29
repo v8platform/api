@@ -15,7 +15,7 @@ import (
 
 type RepositoryCfgTestSuite struct {
 	tests.TestSuite
-	Repository *Repository
+	Repository Repository
 }
 
 func TestRepositoryCfg(t *testing.T) {
@@ -44,19 +44,17 @@ func (t *RepositoryCfgTestSuite) createTestRepository() {
 
 	repPath, _ := ioutil.TempDir("", "1c_rep_")
 
-	t.Repository = &Repository{
+	t.Repository = Repository{
 		Path: repPath,
 		User: "admin",
 	}
 
 	createOptions := RepositoryCreateOptions{
-		Designer:                  designer.NewDesigner(),
-		Repository:                *t.Repository,
 		NoBind:                    true,
 		AllowConfigurationChanges: true,
 		ChangesAllowedRule:        REPOSITORY_SUPPORT_NOT_SUPPORTED,
 		ChangesNotRecommendedRule: REPOSITORY_SUPPORT_NOT_SUPPORTED,
-	}
+	}.WithRepository(t.Repository)
 
 	err = t.Runner.Run(infobase.NewFileIB(t.TempIB), createOptions,
 		runner.WithTimeout(30))
@@ -67,11 +65,9 @@ func (t *RepositoryCfgTestSuite) createTestRepository() {
 func (t *RepositoryCfgTestSuite) TestRepositoryBindCfg() {
 
 	command := RepositoryBindCfgOptions{
-		//Designer: designer.NewDesigner(),
-		Repository:                 *t.Repository,
 		ForceBindAlreadyBindedUser: true,
 		ForceReplaceCfg:            true,
-	}
+	}.WithRepository(t.Repository)
 
 	err := t.Runner.Run(infobase.NewFileIB(t.TempIB), command,
 		runner.WithTimeout(30),
@@ -84,11 +80,9 @@ func (t *RepositoryCfgTestSuite) TestRepositoryBindCfg() {
 func (t *RepositoryCfgTestSuite) TestRepositoryUnbindCfg() {
 
 	command := RepositoryBindCfgOptions{
-		Designer:                   designer.NewDesigner(),
-		Repository:                 *t.Repository,
 		ForceBindAlreadyBindedUser: true,
 		ForceReplaceCfg:            true,
-	}
+	}.WithRepository(t.Repository)
 
 	err := t.Runner.Run(infobase.NewFileIB(t.TempIB), command,
 		runner.WithTimeout(30))
@@ -96,10 +90,8 @@ func (t *RepositoryCfgTestSuite) TestRepositoryUnbindCfg() {
 	t.R().NoError(err, errors.GetErrorContext(err))
 
 	command2 := RepositoryUnbindCfgOptions{
-		Designer:   designer.NewDesigner(),
-		Repository: *t.Repository,
-		Force:      true,
-	}
+		Force: true,
+	}.WithRepository(t.Repository)
 
 	err = t.Runner.Run(infobase.NewFileIB(t.TempIB), command2,
 		runner.WithTimeout(30))
@@ -113,10 +105,9 @@ func (t *RepositoryCfgTestSuite) TestRepositoryDumpCfg() {
 	cfFile, _ := ioutil.TempFile("", "v8_DumpResult_*.cf")
 
 	command := RepositoryDumpCfgOptions{
-		Designer:   designer.NewDesigner(),
-		Repository: *t.Repository,
-		File:       cfFile.Name(),
-	}
+		Designer: designer.NewDesigner(),
+		File:     cfFile.Name(),
+	}.WithRepository(t.Repository)
 
 	cfFile.Close()
 
@@ -134,12 +125,11 @@ func (t *RepositoryCfgTestSuite) TestRepositoryDumpCfg() {
 func (t *RepositoryCfgTestSuite) TestRepositoryUpdateCfg() {
 
 	command := RepositoryUpdateCfgOptions{
-		Designer:   designer.NewDesigner(),
-		Repository: *t.Repository,
-		Force:      true,
-		Version:    -1,
-		Revised:    true,
-	}
+		Designer: designer.NewDesigner(),
+		Force:    true,
+		Version:  -1,
+		Revised:  true,
+	}.WithRepository(t.Repository)
 
 	err := t.Runner.Run(infobase.NewFileIB(t.TempIB), command,
 		runner.WithTimeout(30))

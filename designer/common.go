@@ -37,34 +37,6 @@ func NewDesigner() Designer {
 	return d
 }
 
-type LoadCfgOptions struct {
-	Designer `v8:",inherit" json:"designer"`
-
-	File string `v8:"/LoadCfg" json:"file"`
-
-	Extension   string              `v8:"-Extension, optional" json:"extension"`
-	UpdateDBCfg *UpdateDBCfgOptions `v8:",inherit" json:"update_db_cfg"`
-}
-
-func (d LoadCfgOptions) Values() *types.Values {
-
-	v, _ := marshaler.Marshal(d)
-	return v
-
-}
-
-type DumpCfgOptions struct {
-	Designer  `v8:",inherit" json:"designer"`
-	File      string `v8:"/DumpCfg" json:"file"`
-	Extension string `v8:"-Extension, optional" json:"extension"`
-}
-
-func (d DumpCfgOptions) Values() *types.Values {
-
-	v, _ := marshaler.Marshal(d)
-	return v
-}
-
 type UpdateCfgOptions struct {
 	Designer `v8:",inherit" json:"designer"`
 	//<имя cf | cfu-файла>
@@ -98,6 +70,23 @@ func (d UpdateCfgOptions) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(d)
 	return v
+
+}
+
+func (d UpdateCfgOptions) WithUpdateDBCfg(upd UpdateDBCfgOptions) UpdateCfgOptions {
+
+	UpdateDBCfg := &upd
+
+	return UpdateCfgOptions{
+		Designer:                         d.Designer,
+		File:                             d.File,
+		Settings:                         d.Settings,
+		IncludeObjectsByUnresolvedRefs:   d.IncludeObjectsByUnresolvedRefs,
+		ClearUnresolvedRefs:              d.ClearUnresolvedRefs,
+		Force:                            d.Force,
+		DumpListOfTwiceChangedProperties: d.DumpListOfTwiceChangedProperties,
+		UpdateDBCfg:                      UpdateDBCfg,
+	}
 
 }
 
@@ -172,31 +161,19 @@ func (d UpdateDBCfgOptions) Values() *types.Values {
 
 }
 
-// /DumpIB <имя файла>
-//— выгрузка информационной базы в командном режиме.
-type DumpIBOptions struct {
-	Designer `v8:",inherit" json:"designer"`
+func (d UpdateDBCfgOptions) WithExtension(extension string) UpdateDBCfgOptions {
 
-	File string `v8:"/DumpIB" json:"file"`
-}
+	return UpdateDBCfgOptions{
+		Designer:          d.Designer,
+		Dynamic:           d.Dynamic,
+		BackgroundStart:   d.BackgroundStart,
+		BackgroundCancel:  d.BackgroundCancel,
+		BackgroundFinish:  d.BackgroundFinish,
+		BackgroundResume:  d.BackgroundResume,
+		BackgroundSuspend: d.BackgroundSuspend,
+		WarningsAsErrors:  d.WarningsAsErrors,
+		Server:            d.Server,
+		Extension:         extension,
+	}
 
-func (d DumpIBOptions) Values() *types.Values {
-
-	v, _ := marshaler.Marshal(d)
-	return v
-}
-
-// /RestoreIB <имя файла>
-// — загрузка информационной базы в командном режиме.
-// Если файл информационной базы отсутствует в указанном каталоге, будет создана новая информационная база.
-type RestoreIBOptions struct {
-	Designer `v8:",inherit" json:"designer"`
-
-	File string `v8:"/RestoreIB" json:"file"`
-}
-
-func (d RestoreIBOptions) Values() *types.Values {
-
-	v, _ := marshaler.Marshal(d)
-	return v
 }

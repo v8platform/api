@@ -9,10 +9,12 @@ const (
 	TagInherit      = "inherit"
 	TagOptional     = "optional"
 	TagEqualSep     = "equal_sep"
+	TagCommaSep     = "comma_sep"
 	TagIgnore       = "-"
 	TagNoSnap       = "no_snap"
 	TagBoolFalse    = "bool_false"
 	TagBoolTrue     = "bool_true"
 	TagDoubleQuotes = "dbl_quotes"
 	TagOneQuotes    = "quotes"
+	TagDefaultValue = "default"
 )

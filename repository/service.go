@@ -62,3 +62,46 @@ func (ib RepositoryReportOptions) Values() *types.Values {
 	return v
 
 }
+
+func (o RepositoryReportOptions) GroupByObject() RepositoryReportOptions {
+
+	newO := o
+	newO.GroupBy = REPOSITORY_GROUP_BY_OBJECT
+	return newO
+
+}
+
+func (o RepositoryReportOptions) GroupByComment() RepositoryReportOptions {
+
+	newO := o
+	newO.GroupBy = REPOSITORY_GROUP_BY_COMMENT
+	return newO
+
+}
+
+func (o RepositoryReportOptions) WithAuth(user, pass string) RepositoryReportOptions {
+
+	newO := o
+	newO.User = user
+	newO.Password = pass
+	return newO
+
+}
+
+func (o RepositoryReportOptions) WithPath(path string) RepositoryReportOptions {
+
+	newO := o
+	newO.Path = path
+	return newO
+
+}
+
+func (o RepositoryReportOptions) WithRepository(repository Repository) RepositoryReportOptions {
+
+	newO := o
+	newO.Path = repository.Path
+	newO.User = repository.User
+	newO.Password = repository.Password
+	return newO
+
+}

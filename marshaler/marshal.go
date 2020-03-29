@@ -170,6 +170,10 @@ func getArgValue(value string, fieldInfo *FieldTagInfo) string {
 
 	}
 
+	if len(fieldInfo.DefaultValue) > 0 && len(value) == 0 {
+		value = fieldInfo.DefaultValue
+	}
+
 	if fieldInfo.Optional && len(value) == 0 {
 		return ""
 	}
@@ -196,6 +200,10 @@ func newNeedValueError(field reflect.StructField) error {
 func needFieldValue(value interface{}, tagInfo *FieldTagInfo) bool {
 
 	if tagInfo.Optional {
+		return false
+	}
+
+	if len(tagInfo.DefaultValue) > 0 {
 		return false
 	}
 

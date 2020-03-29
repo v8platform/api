@@ -96,4 +96,5 @@ func (t *infoBaseTestSuite) TestMarshal() {
 		}
 
 	}
+
 }

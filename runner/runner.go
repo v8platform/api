@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-var VERSION_1S = "8.3"
+var defaultVersion = "8.3"
 
 type Runner struct {
 	Options *Options
@@ -134,7 +134,7 @@ func getV8Path(options Options) (string, error) {
 		return options.v8path, nil
 	}
 
-	v8 := VERSION_1S
+	v8 := defaultVersion
 	if len(options.Version) > 0 {
 		v8 = options.Version
 	}

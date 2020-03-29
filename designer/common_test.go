@@ -55,10 +55,8 @@ func (t *designerTestSuite) TestUpdateCfg() {
 	loadCfg := LoadCfgOptions{
 		Designer: NewDesigner(),
 		File:     confFile,
-		UpdateDBCfg: &UpdateDBCfgOptions{
-			Dynamic: false,
-		},
-	}
+	}.WithUpdateDBCfg(UpdateDBCfgOptions{})
+
 	err := t.Runner.Run(infobase.NewFileIB(t.TempIB), loadCfg,
 		runner.WithTimeout(30))
 

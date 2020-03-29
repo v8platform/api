@@ -36,6 +36,7 @@ type FieldTagInfo struct {
 	Sep          string
 	DoubleQuotes bool
 	OneQuotes    bool
+	DefaultValue string
 }
 
 func GetFieldTagInfo(sField reflect.StructField) *FieldTagInfo {
@@ -43,6 +44,8 @@ func GetFieldTagInfo(sField reflect.StructField) *FieldTagInfo {
 	tagsString := sField.Tag.Get(TagNamespace)
 	info := &FieldTagInfo{Sep: " "}
 	tags := strings.Split(tagsString, TagSeparator)
+
+	tagNameIsSet := false
 
 	for _, v := range tags {
 
@@ -86,13 +89,22 @@ func GetFieldTagInfo(sField reflect.StructField) *FieldTagInfo {
 
 			info.TrueFormat = value
 
+		case TagDefaultValue:
+
+			info.DefaultValue = value
+
 		case TagBoolFalse:
 
 			info.FalseFormat = value
 
 		default:
 
+			if tagNameIsSet {
+				continue
+			}
+
 			info.Name = tag
+			tagNameIsSet = true
 
 		}
 

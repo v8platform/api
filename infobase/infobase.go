@@ -1,10 +1,59 @@
 package infobase
 
 import (
+	"fmt"
 	"github.com/Khorevaa/go-v8runner/marshaler"
 	"github.com/Khorevaa/go-v8runner/types"
 	"io/ioutil"
+	"strings"
 )
+
+type DatabaseSeparator struct {
+	Use   bool
+	Value string
+}
+
+func (t DatabaseSeparator) MarshalV8() (string, error) {
+
+	use := "-"
+	if t.Use {
+		use = "+"
+	}
+	//	[<+>|<->] - признак использования: "+" (по умолчанию) - реквизит используется; "-" - не используется;
+	//	Если разделитель не используется, то перед значением должен быть "-".
+	//	Если первым символом в значении разделителя содержится символ "+" или "-", то при указании его нужно удваивать.
+	//	<значение общего реквизита> - значение общего реквизита. Если в значении разделителя присутствует запятая,
+	//	то при указании ее нужно удваивать.
+	//	Если значение разделителя пропущено, но разделитель должен использоваться, то используется символ "+".
+	//	Разделители разделяются запятой.
+	//	Например:
+	//	"Zn=-ПервыйРазделитель,+,---ТретийРазделитель", что означает:
+	//	Первый разделитель выключен, значение – "ПервыйРазделитель",
+	//	Второй разделитель включен, значение – пустая строка,
+	//	Третий разделитель выключен, значение – "-ТретийРазделитель".
+	// TODO Сделать удвоение спец символов
+	return fmt.Sprintf("%s%s", use, t.Value), nil
+
+}
+
+type DatabaseSeparatorList []DatabaseSeparator
+
+func (t DatabaseSeparatorList) MarshalV8() (string, error) {
+
+	if len(t) == 0 {
+		return "", nil
+	}
+
+	var sep []string
+
+	for _, separator := range t {
+
+		str, _ := separator.MarshalV8()
+		sep = append(sep, str)
+	}
+
+	return strings.Join(sep, ","), nil
+}
 
 type InfoBase struct {
 
@@ -31,21 +80,32 @@ type InfoBase struct {
 	//	<Общий реквизит> = [<+>|<->]<значение общего реквизита>
 	//
 	//	[<+>|<->] - признак использования: "+" (по умолчанию) - реквизит используется; "-" - не используется;
-	//	Если разделитель не используется, то перед значением должен быть "-". Если первым символом в значении разделителя содержится символ "+" или "-", то при указании его нужно удваивать.
-	//	<значение общего реквизита> - значение общего реквизита. Если в значении разделителя присутствует запятая, то при указании ее нужно удваивать. Если значение разделителя пропущено, но разделитель должен использоваться, то используется символ "+".
+	//	Если разделитель не используется, то перед значением должен быть "-".
+	//	Если первым символом в значении разделителя содержится символ "+" или "-", то при указании его нужно удваивать.
+	//	<значение общего реквизита> - значение общего реквизита. Если в значении разделителя присутствует запятая,
+	//	то при указании ее нужно удваивать.
+	//	Если значение разделителя пропущено, но разделитель должен использоваться, то используется символ "+".
 	//	Разделители разделяются запятой.
 	//	Например:
 	//	"Zn=-ПервыйРазделитель,+,---ТретийРазделитель", что означает:
 	//	Первый разделитель выключен, значение – "ПервыйРазделитель",
 	//	Второй разделитель включен, значение – пустая строка,
 	//	Третий разделитель выключен, значение – "-ТретийРазделитель".
-	Zn string `v8:"Zn, optional" json:"zn"`
+	Zn DatabaseSeparatorList `v8:"ZN, equal_sep, optional" json:"zn"`
 
 	// запуск в режиме привилегированного сеанса.
 	// Разрешен аутентифицированному пользователю, имеющему административные права.
 	// Журнал регистрации фиксирует установку или отказ в возможности установки режима привилегированного сеанса.
 	// prmod=1 - привилегированный сеанс устанавливается.
 	Prmod bool `v8:"Prmod, equal_sep, optional, bool_true=1" json:"prmod"`
+
+	///UC <код доступа>
+	//— позволяет выполнить установку соединения с информационной базой,
+	//на которую установлена блокировка установки соединений.
+	//Если при установке блокировки задан непустой код доступа,
+	//то для установки соединения необходимо в параметре /UC указать этот код доступа.
+	//Не используется при работе тонкого клиента через веб-сервер
+	UnlockCode string `v8:"/UC, optional" json:"uc"`
 }
 
 type FileInfoBase struct {
@@ -79,34 +139,53 @@ func (ib InfoBase) Path() string {
 	return ""
 }
 
+func (ib InfoBase) WithAuth(user, pass string) InfoBase {
+
+	return InfoBase{
+		Usr:     user,
+		Pwd:     pass,
+		LicDstr: ib.LicDstr,
+		Zn:      ib.Zn,
+		Prmod:   ib.Prmod,
+	}
+}
+
+func (ib FileInfoBase) WithAuth(user, pass string) FileInfoBase {
+
+	return FileInfoBase{
+		InfoBase: ib.InfoBase.WithAuth(user, pass),
+		File:     ib.File,
+		Locale:   ib.Locale,
+	}
+}
+
+func (ib ServerInfoBase) WithAuth(user, pass string) ServerInfoBase {
+
+	return ServerInfoBase{
+		InfoBase: ib.InfoBase.WithAuth(user, pass),
+		Srvr:     ib.Srvr,
+		Ref:      ib.Ref,
+	}
+}
+
+func (ib FileInfoBase) WithUC(uc string) FileInfoBase {
+
+	newIb := ib
+	newIb.UnlockCode = uc
+	return newIb
+}
+
+func (ib ServerInfoBase) WithUC(uc string) ServerInfoBase {
+
+	newIb := ib
+	newIb.UnlockCode = uc
+	return newIb
+}
+
 func (ib InfoBase) Values() *types.Values {
 	v, _ := marshaler.Marshal(ib)
 	return v
 
-	//v := make(types.Values)
-	//
-	//if len(ib.Usr) > 0 {
-	//
-	//	v.Set("Usr", types.EqualSep, ib.Usr)
-	//
-	//	if len(ib.Pwd) > 0 {
-	//		v.Set("Pwd", types.EqualSep, ib.Pwd)
-	//	}
-	//
-	//}
-	//
-	//if ib.Prmod {
-	//	v.Set("Prmod", types.EqualSep, "1")
-	//}
-	//if ib.LicDstr {
-	//	v.Set("LicDstr", types.EqualSep, "Y")
-	//}
-	//
-	//if len(ib.Zn) > 0 {
-	//	v.Set("Zn", types.EqualSep, ib.Zn)
-	//}
-	//
-	//return v
 }
 
 func (ib FileInfoBase) Values() *types.Values {
@@ -114,13 +193,6 @@ func (ib FileInfoBase) Values() *types.Values {
 	v, _ := marshaler.Marshal(ib)
 	return v
 
-	//v := ib.InfoBase.Values()
-	//
-	//v.Set("File", types.EqualSep, fmt.Sprintf("\"%s\"", ib.File))
-	//if len(ib.Locale) > 0 {
-	//	v.Set("Locale", types.EqualSep, ib.Locale)
-	//}
-	//return v
 }
 
 func (ib ServerInfoBase) Values() *types.Values {
@@ -128,12 +200,6 @@ func (ib ServerInfoBase) Values() *types.Values {
 	v, _ := marshaler.Marshal(ib)
 	return v
 
-	//v := ib.InfoBase.Values()
-	//
-	//v.Set("Srvr", types.EqualSep, ib.Srvr)
-	//v.Set("Ref", types.EqualSep, fmt.Sprintf("\"%s\"", ib.Ref))
-	//
-	//return v
 }
 
 func NewTempIB() FileInfoBase {

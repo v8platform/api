@@ -1,8 +1,10 @@
 package designer
 
 import (
+	"github.com/Khorevaa/go-v8runner/errors"
 	"github.com/Khorevaa/go-v8runner/marshaler"
 	"github.com/Khorevaa/go-v8runner/types"
+	"github.com/hashicorp/go-multierror"
 )
 
 ///IBRestoreIntegrity
@@ -40,6 +42,68 @@ type RollbackCfgOptions struct {
 func (d RollbackCfgOptions) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(d)
+	return v
+
+}
+
+func (d RollbackCfgOptions) WithExtension(extension string) RollbackCfgOptions {
+
+	return RollbackCfgOptions{
+		Designer:  d.Designer,
+		Extension: extension,
+	}
+
+}
+
+///ManageCfgSupport [-disableSupport] [-force]
+//— предназначен для управления настройками поддержки конфигурации. Допустимо использование следующих параметров:
+type ManageCfgSupportOptions struct {
+	Designer `v8:",inherit" json:"designer"`
+
+	command string `v8:"/ManageCfgSupport" json:"-"`
+	//disableSupport — признак необходимости снятия конфигурации с поддержки.
+	//Если не указан, в файл протокола будет выведено сообщение об ошибке.
+	DisableSupport bool `v8:"-disableSupport" json:"disable_support"`
+	//force — используется для снятия конфигурации с поддержки даже в том случае, если в конфигурации не разрешены изменения.
+	//Если не указан, а в конфигурации на момент выполнения команды не разрешены изменения,
+	//конфигурация не будет снята с поддержки, а в файл протокола будет выведено сообщение об ошибке.
+	Force bool `v8:"-force, optional" json:"force"`
+}
+
+func (o ManageCfgSupportOptions) Values() *types.Values {
+
+	v, _ := marshaler.Marshal(o)
+	return v
+
+}
+func (o ManageCfgSupportOptions) Check() error {
+
+	var err multierror.Error
+
+	if !o.DisableSupport {
+		multierror.Append(&err, errors.Check.New("disable support must be set"))
+	}
+
+	return err.ErrorOrNil()
+
+}
+
+///ReduceEventLogSize <Date> [-saveAs <имя файла>] [-KeepSplitting]
+//— сокращение журнала регистрации.
+type ReduceEventLogSizeOptions struct {
+	Designer `v8:",inherit" json:"designer"`
+
+	//Date — новая граница журнала регистраций в формате ГГГГ-ММ-ДД;
+	Date string `v8:"/ReduceEventLogSize" json:"date"`
+	//-saveAs <имя файла> — параметр для сохранения копии выгружаемых записей;
+	File string `v8:"-saveAs" json:"save_as"`
+	//-KeepSplitting — требуется сохранить разделение на файлы по периодам.
+	KeepSplitting bool `v8:"-KeepSplitting, optional" json:"keep_splitting"`
+}
+
+func (o ReduceEventLogSizeOptions) Values() *types.Values {
+
+	v, _ := marshaler.Marshal(o)
 	return v
 
 }

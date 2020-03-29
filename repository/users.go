@@ -49,6 +49,33 @@ func (ib RepositoryAddUserOptions) Values() *types.Values {
 
 }
 
+func (o RepositoryAddUserOptions) WithAuth(user, pass string) RepositoryAddUserOptions {
+
+	newO := o
+	newO.User = user
+	newO.Password = pass
+	return newO
+
+}
+
+func (o RepositoryAddUserOptions) WithPath(path string) RepositoryAddUserOptions {
+
+	newO := o
+	newO.Path = path
+	return newO
+
+}
+
+func (o RepositoryAddUserOptions) WithRepository(repository Repository) RepositoryAddUserOptions {
+
+	newO := o
+	newO.Path = repository.Path
+	newO.User = repository.User
+	newO.Password = repository.Password
+	return newO
+
+}
+
 ///ConfigurationRepositoryCopyUsers  -Path <путь> -User <Имя>
 //-Pwd <Пароль> [-RestoreDeletedUser][-Extension <имя расширения>]
 //— копирование пользователей из хранилища конфигурации. Копирование удаленных пользователей не выполняется. Если пользователь с указанным именем существует, то пользователь не будет добавлен.
@@ -58,9 +85,6 @@ type RepositoryCopyUsersOptions struct {
 
 	command struct{} `v8:"/ConfigurationRepositoryCopyUsers" json:"-"`
 
-	//-Path — Путь к хранилищу, из которого выполняется копирование пользователей.
-	RemotePath string `v8:"-Path" json:"remote_path"`
-
 	//-Extension <имя расширения> — Имя расширения.
 	// Если параметр не указан, выполняется попытка соединения с хранилищем основной конфигурации,
 	// и команда выполняется для основной конфигурации.
@@ -68,11 +92,14 @@ type RepositoryCopyUsersOptions struct {
 	// хранилищем указанного расширения, и команда выполняется для этого хранилища.
 	Extension string `v8:"-Extension, optional" json:"extension"`
 
+	//-Path — Путь к хранилищу, из которого выполняется копирование пользователей.
+	RemotePath string `v8:"-Path" json:"remote_path"`
+
 	//-User — Имя создаваемого пользователя.
-	User string `v8:"-User" json:"user"`
+	RemoteUser string `v8:"-User" json:"user"`
 
 	//-Pwd — Пароль создаваемого пользователя.
-	Pwd string `v8:"-Pwd, optional" json:"pwd"`
+	RemotePwd string `v8:"-Pwd, optional" json:"pwd"`
 
 	//-RestoreDeletedUser — Если обнаружен удаленный пользователь с таким же именем, он будет восстановлен.
 	RestoreDeletedUser bool `v8:"-RestoreDeletedUser, optional" json:"restore_deleted_user"`
@@ -82,5 +109,42 @@ func (ib RepositoryCopyUsersOptions) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(ib)
 	return v
+
+}
+
+func (o RepositoryCopyUsersOptions) WithAuth(user, pass string) RepositoryCopyUsersOptions {
+
+	newO := o
+	newO.User = user
+	newO.Password = pass
+	return newO
+
+}
+
+func (o RepositoryCopyUsersOptions) WithPath(path string) RepositoryCopyUsersOptions {
+
+	newO := o
+	newO.Path = path
+	return newO
+
+}
+
+func (o RepositoryCopyUsersOptions) WithRepository(repository Repository) RepositoryCopyUsersOptions {
+
+	newO := o
+	newO.Path = repository.Path
+	newO.User = repository.User
+	newO.Password = repository.Password
+	return newO
+
+}
+
+func (o RepositoryCopyUsersOptions) FromRepository(repository Repository) RepositoryCopyUsersOptions {
+
+	newO := o
+	newO.RemotePath = repository.Path
+	newO.RemoteUser = repository.User
+	newO.RemotePwd = repository.Password
+	return newO
 
 }

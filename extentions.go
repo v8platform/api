@@ -19,6 +19,24 @@ func DumpExtensionCfg(file, extension string) designer.DumpCfgOptions {
 
 }
 
+func LoadExtensionConfigFromFiles(dir, extension string) designer.LoadConfigFromFiles {
+
+	command := LoadConfigFromFiles(dir)
+	command.Extension = extension
+
+	return command
+
+}
+
+func DumpExtensionConfigToFiles(dir, extension string, force bool) designer.DumpConfigToFilesOptions {
+
+	command := DumpConfigToFiles(dir, force)
+	command.Extension = extension
+
+	return command
+
+}
+
 func RollbackExtensionCfg(extension string) designer.RollbackCfgOptions {
 
 	command := designer.RollbackCfgOptions{
