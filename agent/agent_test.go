@@ -1,8 +1,8 @@
 package agent
 
 import (
-	"github.com/Khorevaa/go-v8runner/agent/client"
-	"github.com/Khorevaa/go-v8runner/tests"
+	"github.com/Khorevaa/go-v8platform/agent/client"
+	"github.com/Khorevaa/go-v8platform/tests"
 	"github.com/stretchr/testify/suite"
 	"log"
 	"os"

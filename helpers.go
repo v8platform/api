@@ -1,7 +1,7 @@
 package v8
 
 import (
-	"github.com/Khorevaa/go-v8runner/infobase"
+	"github.com/Khorevaa/go-v8platform/infobase"
 	"io/ioutil"
 )
 

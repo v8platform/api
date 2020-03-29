@@ -2,8 +2,8 @@ package infobase
 
 import (
 	"fmt"
-	"github.com/Khorevaa/go-v8runner/marshaler"
-	"github.com/Khorevaa/go-v8runner/types"
+	"github.com/Khorevaa/go-v8platform/marshaler"
+	"github.com/Khorevaa/go-v8platform/types"
 	"io/ioutil"
 	"strings"
 )

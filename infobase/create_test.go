@@ -1,7 +1,7 @@
 package infobase
 
 import (
-	"github.com/Khorevaa/go-v8runner/runner"
+	"github.com/Khorevaa/go-v8platform/runner"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"os"

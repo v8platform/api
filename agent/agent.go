@@ -1,9 +1,9 @@
 package agent
 
 import (
-	"github.com/Khorevaa/go-v8runner/errors"
-	"github.com/Khorevaa/go-v8runner/marshaler"
-	"github.com/Khorevaa/go-v8runner/types"
+	"github.com/Khorevaa/go-v8platform/errors"
+	"github.com/Khorevaa/go-v8platform/marshaler"
+	"github.com/Khorevaa/go-v8platform/types"
 )
 
 ///AgentMode

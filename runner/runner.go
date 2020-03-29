@@ -2,14 +2,14 @@ package runner
 
 import (
 	"fmt"
-	"github.com/Khorevaa/go-v8runner/find"
-	"github.com/Khorevaa/go-v8runner/types"
+	"github.com/Khorevaa/go-v8platform/find"
+	"github.com/Khorevaa/go-v8platform/types"
 	"os/exec"
 	"strconv"
 	"strings"
 
 	"context"
-	"github.com/Khorevaa/go-v8runner/errors"
+	"github.com/Khorevaa/go-v8platform/errors"
 	"time"
 )
 

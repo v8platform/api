@@ -1,6 +1,6 @@
 package v8
 
-import "github.com/Khorevaa/go-v8runner/enterprise"
+import "github.com/Khorevaa/go-v8platform/enterprise"
 
 func Execute(file string) enterprise.ExecuteOptions {
 

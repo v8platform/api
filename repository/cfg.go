@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"github.com/Khorevaa/go-v8runner/designer"
-	"github.com/Khorevaa/go-v8runner/marshaler"
-	"github.com/Khorevaa/go-v8runner/types"
+	"github.com/Khorevaa/go-v8platform/designer"
+	"github.com/Khorevaa/go-v8platform/marshaler"
+	"github.com/Khorevaa/go-v8platform/types"
 )
 
 ///ConfigurationRepositoryBindCfg [-Extension <имя расширения>] [-forceBindAlreadyBindedUser][-forceReplaceCfg]
