@@ -1,4 +1,4 @@
-module github.com/Khorevaa/go-v8runner
+module github.com/Khorevaa/go-v8platform
 
 go 1.12
 
