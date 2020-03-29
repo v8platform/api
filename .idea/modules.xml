@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/go-v8runner.iml" filepath="$PROJECT_DIR$/go-v8runner.iml" />
-      <module fileurl="file://$PROJECT_DIR$/v8config-file/v8config-file.iml" filepath="$PROJECT_DIR$/v8config-file/v8config-file.iml" />
-      <module fileurl="file://$PROJECT_DIR$/v8constants/v8constants.iml" filepath="$PROJECT_DIR$/v8constants/v8constants.iml" />
-      <module fileurl="file://$PROJECT_DIR$/v8dumpMode/v8dumpMode.iml" filepath="$PROJECT_DIR$/v8dumpMode/v8dumpMode.iml" />
-      <module fileurl="file://$PROJECT_DIR$/v8platform/v8platform.iml" filepath="$PROJECT_DIR$/v8platform/v8platform.iml" />
-      <module fileurl="file://$PROJECT_DIR$/v8run/v8run.iml" filepath="$PROJECT_DIR$/v8run/v8run.iml" />
-      <module fileurl="file://$PROJECT_DIR$/v8tools/v8tools.iml" filepath="$PROJECT_DIR$/v8tools/v8tools.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/go-v8runner.iml" filepath="$PROJECT_DIR$/.idea/go-v8runner.iml" />
     </modules>
   </component>
 </project>

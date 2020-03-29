@@ -1,18 +1,12 @@
-# go-v8runner
-Библиотека на GO для работы с 1С.Предприятие.
-Предназначен для инкапсуляции запуска команд Конфигуратора и 1С:Предприятия с помощью командной строки.
+go-v8platform
+=============
 
-Как правило, запуск той или иной команды конфигуратора в автоматическом режиме достаточно сложен. Нужно помнить синтаксис каждой команды, постоянно сверяться со справкой, обрабатывать выходные сообщения Конфигуратора и т.п.
+[![Build Status](https://img.shields.io/travis/khorevaa/go-v8platform.svg)](https://travis-ci.org/khorevaa/go-v8platform)
+[![ISC License](http://img.shields.io/badge/license-BSD-blue.svg)](http://copyfree.org)  
+[![Coverage Status](https://img.shields.io/coveralls/davecgh/go-spew.svg)](https://coveralls.io/r/khorevaa/go-v8platform?branch=master)
 
-go-v8runner упрощает эти задачи и позволяет запускать Конфигуратор программно, в объектной манере.
+Реализация программного интерфейсом пакетного режима работы с 1С:Предприятием 8.x
 
-#Использовать go-v8runner
-```go
-import "github.com/khorevaa/go-v8runner"
+## Документация
 
-conf := НовыйКонфигуратор()
-errLoad := conf.ЗагрузитьКонфигурациюИзФайла(ПутьКФайлуКофигурации)
-
-err := conf.ВыгрузитьКонфигурациюСРежимомВыгрузки(КаталогЗагрузки, ФорматВыгрузки)
-
-```
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/khorevaa/go-v8platform)
