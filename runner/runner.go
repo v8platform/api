@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/Khorevaa/go-v8platform/find"
 	"github.com/Khorevaa/go-v8platform/types"
-	"io"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -20,33 +19,57 @@ type Runner struct {
 	Options *Options
 }
 
-type Command struct {
-	process *exec.Cmd
-	args    []string
-	env     []string
-	running bool
-	ctx     context.Context
+type runnerCmd struct {
+	cmd       *exec.Cmd
+	command   string
+	args      []string
+	env       []string
+	running   bool
+	ctx       context.Context
+	cancelCtx context.CancelFunc
 }
 
-func (c *Command) Run() error {
+func (c *runnerCmd) Run() error {
 
-	err := c.process.Run()
+	if err := c.Start(); err != nil {
+		return err
+	}
+
+	return c.Wait()
+}
+
+func (c *runnerCmd) Wait() error {
+
+	if !c.running {
+		return errors.BadCommand.New("command not runnint")
+	}
+	defer c.cancelCtx()
+
+	return c.cmd.Wait()
+}
+
+func (c *runnerCmd) Start() error {
+
+	c.create()
+
+	err := c.cmd.Start()
+
+	if err == nil {
+		c.running = true
+	}
 
 	return err
 }
 
-type Runner interface {
-	SetStdoutWriter(io.Writer)
-	SetStderrWriter(io.Writer)
-	StdoutPipe() (io.Reader, error) // use in combination with Start() & Wait(), don't use in combination with Run()
-	StderrPipe() (io.Reader, error) // use in combination with Start() & Wait(), don't use in combination with Run()
+func (c *runnerCmd) create() {
 
-	Run() error
-	Start() error
-	Wait() error
-	Close() error
+	if c.ctx == nil {
+		c.cmd = exec.Command(c.command, c.args...)
+	} else {
+		c.cmd = exec.CommandContext(c.ctx, c.command, c.args...)
+	}
+	c.cmd.Env = c.env
 
-	ExitCode() int // -1 when runner error without completing script
 }
 
 func NewRunner(opts ...Option) *Runner {
@@ -82,6 +105,111 @@ func (r *Runner) Run(where types.InfoBase, what types.Command, opts ...interface
 
 	return r.RunWithOptions(where, what, *options)
 
+}
+
+func (r *Runner) run(where types.InfoBase, what types.Command, options Options) error {
+
+	err := checkCommand(what)
+
+	if err != nil {
+		return err
+	}
+
+	args := getCmdArgs(where, what, options)
+
+	cmd, err := prepareCmd(args, options)
+
+	if err != nil {
+		return err
+	}
+
+	defer options.RemoveTempFiles()
+
+	errRun := cmd.Run()
+
+	if errRun != nil {
+		outLog, _ := readOut(options.Out)
+		errorWithOut := errors.AddErrorContext(errRun, "out", outLog)
+		return errorWithOut
+	}
+
+	dumpErr := checkRunResult(options)
+
+	if dumpErr != nil {
+		return dumpErr
+	}
+
+	return dumpErr
+
+}
+
+func checkCommand(what types.Command) (err error) {
+	err = what.Check()
+	return
+}
+
+func getCmdArgs(where types.InfoBase, what types.Command, options Options) []string {
+
+	var args []string
+
+	values := types.NewValues()
+
+	connectString := where.Values()
+
+	if what.Command() == types.COMMAND_CREATEINFOBASE {
+		connectString.Append(*what.Values())
+	} else {
+		values.Set("/IBConnectionString", types.SpaceSep,
+			fmt.Sprintf("%s;", strings.Join(connectString.Values(), ";")))
+		values.Append(*what.Values())
+	}
+
+	values.Append(options.commonValues)
+	values.Append(*options.Values())
+	values.Append(options.customValues)
+
+	args = append(args, what.Command())
+	if what.Command() == types.COMMAND_CREATEINFOBASE {
+
+		args = append(args, strings.Join(connectString.Values(), ";"))
+
+		clearValuesForCreateInfobase(values)
+	}
+	args = append(args, values.Values()...)
+
+	return args
+}
+
+func prepareCmd(args []string, options Options) (*runnerCmd, error) {
+
+	commandV8, err := getV8Path(options)
+
+	if err != nil {
+		return nil, err
+	}
+
+	cmd := &runnerCmd{
+		command: commandV8,
+	}
+
+	cmd.args = args
+
+	if options.Context != nil {
+		cmd.ctx = options.Context
+	}
+
+	if options.Timeout > 0 {
+
+		if cmd.ctx == nil {
+			cmd.ctx = context.Background()
+		}
+
+		timeout := int64(time.Second) * options.Timeout
+		cmd.ctx, cmd.cancelCtx = context.WithTimeout(cmd.ctx, time.Duration(timeout))
+
+	}
+
+	return cmd, nil
 }
 
 func (r *Runner) RunWithOptions(where types.InfoBase, what types.Command, options Options) error {
