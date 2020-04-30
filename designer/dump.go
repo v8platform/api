@@ -1,14 +1,35 @@
 package designer
 
 import (
+	agent "github.com/Khorevaa/go-v8platform/agent/client"
 	"github.com/Khorevaa/go-v8platform/marshaler"
 	"github.com/Khorevaa/go-v8platform/types"
+	"path"
 )
 
 type DumpCfgOptions struct {
 	Designer  `v8:",inherit" json:"designer"`
 	File      string `v8:"/DumpCfg" json:"file"`
 	Extension string `v8:"-Extension, optional" json:"extension"`
+}
+
+func (d DumpCfgOptions) OnAgent(tasks *agent.AgentTasks) bool {
+
+	_, file := path.Split(d.File)
+
+	tempFile := path.Join("./temp/", file)
+
+	cmd := agent.DumpCfg{
+		File:      tempFile,
+		Extension: d.Extension,
+	}
+
+	task := tasks.NewTask(cmd)
+	task.After.ConnectIB = true
+	task.Before.DownloadFile(tempFile, d.File)
+
+	return true
+
 }
 
 func (d DumpCfgOptions) Values() *types.Values {

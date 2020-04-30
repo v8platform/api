@@ -4,6 +4,8 @@ import (
 	"github.com/Khorevaa/go-v8platform/errors"
 	"github.com/Khorevaa/go-v8platform/marshaler"
 	"github.com/Khorevaa/go-v8platform/types"
+	"net"
+	"strconv"
 )
 
 ///AgentMode
@@ -68,4 +70,25 @@ func (d AgentModeOptions) Values() *types.Values {
 
 	v, _ := marshaler.Marshal(d)
 	return v
+}
+
+func (o AgentModeOptions) WithBaseDir(dir string) AgentModeOptions {
+
+	newO := o
+	newO.BaseDir = dir
+	return newO
+
+}
+
+func (o AgentModeOptions) WithListenAddress(ipPort string) AgentModeOptions {
+
+	host, portString, _ := net.SplitHostPort(ipPort)
+
+	port, _ := strconv.ParseInt(portString, 10, 64)
+
+	newO := o
+	newO.ListenAddress = host
+	newO.Port = int(port)
+	return newO
+
 }

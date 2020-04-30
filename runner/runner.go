@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Khorevaa/go-v8platform/find"
 	"github.com/Khorevaa/go-v8platform/types"
+	"io"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -17,6 +18,35 @@ var defaultVersion = "8.3"
 
 type Runner struct {
 	Options *Options
+}
+
+type Command struct {
+	process *exec.Cmd
+	args    []string
+	env     []string
+	running bool
+	ctx     context.Context
+}
+
+func (c *Command) Run() error {
+
+	err := c.process.Run()
+
+	return err
+}
+
+type Runner interface {
+	SetStdoutWriter(io.Writer)
+	SetStderrWriter(io.Writer)
+	StdoutPipe() (io.Reader, error) // use in combination with Start() & Wait(), don't use in combination with Run()
+	StderrPipe() (io.Reader, error) // use in combination with Start() & Wait(), don't use in combination with Run()
+
+	Run() error
+	Start() error
+	Wait() error
+	Close() error
+
+	ExitCode() int // -1 when runner error without completing script
 }
 
 func NewRunner(opts ...Option) *Runner {
