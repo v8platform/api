@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+var _ types.Command = (Enterprise)(nil)
+
 type Enterprise struct {
 	DisableSplash          bool `v8:"/DisableSplash" json:"disable_splash"`
 	DisableStartupDialogs  bool `v8:"/DisableStartupDialogs" json:"disable_startup_dialogs"`

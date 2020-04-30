@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+var _ types.InfoBase = (InfoBase)(nil)
+
 type DatabaseSeparator struct {
 	Use   bool
 	Value string

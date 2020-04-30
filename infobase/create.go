@@ -24,6 +24,8 @@ const (
 	DBMS_OracleDatabase = "OracleDatabase"
 )
 
+var _ types.Command = (CreateInfoBaseOptions)(nil)
+
 type CreateInfoBaseOptions struct {
 	DisableStartupDialogs bool   `v8:"/DisableStartupDialogs" json:"disable_startup_dialogs"`
 	UseTemplate           string `v8:"/UseTemplate" json:"use_template"`
