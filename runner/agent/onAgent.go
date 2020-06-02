@@ -1,4 +1,4 @@
-package runner
+package agent
 
 import (
 	agent2 "github.com/Khorevaa/go-v8platform/agent"

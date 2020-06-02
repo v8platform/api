@@ -329,7 +329,7 @@ func runCommand(command string, args []string) (err error) {
 	err = cmd.Run()
 
 	if err != nil {
-		errors.Runtime.Wrapf(err, "run command exec error")
+		err = errors.Runtime.Wrapf(err, "run command exec error")
 	}
 
 	return
