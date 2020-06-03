@@ -5,7 +5,7 @@ import (
 	"github.com/Khorevaa/go-v8platform/types"
 )
 
-var _ types.Command = (Designer)(nil)
+var _ types.Command = (*Designer)(nil)
 
 type Designer struct {
 	DisableStartupDialogs  bool `v8:"/DisableStartupDialogs" json:"disable_startup_dialogs"`

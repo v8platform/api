@@ -34,14 +34,13 @@ func (t *createInfoBaseTestSuite) TearDownTest() {
 }
 func (t *createInfoBaseTestSuite) SetupSuite() {
 
-	t.runner = runner.NewRunner()
 }
 
 func (t *createInfoBaseTestSuite) TestCreateTempInfoBase() {
 
 	ib := NewTempIB()
 
-	err := t.runner.Run(ib, CreateFileInfoBaseOptions{},
+	err := runner.Run(ib, CreateFileInfoBaseOptions{},
 		runner.WithTimeout(30),
 		runner.WithCredentials("User", "pwd"),
 	)

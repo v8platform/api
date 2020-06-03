@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var _ types.InfoBase = (InfoBase)(nil)
+var _ types.InfoBase = (*InfoBase)(nil)
 
 type DatabaseSeparator struct {
 	Use   bool

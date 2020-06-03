@@ -3,143 +3,91 @@ package runner
 import (
 	"fmt"
 	"github.com/Khorevaa/go-v8platform/find"
+	"github.com/Khorevaa/go-v8platform/runner/cmd"
 	"github.com/Khorevaa/go-v8platform/types"
-	"os/exec"
-	"strconv"
 	"strings"
 
 	"context"
 	"github.com/Khorevaa/go-v8platform/errors"
-	"time"
 )
 
 var defaultVersion = "8.3"
 
-type Runner struct {
-	Options *Options
-}
-
-type runnerCmd struct {
-	cmd       *exec.Cmd
-	command   string
-	args      []string
-	env       []string
-	running   bool
+type v8Runner struct {
+	Options   *Options
+	Where     types.InfoBase
+	What      types.Command
 	ctx       context.Context
-	cancelCtx context.CancelFunc
+	commandV8 string
 }
 
-func (c *runnerCmd) Run() error {
+func newRunner(ctx context.Context, where types.InfoBase, what types.Command, opts ...interface{}) v8Runner {
 
-	if err := c.Start(); err != nil {
-		return err
-	}
-
-	return c.Wait()
-}
-
-func (c *runnerCmd) Wait() error {
-
-	if !c.running {
-		return errors.BadCommand.New("command not runnint")
-	}
-	defer c.cancelCtx()
-
-	return c.cmd.Wait()
-}
-
-func (c *runnerCmd) Start() error {
-
-	c.create()
-
-	err := c.cmd.Start()
-
-	if err == nil {
-		c.running = true
-	}
-
-	return err
-}
-
-func (c *runnerCmd) create() {
-
-	if c.ctx == nil {
-		c.cmd = exec.Command(c.command, c.args...)
-	} else {
-		c.cmd = exec.CommandContext(c.ctx, c.command, c.args...)
-	}
-	c.cmd.Env = c.env
-
-}
-
-func NewRunner(opts ...Option) *Runner {
-
-	r := &Runner{
-		Options: defaultOptions(),
-	}
-
-	r.Options.Options(opts...)
-
-	return r
-
-}
-
-func (r *Runner) Run(where types.InfoBase, what types.Command, opts ...interface{}) error {
-
-	copyOptions := *r.Options
-
-	options := &copyOptions
+	options := defaultOptions()
 
 	inlineOptions := getOptions(opts...)
 	if inlineOptions != nil {
 		options = inlineOptions
 	}
 
-	if options == nil {
-		options = defaultOptions()
-	}
-
 	o := clearOpts(opts)
 
 	options.Options(o...)
 
-	return r.RunWithOptions(where, what, *options)
+	r := v8Runner{
+		Where:   where,
+		What:    what,
+		Options: options,
+		ctx:     ctx,
+	}
+
+	return r
+}
+
+func Run(where types.InfoBase, what types.Command, opts ...interface{}) error {
+
+	ctx := context.Background()
+
+	p, err := Background(ctx, where, what, opts...)
+
+	if err != nil {
+		return err
+	}
+
+	return <-p.Wait()
+}
+
+func Background(ctx context.Context, where types.InfoBase, what types.Command, opts ...interface{}) (Process, error) {
+
+	r := newRunner(ctx, where, what, opts...)
+
+	err := checkCommand(r.What)
+
+	if err != nil {
+		return nil, err
+	}
+
+	r.commandV8, err = getV8Path(*r.Options)
+
+	if err != nil {
+		return nil, err
+	}
+
+	p := r.run()
+
+	return p, nil
 
 }
 
-func (r *Runner) run(where types.InfoBase, what types.Command, options Options) error {
+func (r *v8Runner) run() Process {
 
-	err := checkCommand(what)
+	args := getCmdArgs(r.Where, r.What, *r.Options)
 
-	if err != nil {
-		return err
-	}
+	runner := prepareRunner(r.commandV8, args, *r.Options)
 
-	args := getCmdArgs(where, what, options)
+	p := background(runner, r.ctx)
 
-	cmd, err := prepareCmd(args, options)
-
-	if err != nil {
-		return err
-	}
-
-	defer options.RemoveTempFiles()
-
-	errRun := cmd.Run()
-
-	if errRun != nil {
-		outLog, _ := readOut(options.Out)
-		errorWithOut := errors.AddErrorContext(errRun, "out", outLog)
-		return errorWithOut
-	}
-
-	dumpErr := checkRunResult(options)
-
-	if dumpErr != nil {
-		return dumpErr
-	}
-
-	return dumpErr
+	return p
 
 }
 
@@ -180,111 +128,15 @@ func getCmdArgs(where types.InfoBase, what types.Command, options Options) []str
 	return args
 }
 
-func prepareCmd(args []string, options Options) (*runnerCmd, error) {
+func prepareRunner(command string, args []string, options Options) Runner {
 
-	commandV8, err := getV8Path(options)
+	r := cmd.NewCmdRunner(command, args,
+		cmd.WithContext(options.Context),
+		cmd.WithOutFilePath(options.Out),
+		cmd.WithDumpResultFilePath(options.DumpResult),
+	)
 
-	if err != nil {
-		return nil, err
-	}
-
-	cmd := &runnerCmd{
-		command: commandV8,
-	}
-
-	cmd.args = args
-
-	if options.Context != nil {
-		cmd.ctx = options.Context
-	}
-
-	if options.Timeout > 0 {
-
-		if cmd.ctx == nil {
-			cmd.ctx = context.Background()
-		}
-
-		timeout := int64(time.Second) * options.Timeout
-		cmd.ctx, cmd.cancelCtx = context.WithTimeout(cmd.ctx, time.Duration(timeout))
-
-	}
-
-	return cmd, nil
-}
-
-func (r *Runner) RunWithOptions(where types.InfoBase, what types.Command, options Options) error {
-
-	checkErr := what.Check()
-	if checkErr != nil {
-		return checkErr
-	}
-
-	commandV8, err := getV8Path(options)
-
-	if err != nil {
-		return err
-	}
-
-	values := types.NewValues()
-
-	connectString := where.Values()
-
-	if what.Command() == types.COMMAND_CREATEINFOBASE {
-		connectString.Append(*what.Values())
-	} else {
-		values.Set("/IBConnectionString", types.SpaceSep, fmt.Sprintf("%s;", strings.Join(connectString.Values(), ";")))
-		values.Append(*what.Values())
-	}
-
-	values.Append(options.commonValues)
-	values.Append(*options.Values())
-	values.Append(options.customValues)
-
-	var args []string
-
-	args = append(args, what.Command())
-	if what.Command() == types.COMMAND_CREATEINFOBASE {
-
-		args = append(args, strings.Join(connectString.Values(), ";"))
-
-		clearValuesForCreateInfobase(values)
-	}
-	args = append(args, values.Values()...)
-
-	defer options.RemoveTempFiles()
-
-	var errRun error
-
-	if options.Context != nil {
-
-		runCtx := options.Context
-
-		if options.Timeout > 0 {
-
-			timeout := int64(time.Second) * options.Timeout
-			ctxTimeout, cancel := context.WithTimeout(runCtx, time.Duration(timeout))
-			defer cancel() // The cancel should be deferred so resources are cleaned up
-			runCtx = ctxTimeout
-		}
-
-		errRun = runCommandContext(runCtx, commandV8, args)
-	} else {
-		errRun = runCommand(commandV8, args)
-	}
-
-	if errRun != nil {
-		outLog, _ := readOut(options.Out)
-		errorWithOut := errors.AddErrorContext(errRun, "out", outLog)
-		return errorWithOut
-	}
-
-	dumpErr := checkRunResult(options)
-
-	if dumpErr != nil {
-		return dumpErr
-	}
-
-	return nil
+	return r
 }
 
 func getV8Path(options Options) (string, error) {
@@ -308,81 +160,6 @@ func getV8Path(options Options) (string, error) {
 	}
 
 	return v8path, nil
-
-}
-
-func readOut(file string) (string, error) {
-	b, err := readV8file(file)
-	return string(b), err
-}
-
-func readDumpResult(file string) int {
-
-	b, _ := readV8file(file)
-	code, _ := strconv.ParseInt(string(b), 10, 64)
-	return int(code)
-}
-
-func runCommand(command string, args []string) (err error) {
-
-	cmd := exec.Command(command, args...)
-	err = cmd.Run()
-
-	if err != nil {
-		err = errors.Runtime.Wrapf(err, "run command exec error")
-	}
-
-	return
-}
-
-func runCommandContext(ctx context.Context, command string, args []string) (err error) {
-
-	cmd := exec.CommandContext(ctx, command, args...)
-
-	err = cmd.Run()
-
-	switch {
-	case ctx.Err() == context.DeadlineExceeded:
-		err = errors.Timeout.Wrap(err, "run command context timeout exceeded")
-	case err != nil:
-		err = errors.Runtime.Wrap(err, "run command context exec error")
-	}
-
-	return
-}
-
-func checkRunResult(options Options) error {
-
-	dumpCode := readDumpResult(options.DumpResult)
-
-	switch dumpCode {
-
-	case 0:
-
-		return nil
-
-	case 1:
-
-		outLog, _ := readOut(options.Out)
-		err := errors.Internal.New("1S internal error")
-		errorWithOut := errors.AddErrorContext(err, "out", outLog)
-		return errorWithOut
-
-	case 101:
-
-		outLog, _ := readOut(options.Out)
-		err := errors.Database.New("1S database error")
-		errorWithOut := errors.AddErrorContext(err, "out", outLog)
-		return errorWithOut
-
-	default:
-
-		outLog, _ := readOut(options.Out)
-		err := errors.Invalid.New("Unknown 1S error")
-		errorWithOut := errors.AddErrorContext(err, "out", outLog)
-		return errorWithOut
-
-	}
 
 }
 

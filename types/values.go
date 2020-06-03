@@ -62,6 +62,7 @@ func (v *Values) Map(key string, value string) {
 
 	if ok {
 		v.values[index] = Value{key, value}
+		return
 	}
 
 	v.values = append(v.values, Value{key, value})

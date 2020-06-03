@@ -24,7 +24,7 @@ const (
 	DBMS_OracleDatabase = "OracleDatabase"
 )
 
-var _ types.Command = (CreateInfoBaseOptions)(nil)
+var _ types.Command = (*CreateInfoBaseOptions)(nil)
 
 type CreateInfoBaseOptions struct {
 	DisableStartupDialogs bool   `v8:"/DisableStartupDialogs" json:"disable_startup_dialogs"`
@@ -138,7 +138,7 @@ func (d CreateInfoBaseOptions) Values() *types.Values {
 func NewCreateInfoBase() CreateInfoBaseOptions {
 
 	d := CreateInfoBaseOptions{
-		DisableStartupDialogs: true,
+		DisableStartupDialogs: false,
 	}
 
 	return d

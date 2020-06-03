@@ -11,10 +11,21 @@ import (
 	"path"
 )
 
+type TestRunner struct {
+	common TestCommon
+}
+
+func (r TestRunner) Run(where types.InfoBase, what types.Command, opts ...interface{}) error {
+
+	opts = append(opts, runner.WithCommonValues(r.common))
+
+	return runner.Run(where, what, opts...)
+}
+
 type TestSuite struct {
 	suite.Suite
 	TempIB string
-	Runner *runner.Runner
+	Runner TestRunner
 	Pwd    string
 }
 
@@ -89,7 +100,8 @@ func (t *TestSuite) SetupSuite() {
 		//ClearCache:             false,
 	}
 
-	t.Runner = runner.NewRunner(runner.WithCommonValues(common))
+	t.Runner = TestRunner{}
+	t.Runner.common = common
 	ibPath, _ := ioutil.TempDir("", "1c_DB_")
 	t.TempIB = ibPath
 	pwd, _ := os.Getwd()
