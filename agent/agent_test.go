@@ -1,12 +1,17 @@
 package agent
 
 import (
+	"context"
 	"github.com/khorevaa/go-v8platform/agent/client"
+	"github.com/khorevaa/go-v8platform/infobase"
+	"github.com/khorevaa/go-v8platform/runner"
 	"github.com/khorevaa/go-v8platform/tests"
 	"github.com/stretchr/testify/suite"
 	"log"
+	"net"
 	"os"
 	"testing"
+	"time"
 )
 
 type AgentTestSuite struct {
@@ -19,8 +24,8 @@ func TestAgent(t *testing.T) {
 
 func (a *AgentTestSuite) TestStartAgent() {
 
-	//ctx, cancel := context.WithCancel(context.Background())
-	//defer cancel()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	//
 	////t := a.T()
 	//
@@ -32,13 +37,45 @@ func (a *AgentTestSuite) TestStartAgent() {
 	//		return nil
 	//	}()
 	//
-	//	a.Runner.Run(infobase.NewFileIB(a.TempIB), AgentModeOptions{
-	//		Visible:        true,
-	//		SSHHostKeyAuto: true,
-	//		BaseDir: "./"},
-	//		runner.WithContext(ctx))
+	process, err := runner.Background(ctx, infobase.NewFileIB(a.TempIB), AgentModeOptions{
+		Visible:        true,
+		SSHHostKeyAuto: true,
+		BaseDir:        "./"},
+	)
 	//
 	//}()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	<-process.Ready()
+	ready := make(chan error)
+
+	go func() {
+		timeuot, _ := context.WithTimeout(ctx, time.Second*2)
+		ticker := time.Tick(time.Second)
+		for {
+			select {
+			case <-ready:
+				return
+			case <-ticker:
+
+				_, err := net.Dial("tcp", ":1543")
+				if err == nil {
+					close(ready)
+					return
+				}
+
+			case <-timeuot.Done():
+				ready <- timeuot.Err()
+			}
+		}
+
+	}()
+	err = <-ready
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	//t.R().NoError(err, errors.GetErrorContext(err))
 
@@ -70,22 +107,22 @@ func (a *AgentTestSuite) TestStartAgent() {
 	//if err != nil {
 	//	logger.Fatalf("copy file %v", err)
 	//}
-	logger.Printf("copy dir")
+	//logger.Printf("copy dir")
 
-	err = client.CopyDirFrom("./src", "./tmp/")
-	if err != nil {
-		logger.Fatalf("copy file %v", err)
-	}
+	//err = client.CopyDirFrom("./src", "./tmp/")
+	//if err != nil {
+	//	logger.Fatalf("copy file %v", err)
+	//}
 	//err = client.Disconnect()
 	//if err != nil {
 	//	logger.Fatal(err)
 	//}
 	//
-	//err = client.Connect()
-	//if err != nil {
-	//	logger.Fatal(err)
-	//}
-	//
+	err = client.Connect()
+	if err != nil {
+		logger.Fatal(err)
+	}
+
 	//err = client.LoadCfg("./1Cv8.cf")
 	//if err != nil {
 	//	logger.Fatal(err)
@@ -96,15 +133,15 @@ func (a *AgentTestSuite) TestStartAgent() {
 	//	logger.Fatal(err)
 	//}
 
-	//err = client.Disconnect()
-	//if err != nil {
-	//	logger.Fatal(err)
-	//}
-	//
-	//err = client.Shutdown()
-	//if err != nil {
-	//	logger.Fatal(err)
-	//}
+	err = client.Disconnect()
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	err = client.Shutdown()
+	if err != nil {
+		logger.Fatal(err)
+	}
 
 	//session.WriteChannel(sshclient.CONFIG_COMMAND)
 	//str := session.ReadChannelTiming(10)
