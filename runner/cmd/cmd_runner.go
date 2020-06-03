@@ -60,9 +60,9 @@ func (r *CmdRunner) Options(opts ...Option) {
 
 }
 
-func NewCmdRunner(command string, args []string, opts ...Option) CmdRunner {
+func NewCmdRunner(command string, args []string, opts ...Option) *CmdRunner {
 
-	cmd := CmdRunner{
+	cmd := &CmdRunner{
 		command: command,
 		args:    args,
 	}
@@ -73,13 +73,13 @@ func NewCmdRunner(command string, args []string, opts ...Option) CmdRunner {
 
 }
 
-func (runner CmdRunner) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
+func (runner *CmdRunner) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 
-	if runner.ctx != nil {
-		runner.cmd = exec.CommandContext(runner.ctx, runner.command, runner.args...)
-	} else {
-		runner.cmd = exec.Command(runner.command, runner.args...)
+	if runner.ctx == nil {
+		runner.ctx = context.Background()
 	}
+
+	runner.cmd = exec.CommandContext(runner.ctx, runner.command, runner.args...)
 
 	err := runner.cmd.Start()
 	if err != nil {
@@ -106,7 +106,7 @@ func (runner CmdRunner) Run(signals <-chan os.Signal, ready chan<- struct{}) err
 				return errorWithOut
 			}
 			return errRun
-		case _ = <-runner.ctx.Done():
+		case <-runner.ctx.Done():
 			return runner.ctx.Err()
 		}
 	}
@@ -184,7 +184,7 @@ func runCommandContext(ctx context.Context, command string, args []string) (err 
 	return
 }
 
-func (runner CmdRunner) checkRunResult() error {
+func (runner *CmdRunner) checkRunResult() error {
 
 	dumpCode := readDumpResult(runner.dumpResultFilePath)
 

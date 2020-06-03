@@ -83,7 +83,7 @@ func (r *v8Runner) run() Process {
 
 	args := getCmdArgs(r.Where, r.What, *r.Options)
 
-	runner := prepareRunner(r.commandV8, args, *r.Options)
+	runner := prepareRunner(r.ctx, r.commandV8, args, *r.Options)
 
 	p := background(runner, r.ctx)
 
@@ -128,7 +128,11 @@ func getCmdArgs(where types.InfoBase, what types.Command, options Options) []str
 	return args
 }
 
-func prepareRunner(command string, args []string, options Options) Runner {
+func prepareRunner(ctx context.Context, command string, args []string, options Options) Runner {
+
+	if options.Context == nil {
+		options.Context = ctx
+	}
 
 	r := cmd.NewCmdRunner(command, args,
 		cmd.WithContext(options.Context),
