@@ -2,7 +2,7 @@ package sshclient
 
 import (
 	"encoding/json"
-	"github.com/Khorevaa/go-v8platform/agent/client/errors"
+	"github.com/khorevaa/go-v8platform/agent/client/errors"
 )
 
 // options

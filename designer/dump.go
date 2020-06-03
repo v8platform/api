@@ -1,9 +1,9 @@
 package designer
 
 import (
-	agent "github.com/Khorevaa/go-v8platform/agent/client"
-	"github.com/Khorevaa/go-v8platform/marshaler"
-	"github.com/Khorevaa/go-v8platform/types"
+	agent "github.com/khorevaa/go-v8platform/agent/client"
+	"github.com/khorevaa/go-v8platform/marshaler"
+	"github.com/khorevaa/go-v8platform/types"
 	"path"
 )
 

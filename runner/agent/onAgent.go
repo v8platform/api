@@ -1,9 +1,9 @@
 package agent
 
 import (
-	agent2 "github.com/Khorevaa/go-v8platform/agent"
-	agent "github.com/Khorevaa/go-v8platform/agent/client"
-	"github.com/Khorevaa/go-v8platform/types"
+	agent2 "github.com/khorevaa/go-v8platform/agent"
+	agent "github.com/khorevaa/go-v8platform/agent/client"
+	"github.com/khorevaa/go-v8platform/types"
 )
 
 type ClientPool struct {

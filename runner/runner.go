@@ -2,13 +2,13 @@ package runner
 
 import (
 	"fmt"
-	"github.com/Khorevaa/go-v8platform/find"
-	"github.com/Khorevaa/go-v8platform/runner/cmd"
-	"github.com/Khorevaa/go-v8platform/types"
+	"github.com/khorevaa/go-v8platform/find"
+	"github.com/khorevaa/go-v8platform/runner/cmd"
+	"github.com/khorevaa/go-v8platform/types"
 	"strings"
 
 	"context"
-	"github.com/Khorevaa/go-v8platform/errors"
+	"github.com/khorevaa/go-v8platform/errors"
 )
 
 var defaultVersion = "8.3"

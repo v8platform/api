@@ -1,11 +1,11 @@
 package repository
 
 import (
-	"github.com/Khorevaa/go-v8platform/designer"
-	"github.com/Khorevaa/go-v8platform/errors"
-	"github.com/Khorevaa/go-v8platform/marshaler"
-	"github.com/Khorevaa/go-v8platform/types"
 	"github.com/hashicorp/go-multierror"
+	"github.com/khorevaa/go-v8platform/designer"
+	"github.com/khorevaa/go-v8platform/errors"
+	"github.com/khorevaa/go-v8platform/marshaler"
+	"github.com/khorevaa/go-v8platform/types"
 )
 
 type RepositoryRightType string

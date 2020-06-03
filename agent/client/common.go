@@ -1,7 +1,7 @@
 package sshclient
 
 import (
-	"github.com/Khorevaa/go-v8platform/agent/client/errors"
+	"github.com/khorevaa/go-v8platform/agent/client/errors"
 )
 
 func (c *AgentClient) Connect(opts ...execOption) error {

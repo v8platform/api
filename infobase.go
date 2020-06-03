@@ -1,8 +1,8 @@
 package v8
 
 import (
-	"github.com/Khorevaa/go-v8platform/designer"
-	"github.com/Khorevaa/go-v8platform/infobase"
+	"github.com/khorevaa/go-v8platform/designer"
+	"github.com/khorevaa/go-v8platform/infobase"
 )
 
 func DumpIB(file string) designer.DumpIBOptions {

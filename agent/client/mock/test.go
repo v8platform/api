@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/Khorevaa/go-v8platform/agent/client/pool"
+	"github.com/khorevaa/go-v8platform/agent/client/pool"
 	"log"
 	"os"
 	"path/filepath"

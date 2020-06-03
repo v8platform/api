@@ -1,7 +1,7 @@
 package common
 
 import (
-	"github.com/Khorevaa/go-v8platform/types"
+	"github.com/khorevaa/go-v8platform/types"
 )
 
 type Common struct {

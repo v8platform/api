@@ -2,7 +2,7 @@ package sshclient
 
 import (
 	"context"
-	"github.com/Khorevaa/go-v8platform/agent/client/pool"
+	"github.com/khorevaa/go-v8platform/agent/client/pool"
 	"github.com/pkg/sftp"
 	"io"
 	"log"

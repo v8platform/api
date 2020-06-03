@@ -2,8 +2,8 @@ package v8
 
 import (
 	"context"
-	"github.com/Khorevaa/go-v8platform/runner"
-	"github.com/Khorevaa/go-v8platform/types"
+	"github.com/khorevaa/go-v8platform/runner"
+	"github.com/khorevaa/go-v8platform/types"
 )
 
 func WithTimeout(timeout int64) runner.Option {

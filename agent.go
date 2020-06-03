@@ -1,7 +1,7 @@
 package v8
 
 import (
-	"github.com/Khorevaa/go-v8platform/agent"
+	"github.com/khorevaa/go-v8platform/agent"
 )
 
 func AgentMode(visible bool) agent.AgentModeOptions {

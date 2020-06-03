@@ -1,6 +1,6 @@
 package agent
 
-import agent "github.com/Khorevaa/go-v8platform/agent/client"
+import agent "github.com/khorevaa/go-v8platform/agent/client"
 
 type ClientID string
 

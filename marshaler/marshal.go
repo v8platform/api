@@ -3,7 +3,7 @@ package marshaler
 import (
 	"errors"
 	"fmt"
-	"github.com/Khorevaa/go-v8platform/types"
+	"github.com/khorevaa/go-v8platform/types"
 	"reflect"
 	"strconv"
 	"time"

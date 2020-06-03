@@ -2,9 +2,9 @@ package v8
 
 import (
 	"context"
-	agent "github.com/Khorevaa/go-v8platform/agent/client"
-	"github.com/Khorevaa/go-v8platform/runner"
-	"github.com/Khorevaa/go-v8platform/types"
+	agent "github.com/khorevaa/go-v8platform/agent/client"
+	"github.com/khorevaa/go-v8platform/runner"
+	"github.com/khorevaa/go-v8platform/types"
 )
 
 func Run(where types.InfoBase, what types.Command, opts ...interface{}) error {
