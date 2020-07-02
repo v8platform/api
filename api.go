@@ -1,12 +1,11 @@
 package v8
 
 import (
-	"github.com/Khorevaa/go-v8runner/runner"
-	"github.com/Khorevaa/go-v8runner/types"
+	"github.com/v8platform/runner"
 )
 
-func Run(where types.InfoBase, what types.Command, opts ...interface{}) error {
+func Run(where runner.Infobase, what runner.Command, opts ...interface{}) error {
 
-	return runner.NewRunner().Run(where, what, opts...)
+	return runner.Run(where, what, opts...)
 
 }

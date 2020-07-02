@@ -1,12 +1,20 @@
-package infobase
+package v8
 
 import (
 	"fmt"
-	"github.com/Khorevaa/go-v8runner/marshaler"
-	"github.com/Khorevaa/go-v8runner/types"
+	"github.com/v8platform/marshaler"
+	"github.com/v8platform/runner"
 	"io/ioutil"
 	"strings"
 )
+
+type Infobase interface {
+	runner.Infobase
+}
+
+type Command interface {
+	runner.Command
+}
 
 type DatabaseSeparator struct {
 	Use   bool
@@ -139,6 +147,26 @@ func (ib InfoBase) Path() string {
 	return ""
 }
 
+func (ib FileInfoBase) Path() string {
+
+	return ib.File
+}
+
+func (ib ServerInfoBase) Path() string {
+
+	return ib.Srvr + "/" + ib.Ref
+}
+
+func (ib FileInfoBase) ConnectionString() string {
+
+	return "/F" + ib.File
+}
+
+func (ib ServerInfoBase) ConnectionString() string {
+
+	return "/S" + ib.Srvr + "/" + ib.Ref
+}
+
 func (ib InfoBase) WithAuth(user, pass string) InfoBase {
 
 	return InfoBase{
@@ -182,20 +210,20 @@ func (ib ServerInfoBase) WithUC(uc string) ServerInfoBase {
 	return newIb
 }
 
-func (ib InfoBase) Values() *types.Values {
+func (ib InfoBase) Values() []string {
 	v, _ := marshaler.Marshal(ib)
 	return v
 
 }
 
-func (ib FileInfoBase) Values() *types.Values {
+func (ib FileInfoBase) Values() []string {
 
 	v, _ := marshaler.Marshal(ib)
 	return v
 
 }
 
-func (ib ServerInfoBase) Values() *types.Values {
+func (ib ServerInfoBase) Values() []string {
 
 	v, _ := marshaler.Marshal(ib)
 	return v

@@ -1,6 +1,6 @@
 package v8
 
-import "github.com/Khorevaa/go-v8runner/designer"
+import "github.com/v8platform/designer"
 
 func LoadExtensionCfg(file, extension string) designer.LoadCfgOptions {
 
