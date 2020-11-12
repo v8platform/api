@@ -1,0 +1,18 @@
+project_name: v8
+before:
+  hooks:
+    - go mod tidy
+#    - docker login
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - Merge pull request
+      - Merge branch
+build:
+  skip: true
+release:
+  github:
+  prerelease: auto
