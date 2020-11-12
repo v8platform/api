@@ -16,6 +16,11 @@ type Command interface {
 	runner.Command
 }
 
+type CreateInfobaseCommand interface {
+	Command
+	Infobase() interface{}
+}
+
 type DatabaseSeparator struct {
 	Use   bool
 	Value string
@@ -114,6 +119,10 @@ type InfoBase struct {
 	//то для установки соединения необходимо в параметре /UC указать этот код доступа.
 	//Не используется при работе тонкого клиента через веб-сервер
 	UnlockCode string `v8:"/UC, optional" json:"uc"`
+}
+
+func (ib InfoBase) ConnectionString() string {
+	return ""
 }
 
 type FileInfoBase struct {
