@@ -1,7 +1,7 @@
 go-v8platform
 =============
 
-[![ISC License](http://img.shields.io/badge/license-BSD-blue.svg)](http://copyfree.org)  
+[![ISC License](http://img.shields.io/badge/license-MIT-blue.svg)](http://copyfree.org)  
 
 Реализация программного интерфейсом пакетного режима работы с 1С:Предприятием 8.x
 
