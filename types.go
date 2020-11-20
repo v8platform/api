@@ -9,16 +9,11 @@ import (
 )
 
 type Infobase interface {
-	runner.Infobase
+	ConnectionString() string
 }
 
 type Command interface {
 	runner.Command
-}
-
-type CreateInfobaseCommand interface {
-	Command
-	Infobase() interface{}
 }
 
 type DatabaseSeparator struct {
@@ -111,14 +106,14 @@ type InfoBase struct {
 	// Журнал регистрации фиксирует установку или отказ в возможности установки режима привилегированного сеанса.
 	// prmod=1 - привилегированный сеанс устанавливается.
 	Prmod bool `v8:"Prmod, equal_sep, optional, bool_true=1" json:"prmod"`
+}
 
-	///UC <код доступа>
-	//— позволяет выполнить установку соединения с информационной базой,
-	//на которую установлена блокировка установки соединений.
-	//Если при установке блокировки задан непустой код доступа,
-	//то для установки соединения необходимо в параметре /UC указать этот код доступа.
-	//Не используется при работе тонкого клиента через веб-сервер
-	UnlockCode string `v8:"/UC, optional" json:"uc"`
+func (ib InfoBase) Path() string {
+	panic("implement me")
+}
+
+func (ib InfoBase) Values() []string {
+	panic("implement me")
 }
 
 func (ib InfoBase) ConnectionString() string {
@@ -151,32 +146,25 @@ type ServerInfoBase struct {
 	Ref string `v8:"Ref, equal_sep, quotes" json:"ref"`
 }
 
-func (ib InfoBase) Path() string {
-
-	return ""
-}
-
-func (ib FileInfoBase) Path() string {
-
-	return ib.File
-}
-
-func (ib ServerInfoBase) Path() string {
-
-	return ib.Srvr + "/" + ib.Ref
-}
-
 func (ib FileInfoBase) ConnectionString() string {
 
-	return "/F" + ib.File
+	v, _ := marshaler.Marshal(ib)
+	connString := strings.Join(v, ";")
+	return "/IBConnectionString " + connString
 }
 
 func (ib ServerInfoBase) ConnectionString() string {
 
-	return "/S" + ib.Srvr + "/" + ib.Ref
+	v, _ := marshaler.Marshal(ib)
+	connString := strings.Join(v, ";")
+	return "/IBConnectionString " + connString
 }
 
 func (ib InfoBase) WithAuth(user, pass string) InfoBase {
+
+	if len(user) == 0 {
+		return ib
+	}
 
 	return InfoBase{
 		Usr:     user,
@@ -203,40 +191,6 @@ func (ib ServerInfoBase) WithAuth(user, pass string) ServerInfoBase {
 		Srvr:     ib.Srvr,
 		Ref:      ib.Ref,
 	}
-}
-
-func (ib FileInfoBase) WithUC(uc string) FileInfoBase {
-
-	newIb := ib
-	newIb.UnlockCode = uc
-	return newIb
-}
-
-func (ib ServerInfoBase) WithUC(uc string) ServerInfoBase {
-
-	newIb := ib
-	newIb.UnlockCode = uc
-	return newIb
-}
-
-func (ib InfoBase) Values() []string {
-	v, _ := marshaler.Marshal(ib)
-	return v
-
-}
-
-func (ib FileInfoBase) Values() []string {
-
-	v, _ := marshaler.Marshal(ib)
-	return v
-
-}
-
-func (ib ServerInfoBase) Values() []string {
-
-	v, _ := marshaler.Marshal(ib)
-	return v
-
 }
 
 func NewTempIB() FileInfoBase {
