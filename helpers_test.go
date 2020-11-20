@@ -133,6 +133,16 @@ func TestInfobaseFromConnectingString(t *testing.T) {
 			nil,
 			true,
 		},
+
+		{
+			"ignore other values",
+			args{"/UC 112;/UseTemplate;File=./file_ib;Locale=ru_RU"},
+			FileInfoBase{
+				File:   "./file_ib",
+				Locale: "ru_RU",
+			},
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
