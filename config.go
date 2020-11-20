@@ -1,7 +1,7 @@
 package v8
 
 import (
-	"github.com/khorevaa/go-v8platform/designer"
+	"github.com/v8platform/designer"
 )
 
 func LoadCfg(file string) designer.LoadCfgOptions {

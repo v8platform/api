@@ -1,8 +1,7 @@
 package v8
 
 import (
-	"github.com/khorevaa/go-v8platform/designer"
-	"github.com/khorevaa/go-v8platform/infobase"
+	"github.com/v8platform/designer"
 )
 
 func DumpIB(file string) designer.DumpIBOptions {
@@ -53,23 +52,12 @@ func UpdateDBExtensionCfg(extension string, server bool, Dynamic bool) designer.
 
 }
 
-func CreateInfobase() infobase.CreateInfoBaseOptions {
+func CreateFileInfobase(file string) designer.CreateFileInfoBaseOptions {
 
-	command := infobase.NewCreateInfoBase()
-
-	return command
-
-}
-
-func CreateFileInfoBase(file string) infobase.CreateFileInfoBaseOptions {
-
-	command := infobase.NewCreateInfoBase()
-
-	FileInfoBaseOptions := infobase.CreateFileInfoBaseOptions{
-		CreateInfoBaseOptions: command,
-		File:                  file,
+	command := designer.CreateFileInfoBaseOptions{
+		File: file,
 	}
 
-	return FileInfoBaseOptions
+	return command
 
 }

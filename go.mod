@@ -1,13 +1,11 @@
-module github.com/khorevaa/go-v8platform
+module github.com/v8platform/v8
 
-go 1.12
+go 1.15
 
 require (
-	github.com/hashicorp/go-multierror v1.0.0
-	github.com/pkg/errors v0.9.1
-	github.com/pkg/sftp v1.11.0
-	github.com/stretchr/testify v1.5.1
-	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586
-	golang.org/x/text v0.3.2
-
+	github.com/stretchr/testify v1.6.1
+	github.com/v8platform/designer v0.1.0
+	github.com/v8platform/enterprise v0.1.0
+	github.com/v8platform/marshaler v0.1.1
+	github.com/v8platform/runner v0.2.2
 )

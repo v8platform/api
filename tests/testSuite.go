@@ -1,144 +1,132 @@
 package tests
 
-import (
-	"github.com/khorevaa/go-v8platform/errors"
-	"github.com/khorevaa/go-v8platform/runner"
-	"github.com/khorevaa/go-v8platform/types"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
-	"io/ioutil"
-	"os"
-	"path"
-)
+// import (
+// 	"github.com/Khorevaa/go-v8runner/errors"
+// 	"github.com/Khorevaa/go-v8runner/runner"
+// 	"github.com/Khorevaa/go-v8runner/types"
+// 	"github.com/stretchr/testify/require"
+// 	"github.com/stretchr/testify/suite"
+// 	"io/ioutil"
+// 	"os"
+// 	"path"
+// )
 
-type TestRunner struct {
-	common TestCommon
-}
+// type TestSuite struct {
+// 	suite.Suite
+// 	TempIB string
+// 	Runner *runner.Runner
+// 	Pwd    string
+// }
 
-func (r TestRunner) Run(where types.InfoBase, what types.Command, opts ...interface{}) error {
+// type TempInfobase struct {
+// 	File string
+// }
 
-	opts = append(opts, runner.WithCommonValues(r.common))
+// func (ib TempInfobase) Path() string {
+// 	return ib.File
+// }
 
-	return runner.Run(where, what, opts...)
-}
+// func (ib TempInfobase) Values() *types.Values {
 
-type TestSuite struct {
-	suite.Suite
-	TempIB string
-	Runner TestRunner
-	Pwd    string
-}
+// 	v := types.NewValues()
+// 	v.Set("File", types.EqualSep, ib.File)
+// 	return v
+// }
 
-type TempInfobase struct {
-	File string
-}
+// type TempCreateInfobase struct {
+// }
 
-func (ib TempInfobase) Path() string {
-	return ib.File
-}
+// type TestCommon struct {
+// 	DisableStartupDialogs  bool `v8:"/DisableStartupDialogs" json:"disable_startup_dialogs"`
+// 	DisableStartupMessages bool `v8:"/DisableStartupDialogs" json:"disable_startup_messages"`
+// 	Visible                bool `v8:"/Visible" json:"visible"`
+// 	ClearCache             bool `v8:"/ClearCache" json:"clear_cache"`
+// }
 
-func (ib TempInfobase) Values() *types.Values {
+// func (cv TestCommon) Values() *types.Values {
 
-	v := types.NewValues()
-	v.Set("File", types.EqualSep, ib.File)
-	return v
-}
+// 	v := types.NewValues()
 
-type TempCreateInfobase struct {
-}
+// 	if cv.Visible {
+// 		v.Set("/Visible", types.NoSep, "")
+// 	}
+// 	if cv.DisableStartupDialogs {
+// 		v.Set("/DisableStartupDialogs", types.NoSep, "")
+// 	}
+// 	if cv.DisableStartupMessages {
+// 		v.Set("/DisableStartupMessages", types.NoSep, "")
+// 	}
+// 	if cv.ClearCache {
+// 		v.Set("/ClearCache", types.NoSep, "")
+// 	}
 
-type TestCommon struct {
-	DisableStartupDialogs  bool `v8:"/DisableStartupDialogs" json:"disable_startup_dialogs"`
-	DisableStartupMessages bool `v8:"/DisableStartupDialogs" json:"disable_startup_messages"`
-	Visible                bool `v8:"/Visible" json:"visible"`
-	ClearCache             bool `v8:"/ClearCache" json:"clear_cache"`
-}
+// 	return v
+// }
 
-func (cv TestCommon) Values() *types.Values {
+// func (ib TempCreateInfobase) Command() string {
+// 	return types.COMMAND_CREATEINFOBASE
+// }
 
-	v := types.NewValues()
+// func (ib TempCreateInfobase) Check() error {
+// 	return nil
+// }
+// func (ib TempCreateInfobase) Values() *types.Values {
 
-	if cv.Visible {
-		v.Set("/Visible", types.NoSep, "")
-	}
-	if cv.DisableStartupDialogs {
-		v.Set("/DisableStartupDialogs", types.NoSep, "")
-	}
-	if cv.DisableStartupMessages {
-		v.Set("/DisableStartupMessages", types.NoSep, "")
-	}
-	if cv.ClearCache {
-		v.Set("/ClearCache", types.NoSep, "")
-	}
+// 	v := types.NewValues()
+// 	return v
+// }
 
-	return v
-}
+// func (s *TestSuite) R() *require.Assertions {
+// 	return s.Require()
+// }
 
-func (ib TempCreateInfobase) Command() string {
-	return types.COMMAND_CREATEINFOBASE
-}
+// func (t *TestSuite) SetupSuite() {
 
-func (ib TempCreateInfobase) Check() error {
-	return nil
-}
-func (ib TempCreateInfobase) Values() *types.Values {
+// 	common := TestCommon{
+// 		DisableStartupDialogs:  true,
+// 		DisableStartupMessages: true,
+// 		Visible:                false,
+// 		//ClearCache:             false,
+// 	}
 
-	v := types.NewValues()
-	return v
-}
+// 	t.Runner = runner.NewRunner(runner.WithCommonValues(common))
+// 	ibPath, _ := ioutil.TempDir("", "1c_DB_")
+// 	t.TempIB = ibPath
+// 	pwd, _ := os.Getwd()
 
-func (s *TestSuite) R() *require.Assertions {
-	return s.Require()
-}
+// 	t.Pwd = path.Join(pwd)
 
-func (t *TestSuite) SetupSuite() {
+// }
 
-	common := TestCommon{
-		DisableStartupDialogs:  true,
-		DisableStartupMessages: true,
-		Visible:                false,
-		//ClearCache:             false,
-	}
+// func (t *TestSuite) AfterTest(suite, testName string) {
+// 	t.ClearTempInfoBase()
+// }
 
-	t.Runner = TestRunner{}
-	t.Runner.common = common
-	ibPath, _ := ioutil.TempDir("", "1c_DB_")
-	t.TempIB = ibPath
-	pwd, _ := os.Getwd()
+// func (t *TestSuite) BeforeTest(suite, testName string) {
+// 	t.CreateTempInfoBase()
+// }
 
-	t.Pwd = path.Join(pwd)
+// func (t *TestSuite) CreateTempInfoBase() {
 
-}
+// 	ib := TempInfobase{File: t.TempIB}
 
-func (t *TestSuite) AfterTest(suite, testName string) {
-	t.ClearTempInfoBase()
-}
+// 	err := t.Runner.Run(ib, TempCreateInfobase{},
+// 		runner.WithTimeout(30))
 
-func (t *TestSuite) BeforeTest(suite, testName string) {
-	t.CreateTempInfoBase()
-}
+// 	t.R().NoError(err, errors.GetErrorContext(err))
 
-func (t *TestSuite) CreateTempInfoBase() {
+// }
 
-	ib := TempInfobase{File: t.TempIB}
+// func (t *TestSuite) ClearTempInfoBase() {
 
-	err := t.Runner.Run(ib, TempCreateInfobase{},
-		runner.WithTimeout(30))
+// 	err := os.RemoveAll(t.TempIB)
+// 	t.R().NoError(err, errors.GetErrorContext(err))
+// }
 
-	t.R().NoError(err, errors.GetErrorContext(err))
-
-}
-
-func (t *TestSuite) ClearTempInfoBase() {
-
-	err := os.RemoveAll(t.TempIB)
-	t.R().NoError(err, errors.GetErrorContext(err))
-}
-
-func Exists(name string) (bool, error) {
-	_, err := os.Stat(name)
-	if os.IsNotExist(err) {
-		return false, err
-	}
-	return true, nil
-}
+// func Exists(name string) (bool, error) {
+// 	_, err := os.Stat(name)
+// 	if os.IsNotExist(err) {
+// 		return false, err
+// 	}
+// 	return true, nil
+// }

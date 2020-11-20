@@ -2,8 +2,7 @@ package v8
 
 import (
 	"context"
-	"github.com/khorevaa/go-v8platform/runner"
-	"github.com/khorevaa/go-v8platform/types"
+	"github.com/v8platform/runner"
 )
 
 func WithTimeout(timeout int64) runner.Option {
@@ -30,7 +29,7 @@ func WithVersion(version string) runner.Option {
 	return runner.WithVersion(version)
 }
 
-func WithCommonValues(cv types.ValuesInterface) runner.Option {
+func WithCommonValues(cv []string) runner.Option {
 	return runner.WithCommonValues(cv)
 }
 
