@@ -58,7 +58,9 @@ func FileInfobaseFromConnectingString(connectingString string) (FileInfoBase, er
 
 	for _, value := range values {
 
-		if len(value) == 0 {
+		if len(value) == 0 ||
+			strings.HasPrefix(value, "/") ||
+			strings.HasPrefix(value, "-") {
 			continue
 		}
 
@@ -113,7 +115,9 @@ func ServerInfobaseFromConnectingString(connectingString string) (ServerInfoBase
 
 	for _, value := range values {
 
-		if len(value) == 0 {
+		if len(value) == 0 ||
+			strings.HasPrefix(value, "/") ||
+			strings.HasPrefix(value, "-") {
 			continue
 		}
 
