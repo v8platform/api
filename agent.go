@@ -1,12 +1,12 @@
 package v8
 
 import (
-	"github.com/khorevaa/go-v8platform/agent"
+	"github.com/v8platform/designer"
 )
 
-func AgentMode(visible bool) agent.AgentModeOptions {
+func AgentMode(visible bool) designer.AgentModeOptions {
 
-	command := agent.AgentModeOptions{
+	command := designer.AgentModeOptions{
 		SSHHostKeyAuto: true,
 		Visible:        visible,
 	}
