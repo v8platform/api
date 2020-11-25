@@ -1,17 +1,23 @@
 package infobase
 
 import (
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"reflect"
 
 	"testing"
 )
 
 type TypesTestSuite struct {
-	baseTestSuite
+	suite.Suite
 }
 
 func (b *TypesTestSuite) SetupSuite() {
 
+}
+
+func (s *TypesTestSuite) r() *require.Assertions {
+	return s.Require()
 }
 
 func Test_TypesTestSuite(t *testing.T) {
@@ -22,12 +28,12 @@ func (t *TypesTestSuite) TestConnectionStringServerBase() {
 
 	tests := []struct {
 		name   string
-		fields ServerInfoBase
+		fields Server
 		want   string
 	}{
 		{
 			"simple",
-			ServerInfoBase{
+			Server{
 				Srvr: "test_server",
 				Ref:  "test_base",
 			},
@@ -35,27 +41,33 @@ func (t *TypesTestSuite) TestConnectionStringServerBase() {
 		},
 		{
 			"with auth",
-			ServerInfoBase{
+			Server{
+				Common: Common{
+					Usr: "user",
+					Pwd: "pwd",
+				},
 				Srvr: "test_server",
 				Ref:  "test_base",
-			}.WithAuth("user", "pwd"),
+			},
 			"/IBConnectionString Usr=user;Pwd=pwd;Srvr=test_server;Ref='test_base'",
 		},
 		{
 			"with LicDstr",
-			ServerInfoBase{
-				InfoBase: InfoBase{
+			Server{
+				Common: Common{
 					LicDstr: true,
+					Usr:     "user",
+					Pwd:     "pwd",
 				},
 				Srvr: "test_server",
 				Ref:  "test_base",
-			}.WithAuth("user", "pwd"),
+			},
 			"/IBConnectionString Usr=user;Pwd=pwd;LicDstr=Y;Srvr=test_server;Ref='test_base'",
 		},
 		{
 			"with Prmod",
-			ServerInfoBase{
-				InfoBase: InfoBase{
+			Server{
+				Common: Common{
 					Prmod: true,
 				},
 				Srvr: "test_server",
@@ -65,8 +77,8 @@ func (t *TypesTestSuite) TestConnectionStringServerBase() {
 		},
 		{
 			"with Zn",
-			ServerInfoBase{
-				InfoBase: InfoBase{
+			Server{
+				Common: Common{
 					Zn: DatabaseSeparatorList{
 						DatabaseSeparator{
 							Use:   true,
@@ -87,10 +99,10 @@ func (t *TypesTestSuite) TestConnectionStringServerBase() {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func() {
-			ib := ServerInfoBase{
-				InfoBase: tt.fields.InfoBase,
-				Srvr:     tt.fields.Srvr,
-				Ref:      tt.fields.Ref,
+			ib := Server{
+				Common: tt.fields.Common,
+				Srvr:   tt.fields.Srvr,
+				Ref:    tt.fields.Ref,
 			}
 
 			got := ib.ConnectionString()
@@ -106,37 +118,43 @@ func (t *TypesTestSuite) TestConnectionStringFileBase() {
 
 	tests := []struct {
 		name   string
-		fields FileInfoBase
+		fields File
 		want   string
 	}{
 		{
 			"simple",
-			FileInfoBase{
+			File{
 				File: "./file_base_dir",
 			},
 			"/IBConnectionString File='./file_base_dir'",
 		},
 		{
 			"with auth",
-			FileInfoBase{
+			File{
 				File: "./file_base_dir",
-			}.WithAuth("user", "pwd"),
+				Common: Common{
+					Usr: "user",
+					Pwd: "pwd",
+				},
+			},
 			"/IBConnectionString Usr=user;Pwd=pwd;File='./file_base_dir'",
 		},
 		{
 			"with LicDstr",
-			FileInfoBase{
-				InfoBase: InfoBase{
+			File{
+				Common: Common{
+					Usr:     "user",
+					Pwd:     "pwd",
 					LicDstr: true,
 				},
 				File: "./file_base_dir",
-			}.WithAuth("user", "pwd"),
+			},
 			"/IBConnectionString Usr=user;Pwd=pwd;LicDstr=Y;File='./file_base_dir'",
 		},
 		{
 			"with Prmod",
-			FileInfoBase{
-				InfoBase: InfoBase{
+			File{
+				Common: Common{
 					Prmod: true,
 				},
 				File: "./file_base_dir",
@@ -145,8 +163,8 @@ func (t *TypesTestSuite) TestConnectionStringFileBase() {
 		},
 		{
 			"with Zn",
-			FileInfoBase{
-				InfoBase: InfoBase{
+			File{
+				Common: Common{
 					Zn: DatabaseSeparatorList{
 						DatabaseSeparator{
 							Use:   true,
@@ -174,4 +192,54 @@ func (t *TypesTestSuite) TestConnectionStringFileBase() {
 		})
 	}
 
+}
+
+func TestWithAuth(t *testing.T) {
+	type args struct {
+		ib       Infobase
+		user     string
+		password string
+	}
+	tests := []struct {
+		name string
+		args args
+		want Infobase
+	}{
+		{
+			"simple file",
+			args{
+				File{},
+				"user",
+				"pwd",
+			},
+			File{
+				Common: Common{
+					Usr: "user",
+					Pwd: "pwd",
+				},
+			},
+		},
+		{
+			"simple server",
+			args{
+				Server{},
+				"user",
+				"pwd",
+			},
+			Server{
+				Common: Common{
+					Usr: "user",
+					Pwd: "pwd",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := WithAuth(tt.args.ib, tt.args.user, tt.args.password); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("WithAuth() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

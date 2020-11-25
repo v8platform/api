@@ -51,3 +51,8 @@ func (t DatabaseSeparatorList) MarshalV8() (string, error) {
 
 	return strings.Join(sep, ","), nil
 }
+
+func ParseDatabaseSeparatorList(stringValue string) (DatabaseSeparatorList, error) {
+	// TODO Сделать парсер
+	return DatabaseSeparatorList{}, nil
+}
