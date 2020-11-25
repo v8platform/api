@@ -1,4 +1,4 @@
-package v8
+package infobase
 
 import (
 	"github.com/stretchr/testify/suite"

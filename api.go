@@ -33,5 +33,5 @@ func CreateInfobase(create runner.Command, opts ...interface{}) (Infobase, error
 
 	connectionStringValues := create.Values()
 	connectionString := strings.Join(connectionStringValues, ";")
-	return InfobaseFromConnectingString(connectionString)
+	return InfobaseFromConnectionString(connectionString)
 }

@@ -86,13 +86,13 @@ func TestFileInfobaseFromConnectingString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := FileInfobaseFromConnectingString(tt.args.connectingString)
+			got, err := FileInfobaseFromConnectionString(tt.args.connectingString)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("FileInfobaseFromConnectingString() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("FileInfobaseFromConnectionString() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FileInfobaseFromConnectingString() got = %v, want %v", got, tt.want)
+				t.Errorf("FileInfobaseFromConnectionString() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -146,13 +146,13 @@ func TestInfobaseFromConnectingString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := InfobaseFromConnectingString(tt.args.connectingString)
+			got, err := InfobaseFromConnectionString(tt.args.connectingString)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("InfobaseFromConnectingString() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("InfobaseFromConnectionString() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("InfobaseFromConnectingString() got = %v, want %v", got, tt.want)
+				t.Errorf("InfobaseFromConnectionString() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -192,8 +192,8 @@ func TestInfobaseFromConnectingStringOrNil(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := InfobaseFromConnectingStringOrNil(tt.args.connectingString); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("InfobaseFromConnectingStringOrNil() = %v, want %v", got, tt.want)
+			if got := InfobaseFromConnectionStringOrNil(tt.args.connectingString); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("InfobaseFromConnectionStringOrNil() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -258,13 +258,13 @@ func TestServerInfobaseFromConnectingString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ServerInfobaseFromConnectingString(tt.args.connectingString)
+			got, err := ServerInfobaseFromConnectionString(tt.args.connectingString)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ServerInfobaseFromConnectingString() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ServerInfobaseFromConnectionString() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ServerInfobaseFromConnectingString() got = %v, want %v", got, tt.want)
+				t.Errorf("ServerInfobaseFromConnectionString() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

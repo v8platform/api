@@ -27,27 +27,27 @@ func NewTempFile(dir, pattern string) string {
 
 }
 
-var ErrorParseConnectingString = errors.BadConnectString.New("wrong connecting string")
+var ErrorParseConnectionString = errors.BadConnectString.New("wrong connection string")
 
-func InfobaseFromConnectingStringOrNil(connectingString string) Infobase {
-	ib, _ := InfobaseFromConnectingString(connectingString)
+func InfobaseFromConnectionStringOrNil(connectingString string) Infobase {
+	ib, _ := InfobaseFromConnectionString(connectingString)
 	return ib
 }
 
-func InfobaseFromConnectingString(connectingString string) (Infobase, error) {
+func InfobaseFromConnectionString(connectingString string) (Infobase, error) {
 
 	switch {
 	case strings.Contains(connectingString, "Srvr="):
-		return ServerInfobaseFromConnectingString(connectingString)
+		return ServerInfobaseFromConnectionString(connectingString)
 	case strings.Contains(connectingString, "File="):
-		return FileInfobaseFromConnectingString(connectingString)
+		return FileInfobaseFromConnectionString(connectingString)
 	default:
-		return nil, ErrorParseConnectingString
+		return nil, ErrorParseConnectionString
 	}
 
 }
 
-func FileInfobaseFromConnectingString(connectingString string) (FileInfoBase, error) {
+func FileInfobaseFromConnectionString(connectingString string) (FileInfoBase, error) {
 
 	if strings.HasPrefix(connectingString, "/IBConnectionString ") {
 		connectingString = strings.TrimPrefix(connectingString, "/IBConnectionString ")
@@ -97,14 +97,14 @@ func FileInfobaseFromConnectingString(connectingString string) (FileInfoBase, er
 	}
 
 	if len(ib.File) == 0 {
-		return FileInfoBase{}, errors.BadConnectString.New("wrong file connecting string")
+		return FileInfoBase{}, errors.BadConnectString.New("wrong file connection string")
 	}
 
 	return ib, nil
 
 }
 
-func ServerInfobaseFromConnectingString(connectingString string) (ServerInfoBase, error) {
+func ServerInfobaseFromConnectionString(connectingString string) (ServerInfoBase, error) {
 
 	if strings.HasPrefix(connectingString, "/IBConnectionString ") {
 		connectingString = strings.TrimPrefix(connectingString, "/IBConnectionString ")
@@ -154,7 +154,7 @@ func ServerInfobaseFromConnectingString(connectingString string) (ServerInfoBase
 	}
 
 	if len(ib.Srvr) == 0 || len(ib.Ref) == 0 {
-		return ServerInfoBase{}, errors.BadConnectString.New("wrong server connecting string")
+		return ServerInfoBase{}, errors.BadConnectString.New("wrong server connection string")
 	}
 
 	return ib, nil
