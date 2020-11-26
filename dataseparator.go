@@ -1,4 +1,4 @@
-package infobase
+package v8
 
 import (
 	"fmt"
