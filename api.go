@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/v8platform/errors"
 	"github.com/v8platform/runner"
+	"strings"
 )
 
 func Run(where runner.Infobase, what runner.Command, opts ...interface{}) error {
@@ -18,17 +19,19 @@ func Background(ctx context.Context, where runner.Infobase, what runner.Command,
 
 }
 
-func CreateInfobase(create CreateInfobaseCommand, opts ...interface{}) (interface{}, error) {
+func CreateInfobase(create runner.Command, opts ...interface{}) (*Infobase, error) {
 
 	if create.Command() != runner.CreateInfobase {
 		return nil, errors.Check.New("command must be <CreateInfobase>")
 	}
 
-	err := Run(InfoBase{}, create, opts...)
+	err := Run(nil, create, opts...)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return create.Infobase(), nil
+	connectionStringValues := create.Values()
+	connectionString := strings.Join(connectionStringValues, ";")
+	return ParseConnectionString(connectionString)
 }
