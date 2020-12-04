@@ -1,7 +1,6 @@
 package v8
 
 import (
-	"github.com/v8platform/errors"
 	"io/ioutil"
 )
 
@@ -25,5 +24,3 @@ func NewTempFile(dir, pattern string) string {
 	return tempFile.Name()
 
 }
-
-var ErrorParseConnectionString = errors.BadConnectString.New("wrong connection string")
