@@ -10,34 +10,44 @@ import (
 var _ ConnectPath = (*FilePath)(nil)
 var _ ConnectPath = (*ServerPath)(nil)
 
+// ConnectPath Описание интерфейса для создания пути подключения к информационной базе
 type ConnectPath interface {
+	// Должно  возвращать:
+	// 	1. Для подключения файловой базе "File='./file_path';"
+	// 	2. Для подключения серверной базе "Srvr=localhost;Ref='infobase_name'"
+	// 	1. Для подключения по тонкому клиенту "Ws=http://localhost/ws/buh;"
 	String() string
 }
 
+// FilePath Описывает подключение к файловой базе данных
 type FilePath struct {
 
 	// имя каталога, в котором размещается файл информационной базы;
 	File string `v8:"File, equal_sep, quotes" json:"file"`
 }
 
+// String Полученияе строки подлючения по заданным полям
 func (f FilePath) String() string {
 	v, _ := marshaler.Marshal(f)
 	connString := strings.Join(v, ";")
 	return connString + ";"
 }
 
+// WsPath Описывает подключение по тонкому клиенту
 type WsPath struct {
 
-	// имя каталога, в котором размещается файл информационной базы;
+	// путь подключения для тонкого клиента
 	Ws string `v8:"Ws, equal_sep" json:"ws"`
 }
 
+// String Полученияе строки подлючения по заданным полям
 func (f WsPath) String() string {
 	v, _ := marshaler.Marshal(f)
 	connString := strings.Join(v, ";")
 	return connString + ";"
 }
 
+// ServerPath Описывает подключение к серверной базе данных
 type ServerPath struct {
 	//имя сервера «1С:Предприятия» в формате: [<протокол>://]<адрес>[:<порт>], где:
 	//<протокол> – не обязателен, поддерживается только протокол TCP,
@@ -49,6 +59,7 @@ type ServerPath struct {
 	Ref string `v8:"Ref, equal_sep, quotes" json:"ref"`
 }
 
+// String Полученияе строки подлючения по заданным полям
 func (s ServerPath) String() string {
 	v, _ := marshaler.Marshal(s)
 	connString := strings.Join(v, ";")
@@ -57,7 +68,16 @@ func (s ServerPath) String() string {
 
 var _ ConnectionString = (*Infobase)(nil)
 
+// Infobase Описание структуры подключения к информационной базе
+//
+//	Пример создания файловой базы базы:
+// 		ib := &v8.Infobase{
+//			Connect:             v8.FilePath{File: "./infobase_path"},
+//			User:                "Admin",
+//			Password:            "password",
+//		}
 type Infobase struct {
+	// Описание подключения к информационной базе
 	Connect ConnectPath `v8:",inherit" json:"path"`
 
 	// имя пользователя;
@@ -109,6 +129,7 @@ type Infobase struct {
 	Locale string `v8:"Locale, optional, equal_sep" json:"locale"`
 }
 
+// ConnectionString Реализация интерфейса для v8.ConnectionString
 func (ib Infobase) ConnectionString() string {
 
 	v, _ := marshaler.Marshal(ib)
@@ -123,8 +144,6 @@ func NewFileInfobase(file string) *Infobase {
 			File: file,
 		},
 	}
-
-	ib.Connect.String()
 
 	return ib
 

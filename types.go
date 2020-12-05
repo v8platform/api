@@ -13,11 +13,11 @@ type Command interface {
 	runner.Command
 }
 
-func NewTempIB() Infobase {
+func NewTempIB() (*Infobase, error) {
 
 	path, _ := ioutil.TempDir("", "1c_DB_")
+	return CreateInfobase(CreateFileInfobase(path))
 
-	return NewFileIB(path)
 }
 
 func NewFileIB(path string) Infobase {
