@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/v8platform/errors"
 	"github.com/v8platform/marshaler"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -137,6 +139,7 @@ func (ib Infobase) ConnectionString() string {
 	return fmt.Sprintf("/IBConnectionString %s%s", ib.Connect.String(), connString)
 }
 
+// NewFileInfobase Получает новую файловую информационную базы по ее каталогу
 func NewFileInfobase(file string) *Infobase {
 
 	ib := &Infobase{
@@ -149,6 +152,21 @@ func NewFileInfobase(file string) *Infobase {
 
 }
 
+// NewInfobase Получает новую информационную базы из переданной строки
+func NewInfobase(connectingString string) (ib *Infobase, err error) {
+
+	file, _ := filepath.Abs(connectingString)
+	_, err = os.Stat(file)
+	if err == nil || os.IsExist(err) {
+		return NewFileInfobase(connectingString), nil
+	}
+
+	return ParseConnectionString(connectingString)
+
+}
+
+// ParseConnectionString Парсит строки подключения к информационной базе и
+// получение из нее информаицонную базу
 func ParseConnectionString(connectingString string) (ib *Infobase, err error) {
 
 	switch {
@@ -172,7 +190,7 @@ func parseIBConnectionString(connectingString string) (ib *Infobase, err error) 
 
 	ib = &Infobase{}
 
-	valuesMap, err := ConnectionStringtoMap(connectingString)
+	valuesMap, err := connectionStringToMap(connectingString)
 	if err != nil {
 		return nil, err
 	}
@@ -226,7 +244,7 @@ func parseIBConnectionString(connectingString string) (ib *Infobase, err error) 
 	return
 }
 
-func ConnectionStringtoMap(connectingString string) (map[string]string, error) {
+func connectionStringToMap(connectingString string) (map[string]string, error) {
 	valuesMap := make(map[string]string)
 
 	values := strings.Split(connectingString, ";")

@@ -4,7 +4,7 @@ import (
 	"github.com/v8platform/designer"
 )
 
-// LoadCfg Возвращает команду загрузки конфигурации из файла
+// LoadCfg получает команду загрузки конфигурации из файла
 // Подробнее в пакете designer.LoadCfgOptions
 func LoadCfg(file string) designer.LoadCfgOptions {
 
@@ -17,7 +17,7 @@ func LoadCfg(file string) designer.LoadCfgOptions {
 
 }
 
-// LoadConfigFromFiles Возвращает команду загрузки конфигурации из файлов каталога
+// LoadConfigFromFiles получает команду загрузки конфигурации из файлов каталога
 func LoadConfigFromFiles(dir string) designer.LoadConfigFromFiles {
 
 	command := designer.LoadConfigFromFiles{
@@ -29,7 +29,7 @@ func LoadConfigFromFiles(dir string) designer.LoadConfigFromFiles {
 
 }
 
-// UpdateCfg Возвращает команду обновления конфигурации из файла
+// UpdateCfg получает команду обновления конфигурации из файла
 // Подробнее в пакете designer.UpdateCfgOptions
 func UpdateCfg(file string, force bool) designer.UpdateCfgOptions {
 
@@ -43,7 +43,7 @@ func UpdateCfg(file string, force bool) designer.UpdateCfgOptions {
 
 }
 
-// DumpCfg Возвращает команду сохранения конфигурации в файл
+// DumpCfg получает команду сохранения конфигурации в файл
 func DumpCfg(file string) designer.DumpCfgOptions {
 
 	command := designer.DumpCfgOptions{
@@ -55,7 +55,7 @@ func DumpCfg(file string) designer.DumpCfgOptions {
 
 }
 
-// DumpConfigToFiles Возвращает команду сохранения конфигурации в файлы указанного каталога
+// DumpConfigToFiles получает команду сохранения конфигурации в файлы указанного каталога
 func DumpConfigToFiles(dir string, force bool) designer.DumpConfigToFilesOptions {
 
 	command := designer.DumpConfigToFilesOptions{
@@ -68,7 +68,7 @@ func DumpConfigToFiles(dir string, force bool) designer.DumpConfigToFilesOptions
 
 }
 
-// GetChangesForConfigDump Возвращает команду получения измнений конфигурации для указаного файла выгрузки конфигурации
+// GetChangesForConfigDump получает команду получения измнений конфигурации для указаного файла выгрузки конфигурации
 func GetChangesForConfigDump(file string, force bool) designer.GetChangesForConfigDumpOptions {
 
 	command := designer.GetChangesForConfigDumpOptions{
@@ -81,7 +81,7 @@ func GetChangesForConfigDump(file string, force bool) designer.GetChangesForConf
 
 }
 
-// DisableCfgSupport Возвращает команду отключение поддержки конфигурации
+// DisableCfgSupport получает команду отключение поддержки конфигурации
 func DisableCfgSupport(force bool) designer.ManageCfgSupportOptions {
 	command := designer.ManageCfgSupportOptions{
 		Designer:       designer.NewDesigner(),
@@ -92,7 +92,7 @@ func DisableCfgSupport(force bool) designer.ManageCfgSupportOptions {
 	return command
 }
 
-// DisableCfgSupport Возвращает команду возврата конфигруации к конфигурации БД
+// DisableCfgSupport получает команду возврата конфигруации к конфигурации БД
 func RollbackCfg() designer.RollbackCfgOptions {
 
 	command := designer.RollbackCfgOptions{

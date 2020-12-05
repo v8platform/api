@@ -4,6 +4,7 @@ import (
 	"github.com/v8platform/designer"
 )
 
+// DumpIB получает команду выгрузки данных информационной базы в файл
 func DumpIB(file string) designer.DumpIBOptions {
 
 	command := designer.DumpIBOptions{
@@ -14,6 +15,7 @@ func DumpIB(file string) designer.DumpIBOptions {
 	return command
 }
 
+// RestoreIB получает команду восстановления данных информационной базы из файла
 func RestoreIB(file string) designer.RestoreIBOptions {
 
 	command := designer.RestoreIBOptions{
@@ -24,6 +26,7 @@ func RestoreIB(file string) designer.RestoreIBOptions {
 	return command
 }
 
+// IBRestoreIntegrity получает команду восстановления структуры информационной базы
 func IBRestoreIntegrity() designer.IBRestoreIntegrityOptions {
 
 	return designer.IBRestoreIntegrityOptions{
@@ -31,6 +34,7 @@ func IBRestoreIntegrity() designer.IBRestoreIntegrityOptions {
 	}
 }
 
+// UpdateDBCfg получает команду обновление конфигурации информационной базы
 func UpdateDBCfg(server bool, Dynamic bool) designer.UpdateDBCfgOptions {
 
 	command := designer.UpdateDBCfgOptions{
@@ -43,6 +47,7 @@ func UpdateDBCfg(server bool, Dynamic bool) designer.UpdateDBCfgOptions {
 
 }
 
+// UpdateDBExtensionCfg получает команду обновление конфигурации расшинения информационной базы
 func UpdateDBExtensionCfg(extension string, server bool, Dynamic bool) designer.UpdateDBCfgOptions {
 
 	command := UpdateDBCfg(server, Dynamic)
@@ -52,6 +57,7 @@ func UpdateDBExtensionCfg(extension string, server bool, Dynamic bool) designer.
 
 }
 
+// CreateFileInfobase получает команду создания файловой информационной базы
 func CreateFileInfobase(file string) designer.CreateFileInfoBaseOptions {
 
 	command := designer.CreateFileInfoBaseOptions{
