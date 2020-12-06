@@ -61,25 +61,6 @@ func ExampleExecute_params() {
 	}
 }
 
-func ExampleLoadCfg() {
-
-	infobase := v8.NewFileIB("./infobase")
-	//infobase := v8.NewServerIB("app", "demobase")
-
-	what := v8.LoadCfg("./1cv8.cf")
-	//what := v8.DumpCfg("./1cv8.cf)
-	//what := v8.DumpIB("./1cv8.dt)
-
-	err := v8.Run(infobase, what)
-	//err := v8.Run(infobase, what)
-	//err := v8.Run(infobase, what, v8.WithTimeout(1), v8.WithPath("path-to-exe"))
-	//err := v8.Run(infobase, what, v8.WithCredentials("infobase-user","pwd"), v8.WithUnlockCode("123"))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 func ExampleInfobase_file() {
 
 	ib := &v8.Infobase{
@@ -275,6 +256,271 @@ func ExampleRun_with_opts() {
 	//v8.WithCredentials("Администратор", ""), // Указание пользователя и пароля для информационной базы
 	//v8.WithCommonValues("/Visible", "/DisableStartupDialogs"), // Указание дополнительных опций запуска
 	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleLoadCfg() {
+
+	infobase, err := v8.CreateTempInfobase()
+	if err != nil {
+		log.Fatal(err)
+	}
+	//infobase := v8.NewFileIB("./infobase")
+	//infobase := v8.NewServerIB("app", "demobase")
+
+	what := v8.LoadCfg("./1cv8.cf")
+
+	err = v8.Run(infobase, what)
+	//err := v8.Run(infobase, what, v8.WithTimeout(1), v8.WithPath("path-to-exe"))
+	//err := v8.Run(infobase, what, v8.WithCredentials("infobase-user","pwd"), v8.WithUnlockCode("123"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleDumpCfg() {
+
+	infobase, err := v8.CreateTempInfobase()
+	if err != nil {
+		log.Fatal(err)
+	}
+	//infobase := v8.NewFileIB("./infobase")
+	//infobase := v8.NewServerIB("app", "demobase")
+
+	what := v8.DumpCfg("./1cv8.cf")
+
+	err = v8.Run(infobase, what)
+	//err := v8.Run(infobase, what, v8.WithTimeout(1), v8.WithPath("path-to-exe"))
+	//err := v8.Run(infobase, what, v8.WithCredentials("infobase-user","pwd"), v8.WithUnlockCode("123"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleLoadCfg_with_updateDBCfg() {
+
+	infobase, err := v8.CreateTempInfobase()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//infobase := v8.NewFileIB("./infobase")
+	//infobase := v8.NewServerIB("app", "demobase")
+
+	what := v8.LoadCfg("./1cv8.cf").
+		WithUpdateDBCfg(v8.UpdateDBCfg(false, false))
+
+	err = v8.Run(infobase, what)
+	//err := v8.Run(infobase, what, v8.WithTimeout(1), v8.WithPath("path-to-exe"))
+	//err := v8.Run(infobase, what, v8.WithCredentials("infobase-user","pwd"), v8.WithUnlockCode("123"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleLoadConfigFromFiles() {
+
+	infobase, err := v8.CreateTempInfobase()
+	if err != nil {
+		log.Fatal(err)
+	}
+	//infobase := v8.NewFileIB("./infobase")
+	//infobase := v8.NewServerIB("app", "demobase")
+
+	what := v8.LoadConfigFromFiles("./src")
+	//what := v8.LoadConfigFromFiles("./src", v8.UpdateDBCfg(false, false))
+
+	err = v8.Run(infobase, what)
+	//err := v8.Run(infobase, what, v8.WithTimeout(1), v8.WithPath("path-to-exe"))
+	//err := v8.Run(infobase, what, v8.WithCredentials("infobase-user","pwd"), v8.WithUnlockCode("123"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleLoadConfigFromFiles_with_files() {
+
+	infobase, err := v8.CreateTempInfobase()
+	if err != nil {
+		log.Fatal(err)
+	}
+	//infobase := v8.NewFileIB("./infobase")
+	//infobase := v8.NewServerIB("app", "demobase")
+
+	what := v8.LoadConfigFromFiles("./src").WithListFile("./listFiles.txt")
+	//what := v8.LoadConfigFromFiles("./src").WithFiles("./src/file.xml", "./src/file2.xml")
+
+	err = v8.Run(infobase, what)
+	//err := v8.Run(infobase, what, v8.WithTimeout(1), v8.WithPath("path-to-exe"))
+	//err := v8.Run(infobase, what, v8.WithCredentials("infobase-user","pwd"), v8.WithUnlockCode("123"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleLoadConfigFromFiles_with_update_dump_info() {
+
+	infobase, err := v8.CreateTempInfobase()
+	if err != nil {
+		log.Fatal(err)
+	}
+	//infobase := v8.NewFileIB("./infobase")
+	//infobase := v8.NewServerIB("app", "demobase")
+
+	what := v8.LoadConfigFromFiles("./src").WithUpdateDumpInfo()
+
+	err = v8.Run(infobase, what)
+	//err := v8.Run(infobase, what, v8.WithTimeout(1), v8.WithPath("path-to-exe"))
+	//err := v8.Run(infobase, what, v8.WithCredentials("infobase-user","pwd"), v8.WithUnlockCode("123"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleDumpConfigToFiles() {
+
+	infobase, err := v8.CreateTempInfobase()
+	if err != nil {
+		log.Fatal(err)
+	}
+	//infobase := v8.NewFileIB("./infobase")
+	//infobase := v8.NewServerIB("app", "demobase")
+
+	what := v8.DumpConfigToFiles("./src")
+	//what := v8.DumpConfigToFiles("./src", true)
+
+	err = v8.Run(infobase, what)
+	//err := v8.Run(infobase, what, v8.WithTimeout(1), v8.WithPath("path-to-exe"))
+	//err := v8.Run(infobase, what, v8.WithCredentials("infobase-user","pwd"), v8.WithUnlockCode("123"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleDumpConfigToFiles_with_update() {
+
+	infobase, err := v8.CreateTempInfobase()
+	if err != nil {
+		log.Fatal(err)
+	}
+	//infobase := v8.NewFileIB("./infobase")
+	//infobase := v8.NewServerIB("app", "demobase")
+
+	what := v8.DumpConfigToFiles("./src").WithUpdate(false, "./src/dumpInfo.xml")
+	//what := v8.DumpConfigToFiles("./src", true)
+
+	err = v8.Run(infobase, what)
+	//err := v8.Run(infobase, what, v8.WithTimeout(1), v8.WithPath("path-to-exe"))
+	//err := v8.Run(infobase, what, v8.WithCredentials("infobase-user","pwd"), v8.WithUnlockCode("123"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleGetChangesForConfigDump() {
+	infobase, err := v8.CreateTempInfobase()
+	if err != nil {
+		log.Fatal(err)
+	}
+	//infobase := v8.NewFileIB("./infobase")
+	//infobase := v8.NewServerIB("app", "demobase")
+
+	what := v8.GetChangesForConfigDump("./src", "./src/dumpInfo.xml")
+
+	err = v8.Run(infobase, what)
+	//err := v8.Run(infobase, what, v8.WithTimeout(1), v8.WithPath("path-to-exe"))
+	//err := v8.Run(infobase, what, v8.WithCredentials("infobase-user","pwd"), v8.WithUnlockCode("123"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleGetChangesForConfigDump_custom_dumpInfo() {
+	infobase, err := v8.CreateTempInfobase()
+	if err != nil {
+		log.Fatal(err)
+	}
+	//infobase := v8.NewFileIB("./infobase")
+	//infobase := v8.NewServerIB("app", "demobase")
+
+	what := v8.GetChangesForConfigDump("./src", "./src/dumpInfo.xml").
+		WithConfigDumpInfo("./src/old_dumpInfo.xml")
+
+	err = v8.Run(infobase, what)
+	//err := v8.Run(infobase, what, v8.WithTimeout(1), v8.WithPath("path-to-exe"))
+	//err := v8.Run(infobase, what, v8.WithCredentials("infobase-user","pwd"), v8.WithUnlockCode("123"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleUpdateCfg() {
+
+	infobase, err := v8.CreateTempInfobase()
+	if err != nil {
+		log.Fatal(err)
+	}
+	//infobase := v8.NewFileIB("./infobase")
+	//infobase := v8.NewServerIB("app", "demobase")
+
+	what := v8.UpdateCfg("./1cv8.cf", false)
+	//what := v8.UpdateCfg("./1cv8.cf", false, v8.UpdateDBCfg(false, false))
+
+	err = v8.Run(infobase, what)
+	//err := v8.Run(infobase, what, v8.WithTimeout(1), v8.WithPath("path-to-exe"))
+	//err := v8.Run(infobase, what, v8.WithCredentials("infobase-user","pwd"), v8.WithUnlockCode("123"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleDisableCfgSupport() {
+
+	infobase, err := v8.CreateTempInfobase()
+	if err != nil {
+		log.Fatal(err)
+	}
+	//infobase := v8.NewFileIB("./infobase")
+	//infobase := v8.NewServerIB("app", "demobase")
+
+	what := v8.DisableCfgSupport()
+	//what := v8.DisableCfgSupport(true)
+
+	err = v8.Run(infobase, what)
+	//err := v8.Run(infobase, what, v8.WithTimeout(1), v8.WithPath("path-to-exe"))
+	//err := v8.Run(infobase, what, v8.WithCredentials("infobase-user","pwd"), v8.WithUnlockCode("123"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleRollbackCfg() {
+
+	infobase, err := v8.CreateTempInfobase()
+	if err != nil {
+		log.Fatal(err)
+	}
+	//infobase := v8.NewFileIB("./infobase")
+	//infobase := v8.NewServerIB("app", "demobase")
+
+	err = v8.Run(infobase, v8.RollbackCfg())
+	//err := v8.Run(infobase, what, v8.WithTimeout(1), v8.WithPath("path-to-exe"))
+	//err := v8.Run(infobase, what, v8.WithCredentials("infobase-user","pwd"), v8.WithUnlockCode("123"))
 
 	if err != nil {
 		log.Fatal(err)
