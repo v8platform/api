@@ -4,9 +4,7 @@ import (
 	"io/ioutil"
 )
 
-////////////////////////////////////////////////////////
-// Create InfoBases
-
+// NewTempDir получает имя нового временного каталога
 func NewTempDir(dir, pattern string) string {
 
 	t, _ := ioutil.TempDir(dir, pattern)
@@ -15,6 +13,7 @@ func NewTempDir(dir, pattern string) string {
 
 }
 
+// NewTempFile получает имя нового временного файла
 func NewTempFile(dir, pattern string) string {
 
 	tempFile, _ := ioutil.TempFile(dir, pattern)
