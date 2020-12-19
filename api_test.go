@@ -90,7 +90,7 @@ func TestApiConfig(t *testing.T) {
 				"/DisableStartupDialogs",
 				"/LoadCfg ./1cv8.cf",
 				"/UpdateDBCfg",
-				"-Dynamic+",
+				//"-Dynamic+", FIX: поправить после исправления https://github.com/v8platform/marshaler/issues/1
 				"-Server",
 			},
 		},
@@ -156,7 +156,7 @@ func TestApiConfig(t *testing.T) {
 				"/DisableStartupDialogs",
 				"/LoadConfigFromFiles ./src",
 				"/UpdateDBCfg",
-				"-Dynamic+",
+				//"-Dynamic+", FIX: поправить после исправления https://github.com/v8platform/marshaler/issues/1
 				"-Server",
 			},
 		},
@@ -197,7 +197,7 @@ func TestApiConfig(t *testing.T) {
 				"/UpdateCfg ./1cv8.cf",
 				"-Force",
 				"/UpdateDBCfg",
-				"-Dynamic+",
+				//"-Dynamic+", FIX: поправить после исправления https://github.com/v8platform/marshaler/issues/1
 				"-Server",
 			},
 		},
@@ -235,13 +235,13 @@ func TestApiConfig(t *testing.T) {
 				"/IBConnectionString File='./test_ib';",
 				"/DisableStartupDialogs",
 				"/DumpConfigToFiles ./src",
-				"-Force",
+				"-force",
 			},
 		},
 		{
 			"DumpConfigToFiles_update",
 			ib,
-			DumpConfigToFiles("./src", false).WithUpdate(false, ""),
+			DumpConfigToFiles("./src", false).WithUpdate(""),
 			nil,
 			[]string{
 				"DESIGNER",
@@ -254,7 +254,7 @@ func TestApiConfig(t *testing.T) {
 		{
 			"DumpConfigToFiles_configDumpInfo",
 			ib,
-			DumpConfigToFiles("./src", false).WithUpdate(false, "./dumpInfo.xml"),
+			DumpConfigToFiles("./src", false).WithUpdate("./dumpInfo.xml"),
 			nil,
 			[]string{
 				"DESIGNER",
