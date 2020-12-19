@@ -25,6 +25,8 @@ github.com/v8platform/agent v0.0.0-20200703051804-b06e6737a7b5 h1:exdR2JPaLRuRva
 github.com/v8platform/agent v0.0.0-20200703051804-b06e6737a7b5/go.mod h1:fLdJkSja8K++qa7+Lw4RQBHsEdS18GcE2F2BlFK33Z4=
 github.com/v8platform/designer v0.1.1 h1:YnC2+GVP7t/9QfAsRD2+dm3BaQVKi2PCGO56acvgcSk=
 github.com/v8platform/designer v0.1.1/go.mod h1:LdRGRiHK3+eIIMJcI1eEF90VSzYqU2cMhXOWeJu2bHE=
+github.com/v8platform/designer v0.2.0 h1:ldcp4MdpIcBxzZw+VH0fterpC5yMCk+OZxAYaBUjDzc=
+github.com/v8platform/designer v0.2.0/go.mod h1:pPkrPaXbTXLQHBfUu9+ikp4W6XRTN3iIF2/MNDTj4Sc=
 github.com/v8platform/enterprise v0.1.0 h1:OKJ3ig9AvUDvIN+R0GRWJUPVNy5rPNtOKoqS2JPLnvw=
 github.com/v8platform/enterprise v0.1.0/go.mod h1:A2XY7UYAi/o9xdKrHzU63XnVD8wvIe6jMBUlUrNANQs=
 github.com/v8platform/errors v0.1.0 h1:7167okMmxBb76FA3+irT4LW9KTVura0vhMWnFDMHcZw=

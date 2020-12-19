@@ -2,12 +2,11 @@ package v8
 
 import (
 	"github.com/v8platform/designer"
-	"github.com/v8platform/designer/repository"
 )
 
-func NewRepository(path string, userAndPassword ...string) repository.Repository {
+func NewRepository(path string, userAndPassword ...string) designer.Repository {
 
-	repo := repository.Repository{
+	repo := designer.Repository{
 		Path: path,
 	}
 
@@ -23,16 +22,16 @@ func NewRepository(path string, userAndPassword ...string) repository.Repository
 
 // RepositoryUpdateCfg получает команду обновления конфигурации из хранилища конфигурации
 // Подробнее в пакете designer.UpdateCfgOptions
-func RepositoryUpdateCfg(repo repository.Repository, updateDBCfg ...designer.UpdateDBCfgOptions) repository.RepositoryUpdateCfgOptions {
+func RepositoryUpdateCfg(repo designer.Repository, updateDBCfg ...designer.UpdateDBCfgOptions) designer.RepositoryUpdateCfgOptions {
 
-	command := repository.RepositoryUpdateCfgOptions{
+	command := designer.RepositoryUpdateCfgOptions{
 		Repository: repo,
 		Designer:   designer.NewDesigner(),
 	}
 
-	if len(updateDBCfg) > 0 {
-		command.UpdateDBCfg = &updateDBCfg[0]
-	}
+	//if len(updateDBCfg) > 0 {
+	//	command.UpdateDBCfg = &updateDBCfg[0]
+	//}
 
 	return command
 }

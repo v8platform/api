@@ -416,7 +416,7 @@ func ExampleDumpConfigToFiles_with_update() {
 	//infobase := v8.NewFileIB("./infobase")
 	//infobase := v8.NewServerIB("app", "demobase")
 
-	what := v8.DumpConfigToFiles("./src").WithUpdate(false, "./src/dumpInfo.xml")
+	what := v8.DumpConfigToFiles("./src").WithUpdate("./src/dumpInfo.xml")
 	//what := v8.DumpConfigToFiles("./src", true)
 
 	err = v8.Run(infobase, what)
