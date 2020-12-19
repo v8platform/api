@@ -5,7 +5,7 @@ package v8_test
 
 import (
 	"fmt"
-	v8 "github.com/v8platform/v8"
+	v8 "github.com/v8platform/api"
 	"io/ioutil"
 	"log"
 	"os"

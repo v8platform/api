@@ -1,4 +1,4 @@
-module github.com/v8platform/v8
+module github.com/v8platform/api
 
 go 1.15
 

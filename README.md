@@ -9,7 +9,7 @@ go-v8platform
 ```go
 package main
 
-import "github.com/v8platform/v8"
+import "github.com/v8platform/api"
 
 func main() {
 	
@@ -33,4 +33,4 @@ func main() {
 ```
 ## Документация
 
-[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/v8platform/v8)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/v8platform/api)
