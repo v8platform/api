@@ -5,21 +5,27 @@ import (
 	"io/ioutil"
 )
 
+// ConnectionString описывает интерфейс для получения строки подключения
+// 	Пример:
+// 		/IBConnectionString File='./file_ib';Usr=User;Pwd=Password;LicDstr=Y;Prmod=1;Locale=ru_RU;
 type ConnectionString interface {
 	ConnectionString() string
 }
 
+// Command описывает интерфейс команд пакетного запуска конфигуратора
 type Command interface {
 	runner.Command
 }
 
-func NewTempIB() Infobase {
+// NewTempIB создает новую временную информационную базы
+func NewTempIB() (*Infobase, error) {
 
 	path, _ := ioutil.TempDir("", "1c_DB_")
+	return CreateInfobase(CreateFileInfobase(path))
 
-	return NewFileIB(path)
 }
 
+// NewFileIB получет файловую информационную базы по пути к каталогу
 func NewFileIB(path string) Infobase {
 
 	ib := Infobase{
@@ -31,6 +37,7 @@ func NewFileIB(path string) Infobase {
 	return ib
 }
 
+// NewServerIB получет серверную информационную базы по имени сервера и базы на нем
 func NewServerIB(server, ref string) Infobase {
 
 	ib := Infobase{

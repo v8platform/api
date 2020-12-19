@@ -16,7 +16,7 @@ func main() {
   infobase := v8.NewFileIB("./infobase")
   //infobase := v8.NewServerIB("app", "demobase")
   
-  what := v8.LoadCfg("./1cv8.cf)
+  what := v8.LoadCfg("./1cv8.cf")
   //what := v8.DumpCfg("./1cv8.cf)
   //what := v8.DumpIB("./1cv8.dt)
   

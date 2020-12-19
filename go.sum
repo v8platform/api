@@ -21,9 +21,10 @@ github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81P
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=
 github.com/stretchr/testify v1.6.1 h1:hDPOHmpOpP40lSULcqw7IrRb/u7w6RpDC9399XyoNd0=
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
+github.com/v8platform/agent v0.0.0-20200703051804-b06e6737a7b5 h1:exdR2JPaLRuRvaLLyPzVHAZV7KkQGrblL2ch5J3Dkpg=
 github.com/v8platform/agent v0.0.0-20200703051804-b06e6737a7b5/go.mod h1:fLdJkSja8K++qa7+Lw4RQBHsEdS18GcE2F2BlFK33Z4=
-github.com/v8platform/designer v0.1.0 h1:KrKGSO+Fah7h66D5TK+urNYezC3KyhTEEvwCT0+rAys=
-github.com/v8platform/designer v0.1.0/go.mod h1:crJehQ/us/JoDy/jgKFxFLJsPTAQXX1SKSa0CMQKbYw=
+github.com/v8platform/designer v0.1.1 h1:YnC2+GVP7t/9QfAsRD2+dm3BaQVKi2PCGO56acvgcSk=
+github.com/v8platform/designer v0.1.1/go.mod h1:LdRGRiHK3+eIIMJcI1eEF90VSzYqU2cMhXOWeJu2bHE=
 github.com/v8platform/enterprise v0.1.0 h1:OKJ3ig9AvUDvIN+R0GRWJUPVNy5rPNtOKoqS2JPLnvw=
 github.com/v8platform/enterprise v0.1.0/go.mod h1:A2XY7UYAi/o9xdKrHzU63XnVD8wvIe6jMBUlUrNANQs=
 github.com/v8platform/errors v0.1.0 h1:7167okMmxBb76FA3+irT4LW9KTVura0vhMWnFDMHcZw=
